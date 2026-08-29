@@ -4,36 +4,62 @@ from pathlib import Path
 import dj_database_url
 
 
+# =========================================================
+# BASE DIRECTORY
+# =========================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# =========================
+# =========================================================
 # SECURITY
-# =========================
+# =========================================================
 
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    "dev-only-change-this-before-production"
+    "dev-only-change-this-before-production",
 )
 
 DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
+
+# =========================================================
+# ALLOWED HOSTS
+# =========================================================
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+
+    # Cloudflare testing
     ".trycloudflare.com",
+
+    # Railway
     ".up.railway.app",
+
+    # Render
+    ".onrender.com",
+
+    # Current AMEXA Render domain
+    "amexa.onrender.com",
 ]
+
+
+# =========================================================
+# CSRF TRUSTED ORIGINS
+# =========================================================
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.trycloudflare.com",
     "https://*.up.railway.app",
+    "https://*.onrender.com",
+    "https://amexa.onrender.com",
 ]
 
 
-# =========================
+# =========================================================
 # APPLICATIONS
-# =========================
+# =========================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -44,18 +70,19 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "rest_framework",
+
     "customer",
 ]
 
 
-# =========================
+# =========================================================
 # MIDDLEWARE
-# =========================
+# =========================================================
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # Production static files
+    # WhiteNoise
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -67,12 +94,16 @@ MIDDLEWARE = [
 ]
 
 
+# =========================================================
+# URL CONFIG
+# =========================================================
+
 ROOT_URLCONF = "amexa.urls"
 
 
-# =========================
+# =========================================================
 # TEMPLATES
-# =========================
+# =========================================================
 
 TEMPLATES = [
     {
@@ -95,15 +126,16 @@ TEMPLATES = [
 ]
 
 
+# =========================================================
+# WSGI
+# =========================================================
+
 WSGI_APPLICATION = "amexa.wsgi.application"
 
 
-# =========================
+# =========================================================
 # DATABASE
-# =========================
-
-# Local computer = SQLite
-# Railway = PostgreSQL automatically through DATABASE_URL
+# =========================================================
 
 DATABASES = {
     "default": dj_database_url.config(
@@ -113,38 +145,55 @@ DATABASES = {
 }
 
 
-# =========================
-# PASSWORD VALIDATION
-# =========================
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-
-# =========================
-# CUSTOM USER
-# =========================
+# =========================================================
+# CUSTOM USER MODEL
+# =========================================================
 
 AUTH_USER_MODEL = "customer.CustomerUser"
+
+
+# =========================================================
+# LOGIN
+# =========================================================
 
 LOGIN_URL = "login"
 
 
-# =========================
+# =========================================================
+# PASSWORD VALIDATION
+# =========================================================
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
+    },
+]
+
+
+# =========================================================
 # LANGUAGE / TIME
-# =========================
+# =========================================================
 
 LANGUAGE_CODE = "en-us"
 
@@ -155,9 +204,9 @@ USE_I18N = True
 USE_TZ = True
 
 
-# =========================
+# =========================================================
 # STATIC FILES
-# =========================
+# =========================================================
 
 STATIC_URL = "/static/"
 
@@ -168,41 +217,55 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
+# =========================================================
+# STORAGE
+# =========================================================
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
 
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 
 
-# =========================
+# =========================================================
 # MEDIA FILES
-# =========================
+# =========================================================
 
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
 
-# =========================
+# =========================================================
 # DEFAULT PRIMARY KEY
-# =========================
+# =========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# =========================
-# PRODUCTION HTTPS
-# =========================
+# =========================================================
+# PROXY / HTTPS SETTINGS
+# Render / Railway HTTPS
+# =========================================================
 
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
 )
 
+
+# =========================================================
+# COOKIES
+# =========================================================
+
 SESSION_COOKIE_SECURE = not DEBUG
+
 CSRF_COOKIE_SECURE = not DEBUG
