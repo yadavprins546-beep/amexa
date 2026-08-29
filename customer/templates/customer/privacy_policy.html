@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Privacy Policy | AMEXA</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial, Helvetica, sans-serif;
+            background:#07111f;
+            color:#ffffff;
+            min-height:100vh;
+        }
+
+        a{
+            color:inherit;
+            text-decoration:none;
+        }
+
+        .page{
+            width:min(100%, 760px);
+            margin:auto;
+            padding-bottom:50px;
+        }
+
+        .topbar{
+            position:sticky;
+            top:0;
+            z-index:20;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:16px;
+            background:rgba(7,17,31,.95);
+            backdrop-filter:blur(14px);
+            border-bottom:1px solid rgba(255,255,255,.08);
+        }
+
+        .back{
+            width:42px;
+            height:42px;
+            display:grid;
+            place-items:center;
+            border-radius:14px;
+            background:#111d31;
+            border:1px solid rgba(255,255,255,.08);
+            font-size:22px;
+            font-weight:900;
+        }
+
+        .topbar h1{
+            font-size:18px;
+            font-weight:900;
+        }
+
+        .hero{
+            margin:16px;
+            padding:24px 20px;
+            border-radius:24px;
+
+            background:
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(0,219,255,.18),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 10% 100%,
+                    rgba(154,60,255,.22),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    #102a58,
+                    #31146a
+                );
+
+            border:1px solid rgba(255,255,255,.10);
+        }
+
+        .hero-icon{
+            width:54px;
+            height:54px;
+            display:grid;
+            place-items:center;
+            border-radius:18px;
+            background:rgba(255,255,255,.10);
+            font-size:27px;
+            margin-bottom:14px;
+        }
+
+        .hero h2{
+            font-size:24px;
+            margin-bottom:8px;
+        }
+
+        .hero p{
+            color:#d7dfef;
+            font-size:13px;
+            line-height:1.65;
+        }
+
+        .section{
+            margin:16px;
+            padding:18px;
+            border-radius:20px;
+            background:#0e192b;
+            border:1px solid rgba(255,255,255,.08);
+        }
+
+        .section h3{
+            font-size:15px;
+            margin-bottom:10px;
+        }
+
+        .section p{
+            color:#bdc8da;
+            font-size:12px;
+            line-height:1.75;
+        }
+
+        .section ul{
+            margin-top:10px;
+            padding-left:18px;
+            color:#bdc8da;
+            font-size:12px;
+            line-height:1.75;
+        }
+
+        .updated{
+            margin:16px;
+            text-align:center;
+            color:#8190a8;
+            font-size:11px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <header class="topbar">
+
+        <a href="{% url 'profile' %}"
+           class="back">
+            ‹
+        </a>
+
+        <h1>Privacy Policy</h1>
+
+    </header>
+
+
+    <section class="hero">
+
+        <div class="hero-icon">
+            🔐
+        </div>
+
+        <h2>Your privacy matters</h2>
+
+        <p>
+            AMEXA respects your privacy and is committed to protecting
+            your personal information while providing local shopping
+            and delivery services.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>1. Information We Collect</h3>
+
+        <p>
+            When you use AMEXA, we may collect information required
+            to provide our services.
+        </p>
+
+        <ul>
+            <li>Name and mobile number</li>
+            <li>Delivery address</li>
+            <li>Location information</li>
+            <li>Order details</li>
+            <li>Payment-related information</li>
+            <li>Customer support information</li>
+        </ul>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>2. How We Use Your Information</h3>
+
+        <p>
+            We use your information to provide and improve AMEXA services,
+            including account login, nearby store discovery, order processing,
+            delivery, customer support and service improvements.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>3. Location Information</h3>
+
+        <p>
+            AMEXA may request your location to show nearby stores,
+            confirm delivery availability and help delivery partners
+            deliver orders to the correct location.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>4. Orders and Payments</h3>
+
+        <p>
+            Information related to orders and payments may be stored
+            as necessary for order processing, customer support,
+            refunds, accounting and fraud prevention.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>5. Sharing of Information</h3>
+
+        <p>
+            AMEXA may share limited information with shops,
+            delivery partners and service providers only when
+            required to complete an order or provide AMEXA services.
+        </p>
+
+        <p style="margin-top:10px;">
+            We do not intend to sell customers' personal information
+            for unrelated marketing purposes.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>6. Data Security</h3>
+
+        <p>
+            We take reasonable measures to protect customer information.
+            However, no internet-based system can guarantee complete security.
+            Customers should also protect their account and mobile device.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>7. OTP and Account Access</h3>
+
+        <p>
+            AMEXA may use OTP verification for account access.
+            Never share your OTP with anyone claiming to be from AMEXA.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>8. Customer Choices</h3>
+
+        <p>
+            Customers may contact AMEXA support regarding their account,
+            personal information, delivery address or privacy-related concerns.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>9. Changes to This Policy</h3>
+
+        <p>
+            AMEXA may update this Privacy Policy as the platform,
+            services or legal requirements change.
+        </p>
+
+    </section>
+
+
+    <section class="section">
+
+        <h3>10. Contact Us</h3>
+
+        <p>
+            If you have questions regarding this Privacy Policy,
+            please contact AMEXA through the Help & Support section.
+        </p>
+
+    </section>
+
+
+    <div class="updated">
+        AMEXA Privacy Policy
+    </div>
+
+</div>
+
+</body>
+</html>

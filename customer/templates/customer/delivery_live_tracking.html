@@ -1,0 +1,813 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Rider Live Tracking | AMEXA{% endblock %}
+
+{% block content %}
+
+<style>
+    .rider-page {
+        width: min(650px, 100%);
+        margin: 0 auto;
+        padding: 16px 12px 100px;
+    }
+
+    .rider-card {
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    .rider-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 900;
+        color: #151515;
+    }
+
+    .rider-subtitle {
+        margin-top: 6px;
+        color: #777;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .order-box {
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 14px;
+        background: #f7f7f7;
+    }
+
+    .order-label {
+        font-size: 11px;
+        color: #888;
+        font-weight: 700;
+    }
+
+    .order-value {
+        display: block;
+        margin-top: 4px;
+        font-size: 15px;
+        font-weight: 900;
+        color: #222;
+    }
+
+    .status-box {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 14px;
+        background: #f3f4f6;
+        color: #555;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .status-box.loading {
+        background: #fff8dd;
+        color: #8a6900;
+    }
+
+    .status-box.success {
+        background: #e8fff3;
+        color: #087443;
+    }
+
+    .status-box.error {
+        background: #ffe9ed;
+        color: #b51f3c;
+    }
+
+    .coordinates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .coordinate-box {
+        padding: 13px;
+        border-radius: 13px;
+        background: #f7f9ff;
+        border: 1px solid #e8ebf4;
+    }
+
+    .coordinate-box small {
+        display: block;
+        color: #888;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .coordinate-box strong {
+        display: block;
+        margin-top: 5px;
+        color: #222;
+        font-size: 13px;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .tracking-btn {
+        border: 0;
+        min-height: 48px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        color: white;
+    }
+
+    .start-btn {
+        background: #0abf7b;
+    }
+
+    .stop-btn {
+        background: #ef476f;
+    }
+
+    .tracking-btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .last-update {
+        margin-top: 15px;
+        padding: 12px;
+        background: #f8f5ff;
+        border-radius: 12px;
+        color: #6545a5;
+        font-size: 12px;
+    }
+
+    .tracking-note {
+        margin-top: 14px;
+        text-align: center;
+        color: #888;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 500px) {
+        .rider-page {
+            padding: 10px 8px 90px;
+        }
+
+        .rider-card {
+            padding: 16px;
+        }
+
+        .rider-title {
+            font-size: 21px;
+        }
+
+        .coordinates,
+        .buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+
+<div class="rider-page">
+
+    <div class="rider-card">
+
+        <h1 class="rider-title">
+            🛵 Rider Live Tracking
+        </h1>
+
+        <div class="rider-subtitle">
+            Delivery ke time is page ko rider ke phone me open rakho.
+            AMEXA rider ki live GPS location customer ke tracking page tak bhejega.
+        </div>
+
+
+        <div class="order-box">
+
+            <div class="order-label">
+                ORDER NUMBER
+            </div>
+
+            <strong class="order-value">
+                {{ order.order_number }}
+            </strong>
+
+        </div>
+
+
+        <div class="order-box">
+
+            <div class="order-label">
+                DELIVERY ADDRESS
+            </div>
+
+            <strong class="order-value">
+
+                {% if order.address %}
+
+                    {{ order.address.address_line }}
+
+                    {% if order.address.city %}
+                        , {{ order.address.city }}
+                    {% endif %}
+
+                    {% if order.address.pincode %}
+                        - {{ order.address.pincode }}
+                    {% endif %}
+
+                {% else %}
+
+                    Delivery address unavailable
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <div
+            id="gpsStatus"
+            class="status-box"
+        >
+            GPS tracking abhi stopped hai.
+        </div>
+
+
+        <div class="coordinates">
+
+            <div class="coordinate-box">
+
+                <small>
+                    LATITUDE
+                </small>
+
+                <strong id="latitudeText">
+                    --
+                </strong>
+
+            </div>
+
+
+            <div class="coordinate-box">
+
+                <small>
+                    LONGITUDE
+                </small>
+
+                <strong id="longitudeText">
+                    --
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                type="button"
+                id="startButton"
+                class="tracking-btn start-btn"
+            >
+                ▶ Start Live Tracking
+            </button>
+
+
+            <button
+                type="button"
+                id="stopButton"
+                class="tracking-btn stop-btn"
+                disabled
+            >
+                ■ Stop Tracking
+            </button>
+
+        </div>
+
+
+        <div class="last-update">
+
+            Last server update:
+
+            <strong id="lastUpdateText">
+                Not sent yet
+            </strong>
+
+        </div>
+
+
+        <div class="tracking-note">
+            Phone ka GPS/Location ON rakho aur browser ko Location permission Allow karo.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // =====================================================
+    // DJANGO URL
+    // =====================================================
+
+    const locationUpdateUrl =
+        "{% url 'delivery_location_update' order.order_number %}";
+
+
+    // =====================================================
+    // ELEMENTS
+    // =====================================================
+
+    const gpsStatus =
+        document.getElementById("gpsStatus");
+
+    const latitudeText =
+        document.getElementById("latitudeText");
+
+    const longitudeText =
+        document.getElementById("longitudeText");
+
+    const lastUpdateText =
+        document.getElementById("lastUpdateText");
+
+    const startButton =
+        document.getElementById("startButton");
+
+    const stopButton =
+        document.getElementById("stopButton");
+
+
+    // =====================================================
+    // VARIABLES
+    // =====================================================
+
+    let watchId = null;
+
+    let lastSentTime = 0;
+
+    let lastLatitude = null;
+
+    let lastLongitude = null;
+
+
+    // =====================================================
+    // CSRF COOKIE
+    // =====================================================
+
+    function getCookie(name) {
+
+        let cookieValue = null;
+
+        if (
+            document.cookie &&
+            document.cookie !== ""
+        ) {
+
+            const cookies =
+                document.cookie.split(";");
+
+            for (
+                let i = 0;
+                i < cookies.length;
+                i++
+            ) {
+
+                const cookie =
+                    cookies[i].trim();
+
+                if (
+                    cookie.substring(
+                        0,
+                        name.length + 1
+                    ) ===
+                    (
+                        name + "="
+                    )
+                ) {
+
+                    cookieValue =
+                        decodeURIComponent(
+                            cookie.substring(
+                                name.length + 1
+                            )
+                        );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    const csrfToken =
+        getCookie("csrftoken");
+
+
+    // =====================================================
+    // STATUS
+    // =====================================================
+
+    function showStatus(
+        message,
+        type = ""
+    ) {
+
+        gpsStatus.className =
+            "status-box";
+
+        if (type) {
+            gpsStatus.classList.add(type);
+        }
+
+        gpsStatus.textContent =
+            message;
+    }
+
+
+    // =====================================================
+    // SEND GPS TO DJANGO
+    // =====================================================
+
+    async function sendLocation(
+        latitude,
+        longitude
+    ) {
+
+        const currentTime =
+            Date.now();
+
+
+        // Minimum 5 seconds gap
+        if (
+            currentTime - lastSentTime
+            < 5000
+        ) {
+            return;
+        }
+
+
+        // Same exact GPS ko baar-baar mat bhejo
+        if (
+            lastLatitude !== null &&
+            lastLongitude !== null
+        ) {
+
+            const latitudeDifference =
+                Math.abs(
+                    latitude -
+                    lastLatitude
+                );
+
+            const longitudeDifference =
+                Math.abs(
+                    longitude -
+                    lastLongitude
+                );
+
+
+            if (
+                latitudeDifference < 0.000005 &&
+                longitudeDifference < 0.000005
+            ) {
+                return;
+            }
+        }
+
+
+        try {
+
+            showStatus(
+                "Live GPS AMEXA ko send ho rahi hai...",
+                "loading"
+            );
+
+
+            const formData =
+                new FormData();
+
+
+            formData.append(
+                "latitude",
+                latitude
+            );
+
+
+            formData.append(
+                "longitude",
+                longitude
+            );
+
+
+            const response =
+                await fetch(
+                    locationUpdateUrl,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "X-CSRFToken":
+                                csrfToken,
+
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+
+                        body:
+                            formData,
+
+                        credentials:
+                            "same-origin"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.ok
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "Location update failed."
+                );
+            }
+
+
+            lastSentTime =
+                Date.now();
+
+
+            lastLatitude =
+                latitude;
+
+
+            lastLongitude =
+                longitude;
+
+
+            latitudeText.textContent =
+                Number(
+                    latitude
+                ).toFixed(6);
+
+
+            longitudeText.textContent =
+                Number(
+                    longitude
+                ).toFixed(6);
+
+
+            lastUpdateText.textContent =
+                new Date()
+                .toLocaleTimeString();
+
+
+            showStatus(
+                "✓ Rider live location server par update ho gayi.",
+                "success"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "AMEXA GPS Error:",
+                error
+            );
+
+
+            showStatus(
+                error.message ||
+                "GPS server ko send nahi ho payi.",
+                "error"
+            );
+        }
+    }
+
+
+    // =====================================================
+    // GPS SUCCESS
+    // =====================================================
+
+    function positionSuccess(
+        position
+    ) {
+
+        const latitude =
+            position.coords.latitude;
+
+
+        const longitude =
+            position.coords.longitude;
+
+
+        latitudeText.textContent =
+            latitude.toFixed(6);
+
+
+        longitudeText.textContent =
+            longitude.toFixed(6);
+
+
+        sendLocation(
+            latitude,
+            longitude
+        );
+    }
+
+
+    // =====================================================
+    // GPS ERROR
+    // =====================================================
+
+    function positionError(
+        error
+    ) {
+
+        let message =
+            "Live location nahi mil rahi.";
+
+
+        if (
+            error.code ===
+            error.PERMISSION_DENIED
+        ) {
+
+            message =
+                "Location permission blocked hai. Browser me Location Allow karo.";
+        }
+
+
+        else if (
+            error.code ===
+            error.POSITION_UNAVAILABLE
+        ) {
+
+            message =
+                "GPS unavailable hai. Phone ka Location/GPS ON karo.";
+        }
+
+
+        else if (
+            error.code ===
+            error.TIMEOUT
+        ) {
+
+            message =
+                "GPS location lene me timeout hua. Dobara try karo.";
+        }
+
+
+        showStatus(
+            message,
+            "error"
+        );
+    }
+
+
+    // =====================================================
+    // START TRACKING
+    // =====================================================
+
+    function startLiveTracking() {
+
+        if (
+            !navigator.geolocation
+        ) {
+
+            showStatus(
+                "Is browser me GPS support nahi hai.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (
+            watchId !== null
+        ) {
+            return;
+        }
+
+
+        showStatus(
+            "GPS start ho raha hai...",
+            "loading"
+        );
+
+
+        watchId =
+            navigator.geolocation.watchPosition(
+
+                positionSuccess,
+
+                positionError,
+
+                {
+                    enableHighAccuracy: true,
+
+                    timeout: 15000,
+
+                    maximumAge: 3000
+                }
+            );
+
+
+        startButton.disabled =
+            true;
+
+
+        stopButton.disabled =
+            false;
+    }
+
+
+    // =====================================================
+    // STOP TRACKING
+    // =====================================================
+
+    function stopLiveTracking() {
+
+        if (
+            watchId !== null
+        ) {
+
+            navigator.geolocation.clearWatch(
+                watchId
+            );
+
+
+            watchId =
+                null;
+        }
+
+
+        startButton.disabled =
+            false;
+
+
+        stopButton.disabled =
+            true;
+
+
+        showStatus(
+            "GPS tracking stopped."
+        );
+    }
+
+
+    // =====================================================
+    // BUTTON EVENTS
+    // =====================================================
+
+    startButton.addEventListener(
+        "click",
+        startLiveTracking
+    );
+
+
+    stopButton.addEventListener(
+        "click",
+        stopLiveTracking
+    );
+
+
+    // =====================================================
+    // PAGE CLOSE
+    // =====================================================
+
+    window.addEventListener(
+        "beforeunload",
+        function () {
+
+            if (
+                watchId !== null
+            ) {
+
+                navigator.geolocation.clearWatch(
+                    watchId
+                );
+            }
+        }
+    );
+
+</script>
+
+{% endblock %}

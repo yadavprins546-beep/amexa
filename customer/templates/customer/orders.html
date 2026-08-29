@@ -1,0 +1,1294 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}My Orders | AMEXA{% endblock %}
+
+{% block content %}
+
+<style>
+
+    .orders-page{
+
+        width:min(1080px,100%);
+
+        margin:auto;
+
+        padding:18px 14px 110px;
+
+    }
+
+    .orders-top{
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:space-between;
+
+        gap:12px;
+
+        margin-bottom:18px;
+
+    }
+
+    .orders-title h1{
+
+        margin:0;
+
+        font-size:30px;
+
+        font-weight:950;
+
+        letter-spacing:-.8px;
+
+    }
+
+    .orders-title p{
+
+        margin:5px 0 0;
+
+        color:#aab1c7;
+
+        font-size:12px;
+
+    }
+
+    .orders-home{
+
+        padding:10px 13px;
+
+        border-radius:12px;
+
+        background:rgba(255,255,255,.06);
+
+        border:1px solid rgba(255,255,255,.10);
+
+        color:#dfe4f4;
+
+        font-size:11px;
+
+        font-weight:900;
+
+        text-decoration:none;
+
+    }
+
+    .order-summary-strip{
+
+        display:grid;
+
+        grid-template-columns:repeat(3,1fr);
+
+        gap:9px;
+
+        margin-bottom:18px;
+
+    }
+
+    .summary-box{
+
+        padding:13px 10px;
+
+        border-radius:15px;
+
+        background:linear-gradient(145deg,rgba(16,23,47,.96),rgba(7,11,27,.96));
+
+        border:1px solid rgba(255,255,255,.09);
+
+        text-align:center;
+
+    }
+
+    .summary-number{
+
+        font-size:18px;
+
+        font-weight:950;
+
+        color:#fff;
+
+    }
+
+    .summary-label{
+
+        margin-top:3px;
+
+        color:#98a2b8;
+
+        font-size:9px;
+
+        font-weight:800;
+
+    }
+
+    .orders-list{
+
+        display:grid;
+
+        gap:14px;
+
+    }
+
+    .order-card{
+
+        overflow:hidden;
+
+        border-radius:22px;
+
+        background:
+
+            radial-gradient(circle at 95% 0%,rgba(0,229,255,.06),transparent 24%),
+
+            linear-gradient(145deg,rgba(16,23,47,.97),rgba(7,11,27,.97));
+
+        border:1px solid rgba(255,255,255,.09);
+
+        box-shadow:0 16px 45px rgba(0,0,0,.20);
+
+    }
+
+    .order-head{
+
+        display:flex;
+
+        align-items:flex-start;
+
+        justify-content:space-between;
+
+        gap:12px;
+
+        padding:16px 16px 12px;
+
+    }
+
+    .order-number{
+
+        font-size:15px;
+
+        font-weight:950;
+
+        color:#fff;
+
+    }
+
+    .order-date{
+
+        margin-top:4px;
+
+        color:#9fa8bd;
+
+        font-size:10px;
+
+    }
+
+    .status{
+
+        flex:0 0 auto;
+
+        padding:6px 9px;
+
+        border-radius:9px;
+
+        font-size:9px;
+
+        font-weight:950;
+
+        border:1px solid transparent;
+
+    }
+
+    .status-pending{
+
+        color:#ffe18a;
+
+        background:rgba(255,216,77,.10);
+
+        border-color:rgba(255,216,77,.14);
+
+    }
+
+    .status-confirmed,
+
+    .status-preparing{
+
+        color:#89eaff;
+
+        background:rgba(0,229,255,.09);
+
+        border-color:rgba(0,229,255,.14);
+
+    }
+
+    .status-out{
+
+        color:#c6b2ff;
+
+        background:rgba(118,44,255,.11);
+
+        border-color:rgba(118,44,255,.16);
+
+    }
+
+    .status-delivered{
+
+        color:#bfffdc;
+
+        background:rgba(25,217,139,.10);
+
+        border-color:rgba(25,217,139,.15);
+
+    }
+
+    .status-cancelled{
+
+        color:#ff9aad;
+
+        background:rgba(255,65,108,.10);
+
+        border-color:rgba(255,65,108,.15);
+
+    }
+
+    .shop-row{
+
+        display:flex;
+
+        align-items:center;
+
+        gap:10px;
+
+        margin:0 16px;
+
+        padding:12px;
+
+        border-radius:15px;
+
+        background:rgba(255,255,255,.035);
+
+        border:1px solid rgba(255,255,255,.06);
+
+    }
+
+    .shop-icon{
+
+        width:42px;
+
+        height:42px;
+
+        display:grid;
+
+        place-items:center;
+
+        border-radius:12px;
+
+        font-size:21px;
+
+        background:linear-gradient(135deg,#fff,#dffaff);
+
+    }
+
+    .shop-name{
+
+        font-size:12px;
+
+        font-weight:900;
+
+        color:#fff;
+
+    }
+
+    .shop-sub{
+
+        margin-top:3px;
+
+        color:#9fa8bd;
+
+        font-size:9px;
+
+    }
+
+    .order-grid{
+
+        display:grid;
+
+        grid-template-columns:repeat(4,1fr);
+
+        gap:8px;
+
+        padding:13px 16px 15px;
+
+    }
+
+    .order-info{
+
+        padding:10px;
+
+        border-radius:13px;
+
+        background:rgba(255,255,255,.03);
+
+        border:1px solid rgba(255,255,255,.055);
+
+    }
+
+    .order-info span{
+
+        display:block;
+
+        color:#8f98ae;
+
+        font-size:8px;
+
+        font-weight:800;
+
+        text-transform:uppercase;
+
+        letter-spacing:.5px;
+
+    }
+
+    .order-info strong{
+
+        display:block;
+
+        margin-top:4px;
+
+        color:#eef2fb;
+
+        font-size:11px;
+
+        font-weight:900;
+
+    }
+
+    .payment-pill{
+
+        display:inline-flex;
+
+        align-items:center;
+
+        gap:5px;
+
+    }
+
+    .order-actions{
+
+        display:flex;
+
+        flex-wrap:wrap;
+
+        gap:8px;
+
+        padding:0 16px 16px;
+
+    }
+
+    .order-btn{
+
+        min-height:39px;
+
+        padding:0 13px;
+
+        display:inline-flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+        border-radius:11px;
+
+        font-size:10px;
+
+        font-weight:900;
+
+        text-decoration:none;
+
+        border:1px solid transparent;
+
+    }
+
+    .order-btn-primary{
+
+        color:white;
+
+        background:linear-gradient(135deg,#009cff,#782cff);
+
+    }
+
+    .order-btn-secondary{
+
+        color:#7cefff;
+
+        background:rgba(0,229,255,.07);
+
+        border-color:rgba(0,229,255,.13);
+
+    }
+
+    .order-btn-danger{
+
+        color:#ff9eb0;
+
+        background:rgba(255,65,108,.08);
+
+        border-color:rgba(255,65,108,.13);
+
+    }
+
+    .order-btn-muted{
+
+        color:#bec5d4;
+
+        background:rgba(255,255,255,.045);
+
+        border-color:rgba(255,255,255,.07);
+
+    }
+
+    .master-note{
+
+        margin:0 16px 14px;
+
+        padding:9px 11px;
+
+        border-radius:10px;
+
+        background:rgba(118,44,255,.07);
+
+        border:1px solid rgba(118,44,255,.10);
+
+        color:#cfc0ff;
+
+        font-size:9px;
+
+        line-height:1.4;
+
+    }
+
+    .alert{
+
+        margin-bottom:12px;
+
+        padding:11px 13px;
+
+        border-radius:12px;
+
+        background:rgba(0,229,255,.08);
+
+        border:1px solid rgba(0,229,255,.12);
+
+        color:#dffcff;
+
+        font-size:11px;
+
+    }
+
+    .empty-order{
+
+        margin-top:18px;
+
+        padding:34px 18px;
+
+        text-align:center;
+
+        border-radius:22px;
+
+        background:linear-gradient(145deg,rgba(16,23,47,.96),rgba(7,11,27,.96));
+
+        border:1px dashed rgba(255,255,255,.12);
+
+    }
+
+    .empty-icon{
+
+        font-size:52px;
+
+        margin-bottom:10px;
+
+    }
+
+    .empty-order h3{
+
+        margin:0;
+
+        font-size:18px;
+
+        font-weight:950;
+
+    }
+
+    .empty-order p{
+
+        margin:7px auto 15px;
+
+        max-width:420px;
+
+        color:#9fa8bd;
+
+        font-size:11px;
+
+        line-height:1.5;
+
+    }
+
+    @media(max-width:700px){
+
+        .orders-title h1{
+
+            font-size:25px;
+
+        }
+
+        .order-summary-strip{
+
+            grid-template-columns:repeat(3,1fr);
+
+        }
+
+        .order-grid{
+
+            grid-template-columns:repeat(2,1fr);
+
+        }
+
+        .order-actions{
+
+            display:grid;
+
+            grid-template-columns:repeat(2,1fr);
+
+        }
+
+        .order-btn{
+
+            width:100%;
+
+        }
+
+    }
+
+    @media(max-width:430px){
+
+        .orders-page{
+
+            padding:12px 10px 100px;
+
+        }
+
+        .orders-home{
+
+            padding:9px 10px;
+
+        }
+
+        .order-head,
+
+        .order-grid,
+
+        .order-actions{
+
+            padding-left:12px;
+
+            padding-right:12px;
+
+        }
+
+        .shop-row,
+
+        .master-note{
+
+            margin-left:12px;
+
+            margin-right:12px;
+
+        }
+
+        .order-number{
+
+            font-size:13px;
+
+        }
+
+    }
+
+
+    .orders-tools{display:flex;justify-content:space-between;gap:10px;margin-bottom:16px}
+    .order-tabs{display:flex;gap:7px;overflow-x:auto}
+    .order-tab{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);color:#aeb6c9;border-radius:999px;padding:8px 11px;font-size:9px;font-weight:900;cursor:pointer}
+    .order-tab.active{color:#fff;background:linear-gradient(135deg,#009cff,#782cff);border-color:transparent}
+    .orders-search{width:min(260px,100%);height:38px;border-radius:11px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);color:#fff;padding:0 11px;outline:none;font-size:10px}
+    .orders-search::placeholder{color:#7f899e}
+    .hidden-order{display:none!important}
+    @media(max-width:700px){.orders-tools{flex-direction:column}.orders-search{width:100%}}
+
+
+    /* ORDER PRODUCTS */
+    .order-products{
+        margin:14px 16px 0;
+        padding:12px;
+        border-radius:16px;
+        background:rgba(255,255,255,.025);
+        border:1px solid rgba(255,255,255,.055);
+    }
+
+    .order-products-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin-bottom:10px;
+    }
+
+    .order-products-title{
+        font-size:11px;
+        font-weight:950;
+        color:#eef2fb;
+    }
+
+    .order-products-count{
+        padding:4px 7px;
+        border-radius:8px;
+        background:rgba(0,229,255,.07);
+        border:1px solid rgba(0,229,255,.11);
+        color:#87f2ff;
+        font-size:8px;
+        font-weight:900;
+    }
+
+    .order-product-list{
+        display:grid;
+        gap:8px;
+    }
+
+    .order-product{
+        display:grid;
+        grid-template-columns:52px minmax(0,1fr) auto;
+        gap:10px;
+        align-items:center;
+        padding:9px;
+        border-radius:13px;
+        background:rgba(255,255,255,.03);
+        border:1px solid rgba(255,255,255,.045);
+    }
+
+    .order-product-image{
+        width:52px;
+        height:52px;
+        display:grid;
+        place-items:center;
+        overflow:hidden;
+        border-radius:12px;
+        background:linear-gradient(145deg,#ffffff,#dfe8ff);
+        color:#111;
+        font-size:23px;
+        box-shadow:0 8px 18px rgba(0,0,0,.20);
+    }
+
+    .order-product-image img{
+        width:100%;
+        height:100%;
+        object-fit:contain;
+        padding:4px;
+    }
+
+    .order-product-main{
+        min-width:0;
+    }
+
+    .order-product-name{
+        color:#fff;
+        font-size:11px;
+        font-weight:900;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .order-product-meta{
+        margin-top:4px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+        color:#909aae;
+        font-size:8px;
+        font-weight:800;
+    }
+
+    .order-product-price{
+        color:#7fefff;
+        font-size:11px;
+        font-weight:950;
+        white-space:nowrap;
+        text-align:right;
+    }
+
+    .order-products-empty{
+        padding:12px;
+        border-radius:12px;
+        text-align:center;
+        color:#8f98ae;
+        font-size:9px;
+        border:1px dashed rgba(255,255,255,.08);
+    }
+
+    @media(max-width:430px){
+        .order-products{
+            margin-left:12px;
+            margin-right:12px;
+        }
+
+        .order-product{
+            grid-template-columns:46px minmax(0,1fr) auto;
+            gap:8px;
+        }
+
+        .order-product-image{
+            width:46px;
+            height:46px;
+        }
+
+        .order-product-name{
+            font-size:10px;
+        }
+
+        .order-product-price{
+            font-size:10px;
+        }
+    }
+
+</style>
+
+<div class="orders-page">
+
+    <div class="orders-top">
+
+        <div class="orders-title">
+
+            <h1>📦 My Orders</h1>
+
+            <p>Track every shop order, payment and delivery status.</p>
+
+        </div>
+
+        <a class="orders-home" href="{% url 'home' %}">
+
+            🏠 Home
+
+        </a>
+
+    </div>
+
+
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert">
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+
+    <div class="order-summary-strip">
+
+        <div class="summary-box">
+
+            <div class="summary-number">
+
+                {{ orders|length }}
+
+            </div>
+
+            <div class="summary-label">
+
+                Total Orders
+
+            </div>
+
+        </div>
+
+        <div class="summary-box">
+
+            <div class="summary-number">
+
+                📍
+
+            </div>
+
+            <div class="summary-label">
+
+                Shop-wise Orders
+
+            </div>
+
+        </div>
+
+        <div class="summary-box">
+
+            <div class="summary-number">
+
+                ⚡
+
+            </div>
+
+            <div class="summary-label">
+
+                Live Tracking
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    
+    {% if orders %}
+    <div class="orders-tools">
+        <div class="order-tabs">
+            <button type="button" class="order-tab active" data-filter="all">All</button>
+            <button type="button" class="order-tab" data-filter="active">Active</button>
+            <button type="button" class="order-tab" data-filter="delivered">Delivered</button>
+            <button type="button" class="order-tab" data-filter="cancelled">Cancelled</button>
+        </div>
+        <input id="orderSearch" class="orders-search" type="search" placeholder="Search order or shop..." autocomplete="off">
+    </div>
+    {% endif %}
+
+{% if orders %}
+
+        <div class="orders-list">
+
+            {% for order in orders %}
+
+                <article class="order-card"
+ data-status="{{ order.status|lower }}"
+ data-search="{{ order.order_number|lower }} {% if order.shop %}{{ order.shop.name|lower }}{% endif %}">
+
+                    <div class="order-head">
+
+                        <div>
+
+                            <div class="order-number">
+
+                                {{ order.order_number }}
+
+                            </div>
+
+                            <div class="order-date">
+
+                                {{ order.created_at|date:"d M Y, h:i A" }}
+
+                            </div>
+
+                        </div>
+
+
+
+                        {% if order.status == "Delivered" %}
+
+                            <span class="status status-delivered">
+
+                                ✓ Delivered
+
+                            </span>
+
+                        {% elif order.status == "Cancelled" %}
+
+                            <span class="status status-cancelled">
+
+                                Cancelled
+
+                            </span>
+
+                        {% elif order.status == "Out for Delivery" %}
+
+                            <span class="status status-out">
+
+                                🚴 Out for Delivery
+
+                            </span>
+
+                        {% elif order.status == "Confirmed" %}
+
+                            <span class="status status-confirmed">
+
+                                ✓ Confirmed
+
+                            </span>
+
+                        {% elif order.status == "Preparing" %}
+
+                            <span class="status status-preparing">
+
+                                👨‍🍳 Preparing
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="status status-pending">
+
+                                ⏳ {{ order.status }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <div class="shop-row">
+
+                        <div class="shop-icon">
+
+                            🏪
+
+                        </div>
+
+                        <div>
+
+                            <div class="shop-name">
+
+                                {% if order.shop %}
+
+                                    {{ order.shop.name }}
+
+                                {% else %}
+
+                                    AMEXA Store
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="shop-sub">
+
+                                This card represents one shop order.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    {% if order.master_order %}
+
+                        <div class="master-note">
+
+                            🧾 Checkout ID:
+
+                            <strong>{{ order.master_order.master_order_number }}</strong>
+
+                            · AMEXA automatically split your checkout shop-wise.
+
+                        </div>
+
+                    {% endif %}
+
+
+
+
+                    <div class="order-products">
+
+                        <div class="order-products-head">
+                            <div class="order-products-title">
+                                🛍️ Products in this order
+                            </div>
+
+                            <div class="order-products-count">
+                                {{ order.items.count }} item{{ order.items.count|pluralize }}
+                            </div>
+                        </div>
+
+                        <div class="order-product-list">
+
+                            {% for item in order.items.all %}
+
+                                <div class="order-product">
+
+                                    <div class="order-product-image">
+
+                                        {% if item.product and item.product.image %}
+                                            <img
+                                                src="{{ item.product.image.url }}"
+                                                alt="{{ item.product_name|default:item.product.name }}"
+                                            >
+                                        {% else %}
+                                            🛍️
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="order-product-main">
+
+                                        <div class="order-product-name">
+                                            {% if item.product_name %}
+                                                {{ item.product_name }}
+                                            {% elif item.product %}
+                                                {{ item.product.name }}
+                                            {% else %}
+                                                AMEXA Product
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="order-product-meta">
+                                            <span>Qty: {{ item.quantity }}</span>
+
+                                            {% if item.product and item.product.category %}
+                                                <span>• {{ item.product.category.name }}</span>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+
+                                    <div class="order-product-price">
+                                        ₹{{ item.price }}
+                                    </div>
+
+                                </div>
+
+                            {% empty %}
+
+                                <div class="order-products-empty">
+                                    Product details are not available for this order.
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                    <div class="order-grid">
+
+                        <div class="order-info">
+
+                            <span>Items</span>
+
+                            <strong>
+
+                                {{ order.item_count }}
+
+                            </strong>
+
+                        </div>
+
+                        <div class="order-info">
+
+                            <span>Total</span>
+
+                            <strong>
+
+                                ₹{{ order.total_amount }}
+
+                            </strong>
+
+                        </div>
+
+                        <div class="order-info">
+
+                            <span>Payment</span>
+
+                            <strong class="payment-pill">
+
+                                {% if order.payment_method == "COD" %}
+
+                                    💵 COD
+
+                                {% else %}
+
+                                    💳 {{ order.payment_method }}
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                        <div class="order-info">
+
+                            <span>Payment Status</span>
+
+                            <strong>
+
+                                {{ order.payment_status }}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="order-actions">
+
+                        <a
+
+                            class="order-btn order-btn-primary"
+
+                            href="{% url 'order_detail' order.order_number %}">
+
+                            📍 Track / View Order
+
+                        </a>
+
+
+
+                        {% if order.status == "Pending" or order.status == "Confirmed" %}
+
+                            <a
+
+                                class="order-btn order-btn-danger"
+
+                                href="{% url 'cancel_order' order.id %}">
+
+                                ✕ Cancel Order
+
+                            </a>
+
+                        {% endif %}
+
+
+
+                        {% if order.shop %}
+
+                            <a
+
+                                class="order-btn order-btn-secondary"
+
+                                href="{% url 'shop_detail' order.shop.slug %}">
+
+                                🏪 Shop Again
+
+                            </a>
+
+                        {% endif %}
+
+
+
+                        {% if order.status == "Delivered" %}
+
+                            <a
+
+                                class="order-btn order-btn-muted"
+
+                                href="{% if order.shop %}{% url 'shop_detail' order.shop.slug %}{% else %}{% url 'home' %}{% endif %}">
+
+                                🔁 Buy Similar
+
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+
+
+    {% else %}
+
+        <div class="empty-order">
+
+            <div class="empty-icon">
+
+                📦
+
+            </div>
+
+            <h3>
+
+                No orders yet
+
+            </h3>
+
+            <p>
+
+                Choose a nearby store, add products and place your first AMEXA order.
+
+                Your shop-wise orders will appear here.
+
+            </p>
+
+            <a
+
+                class="order-btn order-btn-primary"
+
+                href="{% url 'home' %}">
+
+                Start Shopping →
+
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<script>
+(function(){
+    const tabs = document.querySelectorAll(".order-tab");
+    const cards = document.querySelectorAll(".order-card");
+    const search = document.getElementById("orderSearch");
+    let filter = "all";
+
+    function run(){
+        const q = search ? search.value.trim().toLowerCase() : "";
+
+        cards.forEach(function(card){
+            const status = (card.dataset.status || "").toLowerCase();
+            const haystack = (card.dataset.search || "").toLowerCase();
+
+            const statusOkay =
+                filter === "all" ||
+                (filter === "active" &&
+                    status !== "delivered" &&
+                    status !== "cancelled") ||
+                status === filter;
+
+            const searchOkay = !q || haystack.includes(q);
+
+            card.classList.toggle(
+                "hidden-order",
+                !(statusOkay && searchOkay)
+            );
+        });
+    }
+
+    tabs.forEach(function(tab){
+        tab.addEventListener("click", function(){
+            tabs.forEach(function(item){
+                item.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+            filter = tab.dataset.filter || "all";
+            run();
+        });
+    });
+
+    if (search){
+        search.addEventListener("input", run);
+    }
+})();
+</script>
+
+{% endblock %}

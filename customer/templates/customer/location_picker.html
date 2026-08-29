@@ -1,0 +1,1105 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Select Location | AMEXA</title>
+
+    <!-- LEAFLET MAP -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #050817;
+            --card: #0d1328;
+            --white: #ffffff;
+            --muted: #9ca7bb;
+            --cyan: #00dff5;
+            --blue: #168cff;
+            --purple: #742cff;
+            --green: #19d98b;
+            --border: rgba(255, 255, 255, .10);
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: white;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        .location-page {
+            position: relative;
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background: #080c18;
+        }
+
+        /* =====================================================
+           MAP
+        ===================================================== */
+
+        #map {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* =====================================================
+           TOP HEADER
+        ===================================================== */
+
+        .top-header {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+
+            z-index: 1000;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            width: 44px;
+            height: 44px;
+
+            flex: 0 0 auto;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid rgba(255, 255, 255, .13);
+            border-radius: 14px;
+
+            background: rgba(5, 9, 22, .90);
+            color: white;
+
+            font-size: 22px;
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            backdrop-filter: blur(16px);
+        }
+
+        .header-card {
+            min-width: 0;
+            flex: 1;
+
+            padding: 10px 13px;
+
+            border-radius: 15px;
+
+            background: rgba(5, 9, 22, .90);
+            border: 1px solid rgba(255, 255, 255, .13);
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            backdrop-filter: blur(16px);
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        .header-sub {
+            margin-top: 2px;
+
+            color: #a6afc1;
+            font-size: 9px;
+        }
+
+        /* =====================================================
+           CENTER FIXED PIN
+        ===================================================== */
+
+        .center-pin-wrap {
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            z-index: 900;
+
+            transform: translate(-50%, -100%);
+
+            pointer-events: none;
+        }
+
+        .center-pin {
+            position: relative;
+
+            width: 52px;
+            height: 62px;
+
+            display: flex;
+            justify-content: center;
+
+            filter: drop-shadow(
+                0 14px 12px rgba(0, 0, 0, .38)
+            );
+
+            animation: pinFloat 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pinFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .pin-head {
+            width: 46px;
+            height: 46px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50% 50% 50% 4px;
+
+            transform: rotate(-45deg);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00dfff,
+                    #167cff 48%,
+                    #742cff
+                );
+
+            border: 3px solid white;
+
+            box-shadow:
+                0 9px 25px rgba(0, 140, 255, .35);
+        }
+
+        .pin-head span {
+            transform: rotate(45deg);
+            font-size: 20px;
+        }
+
+        .pin-shadow {
+            position: absolute;
+
+            left: 50%;
+            bottom: -1px;
+
+            width: 26px;
+            height: 8px;
+
+            transform: translateX(-50%);
+
+            border-radius: 50%;
+
+            background: rgba(0, 0, 0, .35);
+            filter: blur(3px);
+        }
+
+        /* =====================================================
+           CROSS / ACCURACY CIRCLE
+        ===================================================== */
+
+        .pin-cross {
+            position: absolute;
+
+            left: 50%;
+            top: 50%;
+
+            width: 16px;
+            height: 16px;
+
+            z-index: 850;
+
+            transform: translate(-50%, -50%);
+
+            border-radius: 50%;
+
+            border: 2px solid rgba(0, 229, 255, .70);
+
+            box-shadow:
+                0 0 0 6px rgba(0, 229, 255, .10);
+        }
+
+        /* =====================================================
+           CURRENT LOCATION BUTTON
+        ===================================================== */
+
+        .gps-floating {
+            position: absolute;
+
+            right: 15px;
+            bottom: 245px;
+
+            z-index: 1000;
+
+            width: 52px;
+            height: 52px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 17px;
+
+            background: rgba(5, 10, 24, .94);
+
+            color: #7cf3ff;
+
+            font-size: 23px;
+
+            box-shadow:
+                0 14px 38px rgba(0, 0, 0, .35);
+
+            backdrop-filter: blur(18px);
+        }
+
+        .gps-floating:disabled {
+            opacity: .6;
+            cursor: wait;
+        }
+
+        /* =====================================================
+           BOTTOM SHEET
+        ===================================================== */
+
+        .bottom-sheet {
+            position: absolute;
+
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            z-index: 1100;
+
+            padding:
+                8px
+                14px
+                calc(14px + env(safe-area-inset-bottom));
+
+            border-radius: 26px 26px 0 0;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(14, 20, 43, .99),
+                    rgba(6, 10, 24, .99)
+                );
+
+            border-top:
+                1px solid rgba(255, 255, 255, .12);
+
+            box-shadow:
+                0 -18px 55px rgba(0, 0, 0, .40);
+
+            backdrop-filter: blur(25px);
+        }
+
+        .sheet-handle {
+            width: 42px;
+            height: 4px;
+
+            margin: 0 auto 11px;
+
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, .20);
+        }
+
+        .selected-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 12px;
+            font-weight: 950;
+        }
+
+        .selected-location-icon {
+            width: 34px;
+            height: 34px;
+
+            flex: 0 0 auto;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 11px;
+
+            color: #74efff;
+
+            background: rgba(0, 229, 255, .08);
+            border: 1px solid rgba(0, 229, 255, .12);
+
+            font-size: 18px;
+        }
+
+        .address-box {
+            margin-top: 9px;
+
+            padding: 11px 12px;
+
+            border-radius: 13px;
+
+            background: rgba(255, 255, 255, .035);
+            border: 1px solid rgba(255, 255, 255, .07);
+        }
+
+        .address-main {
+            color: #f4f7ff;
+
+            font-size: 11px;
+            font-weight: 900;
+
+            line-height: 1.35;
+        }
+
+        .address-sub {
+            margin-top: 4px;
+
+            color: #8e99ae;
+
+            font-size: 8px;
+            line-height: 1.4;
+        }
+
+        .coordinates {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+
+            margin-top: 7px;
+        }
+
+        .coordinate-pill {
+            padding: 5px 7px;
+
+            border-radius: 8px;
+
+            color: #87effc;
+
+            background: rgba(0, 229, 255, .06);
+
+            font-size: 7px;
+            font-weight: 850;
+        }
+
+        .location-status {
+            margin-top: 8px;
+
+            color: #9ea8bb;
+
+            font-size: 8px;
+            line-height: 1.4;
+        }
+
+        .location-status.loading {
+            color: #ffe178;
+        }
+
+        .location-status.success {
+            color: #7fffc4;
+        }
+
+        .location-status.error {
+            color: #ff9eb1;
+        }
+
+        /* =====================================================
+           CONFIRM BUTTON
+        ===================================================== */
+
+        .confirm-btn {
+            width: 100%;
+            min-height: 50px;
+
+            margin-top: 12px;
+
+            border: 0;
+            border-radius: 14px;
+
+            color: white;
+
+            font-size: 11px;
+            font-weight: 950;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #009cff,
+                    #6335ff,
+                    #8424ff
+                );
+
+            box-shadow:
+                0 12px 30px rgba(73, 53, 255, .30);
+
+            transition: .18s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .confirm-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .service-note {
+            margin-top: 8px;
+
+            text-align: center;
+
+            color: #818ba0;
+
+            font-size: 7px;
+            line-height: 1.35;
+        }
+
+        /* =====================================================
+           LEAFLET STYLE
+        ===================================================== */
+
+        .leaflet-control-zoom {
+            display: none;
+        }
+
+        .leaflet-control-attribution {
+            font-size: 7px !important;
+        }
+
+        /* =====================================================
+           DESKTOP
+        ===================================================== */
+
+        @media(min-width: 700px) {
+
+            .location-page {
+                width: min(480px, 100%);
+                height: min(850px, 100dvh);
+
+                margin: auto;
+
+                border-left:
+                    1px solid rgba(255, 255, 255, .08);
+
+                border-right:
+                    1px solid rgba(255, 255, 255, .08);
+
+                box-shadow:
+                    0 0 80px rgba(0, 0, 0, .55);
+            }
+
+        }
+
+        /* =====================================================
+           SMALL MOBILE
+        ===================================================== */
+
+        @media(max-width: 360px) {
+
+            .top-header {
+                top: 8px;
+                left: 8px;
+                right: 8px;
+            }
+
+            .back-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .header-card {
+                padding: 8px 10px;
+            }
+
+            .bottom-sheet {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .gps-floating {
+                right: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="location-page">
+
+
+    <!-- =====================================================
+         MAP
+    ====================================================== -->
+
+    <div id="map"></div>
+
+    <div id="mapFallback" style="
+        display:none;
+        position:absolute;
+        inset:0;
+        z-index:700;
+        align-items:center;
+        justify-content:center;
+        padding:24px;
+        text-align:center;
+        background:linear-gradient(145deg,#08101f,#050817);
+        color:white;
+    ">
+        <div style="max-width:320px;">
+            <div style="font-size:42px;margin-bottom:12px;">📍</div>
+            <div style="font-size:16px;font-weight:900;">Map could not load</div>
+            <div style="margin-top:8px;color:#9ca7bb;font-size:11px;line-height:1.5;">
+                Internet connection check karo aur page refresh karo.
+                Current Location button se GPS location phir bhi try kar sakte ho.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="top-header">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+            ‹
+        </button>
+
+
+        <div class="header-card">
+
+            <div class="header-title">
+                Select delivery location
+            </div>
+
+            <div class="header-sub">
+                Move the map and place the pin exactly where you are
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FIXED CENTER PIN
+    ====================================================== -->
+
+    <div class="center-pin-wrap">
+
+        <div class="center-pin">
+
+            <div class="pin-head">
+                <span>📍</span>
+            </div>
+
+            <div class="pin-shadow"></div>
+
+        </div>
+
+    </div>
+
+
+    <div class="pin-cross"></div>
+
+
+    <!-- =====================================================
+         GPS BUTTON
+    ====================================================== -->
+
+    <button
+        type="button"
+        class="gps-floating"
+        id="gpsButton"
+        onclick="useCurrentLocation()"
+        aria-label="Use current location"
+    >
+        ◎
+    </button>
+
+
+    <!-- =====================================================
+         BOTTOM SHEET
+    ====================================================== -->
+
+    <div class="bottom-sheet">
+
+        <div class="sheet-handle"></div>
+
+
+        <div class="selected-title">
+
+            <div class="selected-location-icon">
+                📍
+            </div>
+
+            <div>
+                Your selected location
+            </div>
+
+        </div>
+
+
+        <div class="address-box">
+
+            <div
+                class="address-main"
+                id="addressMain"
+            >
+                Move map or use your current location
+            </div>
+
+
+            <div
+                class="address-sub"
+                id="addressSub"
+            >
+                AMEXA will use this point to find nearby stores.
+            </div>
+
+
+            <div class="coordinates">
+
+                <span
+                    class="coordinate-pill"
+                    id="latitudeText"
+                >
+                    Lat: --
+                </span>
+
+                <span
+                    class="coordinate-pill"
+                    id="longitudeText"
+                >
+                    Lon: --
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="location-status"
+            id="locationStatus"
+        >
+            Drag the map and keep your delivery point under the pin.
+        </div>
+
+
+        <!-- SAVE LOCATION -->
+
+        <form
+            method="post"
+            action="{% url 'location_save' %}"
+            id="locationForm"
+        >
+
+            {% csrf_token %}
+
+
+            <input
+                type="hidden"
+                name="latitude"
+                id="latitudeInput"
+            >
+
+
+            <input
+                type="hidden"
+                name="longitude"
+                id="longitudeInput"
+            >
+
+
+            <input
+                type="hidden"
+                name="address_name"
+                id="addressNameInput"
+            >
+
+            <input
+                type="hidden"
+                name="address_full"
+                id="addressFullInput"
+            >
+
+
+            <button
+                type="submit"
+                class="confirm-btn"
+                id="confirmButton"
+                disabled
+            >
+                ✓ Confirm Location
+            </button>
+
+        </form>
+
+
+        <div class="service-note">
+            AMEXA will use this location to show stores available
+            inside the local delivery service radius.
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     LEAFLET JS
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+    const fallbackLat = 26.2309;
+    const fallbackLon = 81.2333;
+
+    const savedLatRaw = "{{ saved_latitude|default:'' }}";
+    const savedLonRaw = "{{ saved_longitude|default:'' }}";
+
+    const savedLat = parseFloat(savedLatRaw);
+    const savedLon = parseFloat(savedLonRaw);
+
+    const hasSavedLocation =
+        Number.isFinite(savedLat) &&
+        Number.isFinite(savedLon) &&
+        savedLat !== 0 &&
+        savedLon !== 0;
+
+    const startLat = hasSavedLocation ? savedLat : fallbackLat;
+    const startLon = hasSavedLocation ? savedLon : fallbackLon;
+
+    const latitudeInput = document.getElementById("latitudeInput");
+    const longitudeInput = document.getElementById("longitudeInput");
+    const latitudeText = document.getElementById("latitudeText");
+    const longitudeText = document.getElementById("longitudeText");
+    const addressMain = document.getElementById("addressMain");
+    const addressSub = document.getElementById("addressSub");
+    const locationStatus = document.getElementById("locationStatus");
+    const confirmButton = document.getElementById("confirmButton");
+    const gpsButton = document.getElementById("gpsButton");
+    const addressNameInput = document.getElementById("addressNameInput");
+    const addressFullInput = document.getElementById("addressFullInput");
+    const mapFallback = document.getElementById("mapFallback");
+
+    let map = null;
+    let reverseTimer = null;
+
+    function setCoordinates(latitude, longitude) {
+        const lat = Number(latitude);
+        const lon = Number(longitude);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            return false;
+        }
+
+        latitudeInput.value = lat.toFixed(6);
+        longitudeInput.value = lon.toFixed(6);
+        latitudeText.textContent = "Lat: " + lat.toFixed(6);
+        longitudeText.textContent = "Lon: " + lon.toFixed(6);
+        confirmButton.disabled = false;
+
+        return true;
+    }
+
+    async function getAddress(latitude, longitude) {
+        locationStatus.className = "location-status loading";
+        locationStatus.textContent = "Finding this address...";
+
+        try {
+            const url =
+                "https://nominatim.openstreetmap.org/reverse"
+                + "?format=jsonv2"
+                + "&lat=" + encodeURIComponent(latitude)
+                + "&lon=" + encodeURIComponent(longitude)
+                + "&zoom=18"
+                + "&addressdetails=1";
+
+            const response = await fetch(url, {
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Address lookup failed");
+            }
+
+            const data = await response.json();
+            const address = data.address || {};
+
+            const primary =
+                address.road
+                || address.neighbourhood
+                || address.suburb
+                || address.village
+                || address.town
+                || address.city
+                || address.county
+                || "Selected Location";
+
+            const secondaryParts = [
+                address.neighbourhood,
+                address.suburb,
+                address.village,
+                address.town,
+                address.city,
+                address.county,
+                address.state,
+                address.postcode
+            ];
+
+            const cleanedSecondary = secondaryParts
+                .filter(Boolean)
+                .filter(function(value, index, arr) {
+                    return arr.indexOf(value) === index && value !== primary;
+                })
+                .slice(0, 4)
+                .join(", ");
+
+            const fullAddress =
+                cleanedSecondary
+                || data.display_name
+                || "Selected delivery location";
+
+            addressMain.textContent = primary;
+            addressSub.textContent = fullAddress;
+            addressNameInput.value = primary;
+            addressFullInput.value = fullAddress;
+
+            locationStatus.className = "location-status success";
+            locationStatus.textContent = "✓ Location ready. Confirm to continue.";
+
+        } catch (error) {
+            const fallbackAddress =
+                "Latitude " + latitude + ", Longitude " + longitude;
+
+            addressMain.textContent = "Selected Location";
+            addressSub.textContent = fallbackAddress;
+            addressNameInput.value = "Selected Location";
+            addressFullInput.value = fallbackAddress;
+
+            locationStatus.className = "location-status success";
+            locationStatus.textContent =
+                "✓ GPS selected. Address name unavailable, but location can be saved.";
+        }
+    }
+
+    function updateFromMap() {
+        if (!map) return;
+
+        const center = map.getCenter();
+
+        if (!setCoordinates(center.lat, center.lng)) {
+            return;
+        }
+
+        clearTimeout(reverseTimer);
+
+        reverseTimer = setTimeout(function() {
+            getAddress(
+                center.lat.toFixed(6),
+                center.lng.toFixed(6)
+            );
+        }, 350);
+    }
+
+    function initializeMap() {
+        if (typeof L === "undefined") {
+            mapFallback.style.display = "flex";
+            locationStatus.className = "location-status error";
+            locationStatus.textContent =
+                "Map library load nahi hui. Internet check karo ya Current Location button use karo.";
+            return;
+        }
+
+        try {
+            map = L.map("map", {
+                zoomControl: false,
+                attributionControl: true
+            }).setView(
+                [startLat, startLon],
+                hasSavedLocation ? 17 : 14
+            );
+
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(map);
+
+            map.on("movestart", function() {
+                locationStatus.className = "location-status loading";
+                locationStatus.textContent =
+                    "Move pin to your exact delivery point...";
+            });
+
+            map.on("moveend", updateFromMap);
+
+            setTimeout(function() {
+                map.invalidateSize();
+                updateFromMap();
+            }, 250);
+
+        } catch (error) {
+            mapFallback.style.display = "flex";
+            locationStatus.className = "location-status error";
+            locationStatus.textContent =
+                "Map start nahi ho paya. Current Location button use karo.";
+        }
+    }
+
+    function useCurrentLocation() {
+        if (!navigator.geolocation) {
+            alert("Your browser does not support live location.");
+            return;
+        }
+
+        gpsButton.disabled = true;
+        gpsButton.textContent = "…";
+
+        locationStatus.className = "location-status loading";
+        locationStatus.textContent = "Finding your live location...";
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                setCoordinates(latitude, longitude);
+
+                if (map) {
+                    map.flyTo(
+                        [latitude, longitude],
+                        18,
+                        {
+                            animate: true,
+                            duration: 1.0
+                        }
+                    );
+                } else {
+                    getAddress(
+                        latitude.toFixed(6),
+                        longitude.toFixed(6)
+                    );
+                }
+
+                gpsButton.disabled = false;
+                gpsButton.textContent = "◎";
+            },
+
+            function(error) {
+                gpsButton.disabled = false;
+                gpsButton.textContent = "◎";
+
+                locationStatus.className = "location-status error";
+
+                if (error.code === 1) {
+                    locationStatus.textContent =
+                        "Location permission blocked. Browser me Location ko Allow karo.";
+                } else if (error.code === 2) {
+                    locationStatus.textContent =
+                        "Live location unavailable hai. Device GPS ON karke try karo.";
+                } else if (error.code === 3) {
+                    locationStatus.textContent =
+                        "Location request timed out. Dobara try karo.";
+                } else {
+                    locationStatus.textContent =
+                        "Current location nahi mil payi.";
+                }
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 10000
+            }
+        );
+    }
+
+    function goBack() {
+        if (
+            document.referrer
+            && document.referrer !== window.location.href
+        ) {
+            history.back();
+        } else {
+            window.location.href = "{% url 'home' %}";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeMap();
+    });
+</script>
+
+
+</body>
+
+</html>

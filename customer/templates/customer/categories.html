@@ -1,0 +1,886 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        *{box-sizing:border-box}
+
+        :root{
+            --bg:#030615;
+            --card:#0b1025;
+            --white:#fff;
+            --muted:#9fa8c1;
+            --cyan:#00e5ff;
+            --blue:#1497ff;
+            --purple:#7a2cff;
+            --green:#19d98b;
+            --red:#ff416c;
+            --yellow:#ffc928;
+        }
+
+        body{
+            margin:0;
+            min-height:100vh;
+            color:var(--white);
+            font-family:"Segoe UI",Inter,Arial,sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%,rgba(0,229,255,.08),transparent 28%),
+                radial-gradient(circle at 90% 15%,rgba(122,44,255,.12),transparent 30%),
+                linear-gradient(135deg,#02040d,#06091b 55%,#070316);
+            overflow-x:hidden;
+        }
+
+        body::before{
+            content:"AMEXA";
+            position:fixed;
+            left:50%;
+            bottom:55px;
+            transform:translateX(-50%) rotate(-10deg);
+            font-size:clamp(100px,18vw,250px);
+            font-weight:1000;
+            letter-spacing:12px;
+            color:rgba(255,255,255,.015);
+            pointer-events:none;
+            white-space:nowrap;
+            z-index:-1;
+        }
+
+        a{color:inherit;text-decoration:none}
+        button,input{font:inherit}
+
+        .page{
+            width:min(1180px,100%);
+            margin:auto;
+            padding:20px 22px 115px;
+        }
+
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:14px;
+            margin-bottom:18px;
+        }
+
+        .left-head{
+            display:flex;
+            align-items:center;
+            gap:11px;
+        }
+
+        .back-btn,
+        .round-action{
+            width:46px;
+            height:46px;
+            display:grid;
+            place-items:center;
+            border-radius:14px;
+            background:rgba(255,255,255,.06);
+            border:1px solid rgba(255,255,255,.10);
+            font-size:20px;
+            position:relative;
+        }
+
+        .title-area h1{
+            margin:0;
+            font-size:30px;
+            font-weight:950;
+        }
+
+        .title-area p{
+            margin:3px 0 0;
+            color:var(--muted);
+            font-size:11px;
+        }
+
+        .top-actions{
+            display:flex;
+            gap:8px;
+        }
+
+        .count-badge{
+            position:absolute;
+            top:-5px;
+            right:-5px;
+            min-width:20px;
+            height:20px;
+            padding:0 5px;
+            display:grid;
+            place-items:center;
+            border-radius:999px;
+            background:#ff355f;
+            color:white;
+            font-size:9px;
+            font-weight:900;
+        }
+
+        .store-card{
+            display:grid;
+            grid-template-columns:1fr auto;
+            gap:14px;
+            align-items:center;
+            padding:18px;
+            margin-bottom:16px;
+            border-radius:22px;
+            background:
+                radial-gradient(circle at 90% 0%,rgba(0,229,255,.12),transparent 28%),
+                linear-gradient(135deg,rgba(13,24,56,.96),rgba(24,15,62,.96));
+            border:1px solid rgba(255,255,255,.11);
+            box-shadow:0 16px 45px rgba(0,0,0,.24);
+        }
+
+        .store-label{
+            color:#7cf3ff;
+            font-size:9px;
+            font-weight:900;
+            letter-spacing:1.5px;
+            text-transform:uppercase;
+        }
+
+        .store-name{
+            margin-top:5px;
+            font-size:20px;
+            font-weight:950;
+        }
+
+        .store-meta{
+            margin-top:5px;
+            color:#aeb6c9;
+            font-size:10px;
+            line-height:1.45;
+        }
+
+        .change-store{
+            min-height:40px;
+            padding:0 13px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:11px;
+            background:linear-gradient(135deg,#00aaff,#762cff);
+            color:white;
+            font-size:9px;
+            font-weight:900;
+        }
+
+        .category-hero{
+            position:relative;
+            overflow:hidden;
+            padding:26px;
+            margin-bottom:16px;
+            border-radius:24px;
+            background:
+                radial-gradient(circle at 85% 25%,rgba(0,229,255,.20),transparent 26%),
+                radial-gradient(circle at 90% 90%,rgba(214,44,255,.18),transparent 30%),
+                linear-gradient(125deg,#07133b,#17206d,#301050);
+            border:1px solid rgba(255,255,255,.13);
+            box-shadow:0 20px 60px rgba(0,0,0,.32);
+        }
+
+        .category-hero::after{
+            content:"🛍️";
+            position:absolute;
+            right:38px;
+            bottom:6px;
+            font-size:110px;
+            opacity:.17;
+            transform:rotate(-10deg);
+        }
+
+        .hero-label{
+            color:#7cf3ff;
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:2px;
+        }
+
+        .category-hero h2{
+            margin:8px 0 7px;
+            max-width:620px;
+            font-size:clamp(28px,5vw,46px);
+            line-height:1.05;
+            font-weight:950;
+        }
+
+        .category-hero p{
+            margin:0;
+            max-width:610px;
+            color:#d7dbeb;
+            font-size:13px;
+            line-height:1.6;
+        }
+
+        .search-wrap{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:8px;
+            margin-bottom:20px;
+            border-radius:18px;
+            background:rgba(13,18,40,.86);
+            border:1px solid rgba(255,255,255,.12);
+        }
+
+        .search-icon{
+            padding-left:12px;
+            font-size:20px;
+            color:#b8c0d5;
+        }
+
+        .search-wrap input{
+            flex:1;
+            min-width:0;
+            border:0;
+            outline:none;
+            padding:13px 4px;
+            background:transparent;
+            color:white;
+            font-size:13px;
+        }
+
+        .search-btn{
+            border:0;
+            padding:11px 17px;
+            border-radius:11px;
+            color:white;
+            font-size:10px;
+            font-weight:900;
+            cursor:pointer;
+            background:linear-gradient(135deg,#00b9ff,#762cff);
+        }
+
+        .section{
+            margin-top:24px;
+        }
+
+        .section-head{
+            display:flex;
+            align-items:end;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:12px;
+        }
+
+        .section-head h2{
+            margin:0;
+            font-size:21px;
+            font-weight:950;
+        }
+
+        .section-head span{
+            color:var(--muted);
+            font-size:10px;
+        }
+
+        .chips{
+            display:flex;
+            gap:8px;
+            overflow-x:auto;
+            padding-bottom:4px;
+            scrollbar-width:none;
+        }
+
+        .chips::-webkit-scrollbar{display:none}
+
+        .chip{
+            flex:0 0 auto;
+            padding:8px 13px;
+            border-radius:999px;
+            background:rgba(255,255,255,.055);
+            border:1px solid rgba(255,255,255,.09);
+            color:#cbd1df;
+            font-size:10px;
+            font-weight:800;
+        }
+
+        .chip.active{
+            color:white;
+            background:linear-gradient(135deg,#00aaff,#762cff);
+        }
+
+        .category-grid{
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:12px;
+        }
+
+        .category-card{
+            position:relative;
+            overflow:hidden;
+            min-height:202px;
+            padding:12px;
+            border-radius:20px;
+            background:linear-gradient(145deg,rgba(19,27,58,.98),rgba(8,12,30,.98));
+            border:1px solid rgba(255,255,255,.09);
+            transition:.22s;
+            box-shadow:0 10px 30px rgba(0,0,0,.18);
+        }
+
+        .category-card:hover{
+            transform:translateY(-4px);
+            border-color:rgba(0,229,255,.34);
+        }
+
+        .category-image{
+            height:112px;
+            overflow:hidden;
+            display:grid;
+            place-items:center;
+            border-radius:15px;
+            background:radial-gradient(circle,rgba(255,255,255,.07),transparent 70%);
+        }
+
+        .category-image img{
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            padding:5px;
+        }
+
+        .category-fallback{
+            font-size:54px;
+        }
+
+        .category-info{
+            padding-top:9px;
+            padding-right:35px;
+        }
+
+        .category-name{
+            font-size:15px;
+            font-weight:900;
+        }
+
+        .category-sub{
+            margin-top:4px;
+            color:var(--muted);
+            font-size:9px;
+        }
+
+        .product-count{
+            display:inline-flex;
+            margin-top:7px;
+            padding:4px 7px;
+            border-radius:8px;
+            background:rgba(25,217,139,.08);
+            border:1px solid rgba(25,217,139,.11);
+            color:#bfffdc;
+            font-size:8px;
+            font-weight:900;
+        }
+
+        .open-arrow{
+            position:absolute;
+            right:11px;
+            bottom:11px;
+            width:30px;
+            height:30px;
+            display:grid;
+            place-items:center;
+            border-radius:9px;
+            background:linear-gradient(135deg,#00aaff,#762cff);
+            font-size:13px;
+        }
+
+        .feature-row{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:10px;
+        }
+
+        .feature-card{
+            padding:15px;
+            border-radius:18px;
+            background:rgba(255,255,255,.045);
+            border:1px solid rgba(255,255,255,.075);
+        }
+
+        .feature-icon{
+            margin-bottom:7px;
+            font-size:27px;
+        }
+
+        .feature-title{
+            font-weight:900;
+            font-size:12px;
+        }
+
+        .feature-text{
+            margin-top:4px;
+            color:var(--muted);
+            font-size:9px;
+            line-height:1.45;
+        }
+
+        .empty-state{
+            grid-column:1/-1;
+            padding:34px 20px;
+            text-align:center;
+            border-radius:20px;
+            background:rgba(255,255,255,.04);
+            border:1px dashed rgba(255,255,255,.12);
+        }
+
+        .empty-icon{font-size:46px}
+
+        .empty-state h3{
+            margin:10px 0 5px;
+        }
+
+        .empty-state p{
+            margin:0;
+            color:var(--muted);
+            font-size:11px;
+        }
+
+        .bottom-nav{
+            position:fixed;
+            left:50%;
+            bottom:10px;
+            transform:translateX(-50%);
+            width:min(850px,calc(100% - 18px));
+            z-index:1000;
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            gap:6px;
+            padding:7px;
+            border-radius:23px;
+            background:rgba(7,12,29,.95);
+            border:1px solid rgba(255,255,255,.12);
+            backdrop-filter:blur(18px);
+            box-shadow:0 15px 50px rgba(0,0,0,.52);
+        }
+
+        .nav-item{
+            position:relative;
+            min-height:57px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:3px;
+            border-radius:15px;
+            color:#a9b0c2;
+            font-size:9px;
+            font-weight:800;
+        }
+
+        .nav-icon{font-size:20px}
+
+        .nav-item.active{
+            color:white;
+            background:linear-gradient(135deg,#00aaff,#762cff);
+        }
+
+        @media(max-width:850px){
+            .category-grid{
+                grid-template-columns:repeat(3,1fr);
+            }
+        }
+
+        @media(max-width:650px){
+            .page{
+                padding:14px 11px 100px;
+            }
+
+            .title-area h1{
+                font-size:23px;
+            }
+
+            .store-card{
+                grid-template-columns:1fr;
+            }
+
+            .change-store{
+                width:100%;
+            }
+
+            .category-hero{
+                padding:21px 17px;
+            }
+
+            .category-hero::after{
+                right:-10px;
+                font-size:85px;
+            }
+
+            .category-grid{
+                grid-template-columns:repeat(2,1fr);
+                gap:8px;
+            }
+
+            .category-card{
+                min-height:178px;
+                padding:9px;
+                border-radius:16px;
+            }
+
+            .category-image{
+                height:92px;
+                border-radius:12px;
+            }
+
+            .category-name{
+                font-size:12px;
+            }
+
+            .feature-row{
+                grid-template-columns:1fr;
+            }
+
+            .search-btn{
+                padding:10px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <header class="topbar">
+
+        <div class="left-head">
+
+            <a href="{% url 'home' %}" class="back-btn">
+                ←
+            </a>
+
+            <div class="title-area">
+                <h1>Categories</h1>
+                <p>Shop faster from your selected nearby store</p>
+            </div>
+
+        </div>
+
+        <div class="top-actions">
+
+            <a href="{% url 'profile' %}" class="round-action">
+                👤
+            </a>
+
+            <a href="{% url 'cart' %}" class="round-action">
+                🛒
+
+                {% if cart_count %}
+                    <span class="count-badge">
+                        {{ cart_count }}
+                    </span>
+                {% endif %}
+            </a>
+
+        </div>
+
+    </header>
+
+
+    {% if selected_shop %}
+
+        <section class="store-card">
+
+            <div>
+
+                <div class="store-label">
+                    Shopping from
+                </div>
+
+                <div class="store-name">
+                    🏪 {{ selected_shop.name }}
+                </div>
+
+                <div class="store-meta">
+                    {{ selected_shop.address }}
+                    {% if selected_shop.rating %}
+                        · ⭐ {{ selected_shop.rating }}
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <a href="{% url 'nearby_shops' %}" class="change-store">
+                Change Store
+            </a>
+
+        </section>
+
+    {% else %}
+
+        <section class="store-card">
+
+            <div>
+
+                <div class="store-label">
+                    Store not selected
+                </div>
+
+                <div class="store-name">
+                    📍 Choose a nearby store
+                </div>
+
+                <div class="store-meta">
+                    Select a nearby AMEXA store to see categories and products available there.
+                </div>
+
+            </div>
+
+            <a href="{% url 'nearby_shops' %}" class="change-store">
+                Select Store
+            </a>
+
+        </section>
+
+    {% endif %}
+
+
+    <section class="category-hero">
+
+        <div class="hero-label">
+            EXPLORE AMEXA
+        </div>
+
+        <h2>
+            Find what you need, faster.
+        </h2>
+
+        <p>
+            Browse grocery, dairy, snacks, beverages, personal care and more.
+            Categories are connected to products available in your selected store.
+        </p>
+
+    </section>
+
+
+    <form
+        method="get"
+        action="{% url 'categories' %}"
+        class="search-wrap">
+
+        <span class="search-icon">
+            🔍
+        </span>
+
+        <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="Search categories...">
+
+        <button type="submit" class="search-btn">
+            Search
+        </button>
+
+    </form>
+
+
+    <section class="section">
+
+        <div class="section-head">
+            <h2>Quick Explore</h2>
+            <span>Tap any category</span>
+        </div>
+
+        <div class="chips">
+
+            <a href="{% url 'categories' %}" class="chip active">
+                All
+            </a>
+
+            {% for category in categories %}
+                <a
+                    href="{% url 'category_products' category.slug %}"
+                    class="chip">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-head">
+            <h2>Shop by Category</h2>
+            <span>{{ categories|length }} categories</span>
+        </div>
+
+        <div class="category-grid">
+
+            {% for category in categories %}
+
+                <a
+                    href="{% url 'category_products' category.slug %}"
+                    class="category-card">
+
+                    <div class="category-image">
+
+                        {% if category.image %}
+
+                            <img
+                                src="{{ category.image.url }}"
+                                alt="{{ category.name }}">
+
+                        {% else %}
+
+                            <div class="category-fallback">
+
+                                {% if "grocery" in category.name|lower %}
+                                    🛒
+                                {% elif "dairy" in category.name|lower %}
+                                    🥛
+                                {% elif "snack" in category.name|lower %}
+                                    🍿
+                                {% elif "beverage" in category.name|lower %}
+                                    🥤
+                                {% elif "personal" in category.name|lower %}
+                                    🧴
+                                {% elif "fruit" in category.name|lower %}
+                                    🍎
+                                {% elif "vegetable" in category.name|lower %}
+                                    🥦
+                                {% elif "bakery" in category.name|lower %}
+                                    🍞
+                                {% elif "clean" in category.name|lower %}
+                                    🧹
+                                {% else %}
+                                    🛍️
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="category-info">
+
+                        <div class="category-name">
+                            {{ category.name }}
+                        </div>
+
+                        <div class="category-sub">
+                            Explore {{ category.name }}
+                        </div>
+
+                        <div class="product-count">
+                            {{ category.product_count }} product{{ category.product_count|pluralize }}
+                        </div>
+
+                    </div>
+
+                    <span class="open-arrow">
+                        →
+                    </span>
+
+                </a>
+
+            {% empty %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        🔎
+                    </div>
+
+                    <h3>
+                        No categories found
+                    </h3>
+
+                    <p>
+                        Try another search or select another nearby store.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-head">
+            <h2>Why this works better</h2>
+        </div>
+
+        <div class="feature-row">
+
+            <div class="feature-card">
+                <div class="feature-icon">🏪</div>
+                <div class="feature-title">Store Based</div>
+                <div class="feature-text">
+                    Categories reflect products available in the selected nearby store.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Faster Shopping</div>
+                <div class="feature-text">
+                    Reach the right products without searching through unrelated stores.
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛵</div>
+                <div class="feature-title">Delivery Friendly</div>
+                <div class="feature-text">
+                    Store-first shopping keeps pickup and delivery easier to manage.
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<nav class="bottom-nav">
+
+    <a href="{% url 'home' %}" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        Home
+    </a>
+
+    <a href="{% url 'nearby_shops' %}" class="nav-item">
+        <span class="nav-icon">🏪</span>
+        Shops
+    </a>
+
+    <a href="{% url 'categories' %}" class="nav-item active">
+        <span class="nav-icon">🏷️</span>
+        Categories
+    </a>
+
+    <a href="{% url 'profile' %}" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Profile
+    </a>
+
+    <a href="{% url 'cart' %}" class="nav-item">
+        <span class="nav-icon">🛒</span>
+
+        {% if cart_count %}
+            <span class="count-badge">
+                {{ cart_count }}
+            </span>
+        {% endif %}
+
+        Cart
+    </a>
+
+</nav>
+
+</body>
+</html>

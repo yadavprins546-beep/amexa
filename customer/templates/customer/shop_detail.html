@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ shop.name }} | AMEXA</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+</head>
+<body>
+    <div class="page-shell">
+        <div class="section-card">
+            <div class="page-head">
+                <h1>{{ shop.name }}</h1>
+                <a class="btn small" href="{% url 'nearby_shops' %}">Back to Shops</a>
+            </div>
+            <div class="detail-panel">
+                <p class="subtle">{{ shop.address }}</p>
+                <p class="meta">Phone: {{ shop.phone }}</p>
+                <p class="meta">Rating: {{ shop.rating }} ★</p>
+                <p class="meta">Distance: {{ shop.distance_km }} km away</p>
+                <p class="meta">Status: {% if shop.is_open %}Open now{% else %}Closed{% endif %}</p>
+            </div>
+            <h2>Popular items</h2>
+            {% if products %}
+                <div class="product-grid">
+                    {% for product in products %}
+                        <article class="product-card">
+                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" />{% else %}<div class="image-placeholder">AMEXA</div>{% endif %}
+                            <div class="product-card-body">
+                                <h3>{{ product.name }}</h3>
+                                <p class="subtle">{{ product.category.name }}</p>
+                                <div class="price-row">
+                                    <span class="price">₹{{ product.price }}</span>
+                                    <span class="mrp">₹{{ product.mrp }}</span>
+                                </div>
+                                <a class="btn small" href="{% url 'product_detail' product.slug %}">View</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="subtle">No products available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

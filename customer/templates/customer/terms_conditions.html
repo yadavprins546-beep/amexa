@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions | AMEXA</title>
+
+    <style>
+        *{
+            box-sizing:border-box;
+            margin:0;
+            padding:0;
+        }
+
+        html,body{
+            width:100%;
+            overflow-x:hidden;
+        }
+
+        body{
+            min-height:100vh;
+            font-family:Arial, "Segoe UI", sans-serif;
+            background:#070b17;
+            color:#f7f9ff;
+        }
+
+        a{
+            color:inherit;
+            text-decoration:none;
+        }
+
+        .app{
+            width:100%;
+            max-width:480px;
+            margin:0 auto;
+            padding:12px 12px 45px;
+        }
+
+        .topbar{
+            display:grid;
+            grid-template-columns:44px 1fr 44px;
+            align-items:center;
+            gap:8px;
+            margin-bottom:12px;
+        }
+
+        .back-btn,
+        .home-btn{
+            width:44px;
+            height:44px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:13px;
+            background:#0e1527;
+            border:1px solid #202a43;
+            font-size:18px;
+        }
+
+        .top-title{
+            text-align:center;
+        }
+
+        .top-title strong{
+            display:block;
+            font-size:16px;
+        }
+
+        .top-title span{
+            display:block;
+            margin-top:2px;
+            color:#8995ac;
+            font-size:9px;
+        }
+
+        .hero{
+            padding:20px;
+            border-radius:22px;
+            background:linear-gradient(135deg,#10264d,#291553);
+            border:1px solid #2b3b5c;
+        }
+
+        .hero-icon{
+            width:52px;
+            height:52px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:16px;
+            background:rgba(255,255,255,.08);
+            font-size:25px;
+            margin-bottom:13px;
+        }
+
+        .hero h1{
+            font-size:22px;
+            margin:0;
+        }
+
+        .hero p{
+            margin-top:8px;
+            color:#c5cee0;
+            font-size:11px;
+            line-height:1.6;
+        }
+
+        .card{
+            width:100%;
+            margin-top:12px;
+            padding:16px;
+            border-radius:17px;
+            background:#0e1527;
+            border:1px solid #202a43;
+        }
+
+        .card h2{
+            margin:0 0 8px;
+            font-size:14px;
+        }
+
+        .card p{
+            color:#aeb9cd;
+            font-size:10px;
+            line-height:1.7;
+        }
+
+        .card ul{
+            padding-left:18px;
+            margin-top:8px;
+            color:#aeb9cd;
+            font-size:10px;
+            line-height:1.7;
+        }
+
+        .footer{
+            margin-top:20px;
+            text-align:center;
+            color:#59657b;
+            font-size:8px;
+            letter-spacing:1px;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app">
+
+    <header class="topbar">
+
+        <a href="{% url 'profile' %}" class="back-btn">
+            ←
+        </a>
+
+        <div class="top-title">
+            <strong>Terms & Conditions</strong>
+            <span>AMEXA Customer Terms</span>
+        </div>
+
+        <a href="{% url 'home' %}" class="home-btn">
+            🏠
+        </a>
+
+    </header>
+
+
+    <section class="hero">
+
+        <div class="hero-icon">📄</div>
+
+        <h1>AMEXA Terms & Conditions</h1>
+
+        <p>
+            These terms explain the basic rules for using AMEXA,
+            placing orders and using our local shopping and delivery services.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>1. Using AMEXA</h2>
+
+        <p>
+            By using AMEXA, you agree to use the platform only for
+            lawful shopping, ordering and delivery purposes.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>2. Customer Account</h2>
+
+        <p>
+            Customers may be required to provide a valid mobile number,
+            name, delivery address and other information necessary to
+            use AMEXA services.
+        </p>
+
+        <p style="margin-top:8px;">
+            You are responsible for keeping your account and OTP secure.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>3. Products & Availability</h2>
+
+        <p>
+            Products displayed on AMEXA are subject to availability
+            from participating shops. A product may become unavailable
+            before an order is processed.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>4. Prices & Charges</h2>
+
+        <p>
+            Customers should review the final order amount before
+            confirming an order.
+        </p>
+
+        <ul>
+            <li>Product prices</li>
+            <li>Applicable discounts</li>
+            <li>Delivery charges</li>
+            <li>Platform charges</li>
+            <li>Applicable taxes or other charges</li>
+        </ul>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>5. Orders</h2>
+
+        <p>
+            An order is subject to product availability, shop acceptance,
+            delivery availability and other operational conditions.
+        </p>
+
+        <p style="margin-top:8px;">
+            AMEXA may cancel or modify an order when it cannot reasonably
+            be fulfilled.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>6. Delivery</h2>
+
+        <p>
+            Delivery times shown by AMEXA are estimates and may change
+            because of traffic, weather, shop preparation time,
+            customer location or other circumstances.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>7. Cancellation & Refunds</h2>
+
+        <p>
+            Order cancellation and refund eligibility may depend on
+            the order status, product type, payment status and whether
+            preparation or delivery has already started.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>8. Payments</h2>
+
+        <p>
+            Customers must use payment methods supported by AMEXA.
+            Additional payment options may be introduced as the
+            platform develops.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>9. Customer Responsibilities</h2>
+
+        <p>
+            Customers should provide accurate delivery and contact
+            information and cooperate with the shop or delivery partner
+            when necessary to complete an order.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>10. Misuse of AMEXA</h2>
+
+        <p>
+            Fraud, fake orders, abusive behaviour, unauthorized access,
+            misuse of coupons or deliberate interference with AMEXA
+            services may result in restriction or suspension of access.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>11. Service Availability</h2>
+
+        <p>
+            AMEXA services may not always be available in every location
+            or at every time. Service areas, participating shops and
+            delivery availability may change.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>12. Changes to These Terms</h2>
+
+        <p>
+            AMEXA may update these Terms & Conditions when services,
+            policies or legal requirements change.
+        </p>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>13. Contact & Support</h2>
+
+        <p>
+            For order problems, delivery questions, payment concerns
+            or other support, customers can use the AMEXA Help & Support
+            section.
+        </p>
+
+    </section>
+
+
+    <div class="footer">
+        AMEXA • SMART LOCAL SHOPPING
+    </div>
+
+</main>
+
+</body>
+</html>

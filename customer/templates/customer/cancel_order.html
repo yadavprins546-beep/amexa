@@ -1,0 +1,411 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Cancel Order | AMEXA{% endblock %}
+
+{% block content %}
+
+<style>
+    .cancel-page{
+        width:min(720px,100%);
+        margin:auto;
+        padding:24px 14px 110px;
+    }
+
+    .cancel-card{
+        overflow:hidden;
+        border-radius:27px;
+        background:
+            radial-gradient(circle at 90% 0%,rgba(255,65,108,.12),transparent 27%),
+            linear-gradient(145deg,rgba(16,23,47,.98),rgba(7,11,27,.98));
+        border:1px solid rgba(255,255,255,.10);
+        box-shadow:0 22px 65px rgba(0,0,0,.30);
+    }
+
+    .cancel-head{
+        padding:25px 22px 20px;
+        text-align:center;
+    }
+
+    .cancel-icon{
+        width:76px;
+        height:76px;
+        margin:auto;
+        display:grid;
+        place-items:center;
+        border-radius:23px;
+        background:rgba(255,65,108,.10);
+        border:1px solid rgba(255,65,108,.17);
+        font-size:36px;
+    }
+
+    .cancel-head h1{
+        margin:14px 0 6px;
+        font-size:25px;
+        font-weight:1000;
+    }
+
+    .cancel-head p{
+        margin:0 auto;
+        max-width:500px;
+        color:#aab3c6;
+        font-size:11px;
+        line-height:1.55;
+    }
+
+    .order-preview{
+        margin:0 18px;
+        padding:15px;
+        border-radius:16px;
+        background:rgba(255,255,255,.035);
+        border:1px solid rgba(255,255,255,.065);
+    }
+
+    .preview-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding:6px 0;
+        font-size:10px;
+        color:#929caf;
+    }
+
+    .preview-row strong{
+        color:#edf1fa;
+        font-size:11px;
+        text-align:right;
+    }
+
+    .cancel-form{
+        padding:20px 18px 22px;
+    }
+
+    .form-title{
+        margin-bottom:11px;
+        font-size:13px;
+        font-weight:950;
+    }
+
+    .reason-list{
+        display:grid;
+        gap:8px;
+    }
+
+    .reason-option{
+        position:relative;
+    }
+
+    .reason-option input{
+        position:absolute;
+        opacity:0;
+        pointer-events:none;
+    }
+
+    .reason-option label{
+        min-height:48px;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:11px 13px;
+        border-radius:13px;
+        cursor:pointer;
+        background:rgba(255,255,255,.03);
+        border:1px solid rgba(255,255,255,.07);
+        color:#c7cede;
+        font-size:10px;
+        font-weight:850;
+        transition:.2s;
+    }
+
+    .reason-option label::before{
+        content:"";
+        width:16px;
+        height:16px;
+        flex:0 0 auto;
+        border-radius:50%;
+        border:2px solid #68738b;
+    }
+
+    .reason-option input:checked + label{
+        color:#fff;
+        background:rgba(255,65,108,.08);
+        border-color:rgba(255,65,108,.28);
+    }
+
+    .reason-option input:checked + label::before{
+        border:5px solid #ff416c;
+        background:white;
+    }
+
+    .description-label{
+        display:block;
+        margin:17px 0 7px;
+        color:#dfe4ef;
+        font-size:10px;
+        font-weight:900;
+    }
+
+    .description{
+        width:100%;
+        min-height:95px;
+        padding:13px;
+        resize:vertical;
+        outline:none;
+        border-radius:13px;
+        border:1px solid rgba(255,255,255,.09);
+        background:#090f24;
+        color:white;
+        font:inherit;
+        font-size:10px;
+    }
+
+    .description:focus{
+        border-color:rgba(255,65,108,.42);
+        box-shadow:0 0 0 3px rgba(255,65,108,.05);
+    }
+
+    .warning{
+        margin-top:15px;
+        padding:12px;
+        border-radius:13px;
+        display:flex;
+        gap:9px;
+        background:rgba(255,216,77,.06);
+        border:1px solid rgba(255,216,77,.11);
+        color:#cfc5a0;
+        font-size:9px;
+        line-height:1.5;
+    }
+
+    .cancel-actions{
+        display:grid;
+        grid-template-columns:1fr 1.5fr;
+        gap:9px;
+        margin-top:18px;
+    }
+
+    .keep-btn,
+    .confirm-btn{
+        min-height:48px;
+        border-radius:13px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:10px;
+        font-weight:950;
+        text-decoration:none;
+    }
+
+    .keep-btn{
+        color:#c7cfdf;
+        background:rgba(255,255,255,.045);
+        border:1px solid rgba(255,255,255,.08);
+    }
+
+    .confirm-btn{
+        border:0;
+        cursor:pointer;
+        color:white;
+        background:linear-gradient(135deg,#ff496d,#d82251);
+        box-shadow:0 9px 24px rgba(255,65,108,.18);
+    }
+
+    @media(max-width:500px){
+        .cancel-actions{
+            grid-template-columns:1fr;
+        }
+
+        .cancel-head{
+            padding-left:16px;
+            padding-right:16px;
+        }
+
+        .cancel-form{
+            padding-left:13px;
+            padding-right:13px;
+        }
+
+        .order-preview{
+            margin-left:13px;
+            margin-right:13px;
+        }
+    }
+</style>
+
+<div class="cancel-page">
+
+    <div class="cancel-card">
+
+        <div class="cancel-head">
+
+            <div class="cancel-icon">
+                ✕
+            </div>
+
+            <h1>Cancel this order?</h1>
+
+            <p>
+                Tell us why you want to cancel.
+                Once confirmed, this shop order will be cancelled
+                and its products will be returned to available stock.
+            </p>
+
+        </div>
+
+        <div class="order-preview">
+
+            <div class="preview-row">
+                <span>Order ID</span>
+                <strong>{{ order.order_number }}</strong>
+            </div>
+
+            {% if order.shop %}
+                <div class="preview-row">
+                    <span>Store</span>
+                    <strong>{{ order.shop.name }}</strong>
+                </div>
+            {% endif %}
+
+            <div class="preview-row">
+                <span>Total</span>
+                <strong>₹{{ order.total_amount }}</strong>
+            </div>
+
+            <div class="preview-row">
+                <span>Status</span>
+                <strong>{{ order.status }}</strong>
+            </div>
+
+        </div>
+
+        <form method="post" class="cancel-form">
+
+            {% csrf_token %}
+
+            <div class="form-title">
+                Why are you cancelling?
+            </div>
+
+            <div class="reason-list">
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason1"
+                        value="Ordered by mistake"
+                        required
+                    >
+                    <label for="reason1">
+                        Ordered by mistake
+                    </label>
+                </div>
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason2"
+                        value="Want to change products"
+                    >
+                    <label for="reason2">
+                        I want to change products or quantity
+                    </label>
+                </div>
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason3"
+                        value="Delivery taking too long"
+                    >
+                    <label for="reason3">
+                        Delivery is taking too long
+                    </label>
+                </div>
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason4"
+                        value="Found better price"
+                    >
+                    <label for="reason4">
+                        Found a better price elsewhere
+                    </label>
+                </div>
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason5"
+                        value="Changed my mind"
+                    >
+                    <label for="reason5">
+                        Changed my mind
+                    </label>
+                </div>
+
+                <div class="reason-option">
+                    <input
+                        type="radio"
+                        name="reason"
+                        id="reason6"
+                        value="Other"
+                    >
+                    <label for="reason6">
+                        Other reason
+                    </label>
+                </div>
+
+            </div>
+
+            <label class="description-label" for="description">
+                Additional details (optional)
+            </label>
+
+            <textarea
+                id="description"
+                name="description"
+                class="description"
+                placeholder="Tell us anything else about the cancellation..."
+            ></textarea>
+
+            <div class="warning">
+                <div>⚠️</div>
+                <div>
+                    Cancellation is available only while the order is
+                    Pending or Confirmed. Online-payment refunds can be
+                    processed separately according to payment status.
+                </div>
+            </div>
+
+            <div class="cancel-actions">
+
+                <a
+                    href="{% url 'order_detail' order.order_number %}"
+                    class="keep-btn"
+                >
+                    ← Keep Order
+                </a>
+
+                <button
+                    type="submit"
+                    class="confirm-btn"
+                    onclick="return confirm('Are you sure you want to cancel this order?');"
+                >
+                    ✕ Confirm Cancellation
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

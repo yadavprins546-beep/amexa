@@ -1,0 +1,1434 @@
+/* =========================================================
+   AMEXA - PREMIUM DARK NEON THEME
+   Blue + Purple + Pink
+   ========================================================= */
+
+:root {
+    --bg: #050816;
+    --bg-2: #080b1d;
+    --surface: #0c1026;
+    --surface-2: #111633;
+    --card: rgba(17, 22, 51, 0.88);
+
+    --blue: #00a8ff;
+    --blue-light: #38c8ff;
+    --purple: #7b2cff;
+    --purple-light: #a855f7;
+    --pink: #e52cff;
+    --cyan: #00e5ff;
+
+    --white: #ffffff;
+    --text: #f5f7ff;
+    --muted: #a7b0d0;
+
+    --border: rgba(116, 133, 210, 0.22);
+
+    --gradient:
+        linear-gradient(
+            135deg,
+            #00a8ff 0%,
+            #5634ff 48%,
+            #e52cff 100%
+        );
+
+    --gradient-soft:
+        linear-gradient(
+            135deg,
+            rgba(0,168,255,.16),
+            rgba(123,44,255,.16),
+            rgba(229,44,255,.12)
+        );
+
+    --shadow:
+        0 18px 60px rgba(0, 0, 0, .45);
+
+    --neon-shadow:
+        0 0 25px rgba(0, 168, 255, .18),
+        0 0 45px rgba(123, 44, 255, .12);
+}
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 10% 0%,
+            rgba(0, 168, 255, .12),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(229, 44, 255, .12),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(123, 44, 255, .10),
+            transparent 35%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    line-height: 1.5;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255,255,255,.015) 50%,
+            transparent 100%
+        );
+
+    z-index: -1;
+}
+
+img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.page-shell {
+    width: min(1100px, calc(100% - 28px));
+    margin: 0 auto;
+
+    padding: 24px 0 110px;
+}
+
+
+/* =========================================================
+   COMMON CARDS
+   ========================================================= */
+
+.hero-card,
+.section-card,
+.search-card,
+.listing-card,
+.product-card,
+.mini-card,
+.detail-panel,
+.card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 22, 51, .95),
+            rgba(8, 11, 29, .92)
+        );
+
+    border: 1px solid var(--border);
+
+    border-radius: 24px;
+
+    box-shadow: var(--shadow), var(--neon-shadow);
+
+    backdrop-filter: blur(16px);
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero-card {
+    position: relative;
+
+    min-height: 260px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    overflow: hidden;
+
+    padding: 38px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(229,44,255,.48),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 25% 100%,
+            rgba(0,229,255,.25),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #071c3d 0%,
+            #12245c 42%,
+            #5722b8 72%,
+            #b820d7 100%
+        );
+
+    border: 1px solid rgba(99, 181, 255, .35);
+}
+
+.hero-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    right: -80px;
+    top: -110px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255,255,255,.14);
+
+    box-shadow:
+        0 0 70px rgba(0,168,255,.25);
+}
+
+.hero-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    left: 45%;
+    bottom: -120px;
+
+    border-radius: 50%;
+
+    background: rgba(0, 229, 255, .10);
+}
+
+.hero-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+
+    letter-spacing: .25em;
+
+    font-size: .72rem;
+
+    font-weight: 800;
+
+    color: #79dcff;
+}
+
+.hero-card h1 {
+    margin: 8px 0;
+
+    max-width: 650px;
+
+    font-size: clamp(2.2rem, 5vw, 4rem);
+
+    line-height: 1.02;
+
+    font-weight: 900;
+
+    letter-spacing: -2px;
+
+    color: white;
+
+    text-shadow:
+        0 0 25px rgba(0,168,255,.25);
+}
+
+.hero-card p {
+    max-width: 650px;
+
+    color: rgba(255,255,255,.82);
+
+    font-size: 1rem;
+}
+
+.hero-illustration {
+    font-size: 5rem;
+
+    filter:
+        drop-shadow(0 0 18px rgba(0,229,255,.5))
+        drop-shadow(0 0 35px rgba(229,44,255,.35));
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn,
+.search-form button,
+.auth-btn {
+    border: none;
+
+    border-radius: 12px;
+
+    background: var(--gradient);
+
+    color: white;
+
+    padding: 12px 18px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(123,44,255,.25);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        filter .2s ease;
+}
+
+.btn:hover,
+.search-form button:hover,
+.auth-btn:hover {
+    transform: translateY(-2px);
+
+    filter: brightness(1.12);
+
+    box-shadow:
+        0 10px 35px rgba(0,168,255,.25),
+        0 0 30px rgba(229,44,255,.18);
+}
+
+.btn.small {
+    padding: 8px 12px;
+    font-size: .88rem;
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.search-card {
+    padding: 14px;
+
+    margin-top: 18px;
+
+    background:
+        rgba(10, 14, 34, .88);
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-form input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    padding: 14px 16px;
+
+    color: white;
+
+    background: #080c20;
+
+    outline: none;
+
+    transition: .2s;
+}
+
+.search-form input::placeholder {
+    color: #707a9d;
+}
+
+.search-form input:focus {
+    border-color: var(--blue);
+
+    box-shadow:
+        0 0 0 3px rgba(0,168,255,.12),
+        0 0 20px rgba(0,168,255,.10);
+}
+
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.section-card {
+    padding: 20px;
+
+    margin-top: 20px;
+}
+
+.section-head,
+.page-head,
+.price-row,
+.detail-meta,
+.quantity-row {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+.section-head h2,
+.page-head h1 {
+    margin: 0;
+
+    color: white;
+
+    font-weight: 850;
+}
+
+.section-head a {
+    color: var(--blue-light);
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   INFO CARDS
+   ========================================================= */
+
+.info-grid,
+.card-grid,
+.product-grid {
+    display: grid;
+
+    gap: 14px;
+}
+
+.info-grid {
+    grid-template-columns: repeat(2, 1fr);
+
+    margin-top: 16px;
+}
+
+.info-card {
+    padding: 18px;
+
+    border-radius: 18px;
+
+    background:
+        var(--gradient-soft);
+
+    border: 1px solid var(--border);
+}
+
+.info-card.accent {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,168,255,.18),
+            rgba(229,44,255,.20)
+        );
+
+    color: white;
+}
+
+
+/* =========================================================
+   CATEGORY / MINI CARDS
+   ========================================================= */
+
+.card-grid {
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    margin-top: 12px;
+}
+
+.mini-card {
+    display: flex;
+
+    gap: 12px;
+
+    padding: 14px;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    transition: .25s;
+}
+
+.mini-card:hover,
+.product-card:hover,
+.listing-card:hover {
+    transform: translateY(-3px);
+
+    border-color:
+        rgba(0,168,255,.40);
+
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.40),
+        0 0 25px rgba(0,168,255,.10);
+}
+
+.mini-card img,
+.product-card img,
+.detail-image {
+    border-radius: 16px;
+
+    height: 120px;
+
+    object-fit: cover;
+
+    background: #0b1027;
+}
+
+.mini-card.vertical {
+    flex-direction: column;
+
+    align-items: flex-start;
+}
+
+
+/* =========================================================
+   PRODUCTS
+   ========================================================= */
+
+.product-grid {
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    margin-top: 12px;
+}
+
+.product-card {
+    overflow: hidden;
+
+    transition: .25s;
+}
+
+.product-card img {
+    height: 190px;
+
+    border-radius: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #101632,
+            #080b1d
+        );
+}
+
+.product-card-body {
+    padding: 15px;
+}
+
+.product-card h3,
+.listing-card h3,
+.mini-card h3 {
+    margin: 0 0 6px;
+
+    font-size: 1.05rem;
+
+    color: white;
+}
+
+.price {
+    font-weight: 900;
+
+    color: #46d7ff;
+
+    font-size: 1.08rem;
+
+    text-shadow:
+        0 0 12px rgba(0,168,255,.25);
+}
+
+.mrp {
+    color: #727b9b;
+
+    text-decoration: line-through;
+
+    font-size: .92rem;
+}
+
+
+/* =========================================================
+   PILLS
+   ========================================================= */
+
+.pill {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(0,168,255,.10);
+
+    border: 1px solid rgba(0,168,255,.20);
+
+    color: #55d8ff;
+
+    font-size: .82rem;
+}
+
+.pill.alt {
+    background:
+        rgba(229,44,255,.10);
+
+    border-color:
+        rgba(229,44,255,.20);
+
+    color: #e58aff;
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+.message-stack {
+    display: grid;
+
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+.message {
+    padding: 10px 12px;
+
+    border-radius: 12px;
+
+    background: rgba(0,168,255,.10);
+
+    border: 1px solid rgba(0,168,255,.18);
+
+    color: #65dfff;
+}
+
+.message.error {
+    background: rgba(255,60,100,.10);
+
+    color: #ff8ca8;
+}
+
+.message.success {
+    background: rgba(0,255,160,.08);
+
+    color: #63ffc7;
+}
+
+.message.info {
+    background: rgba(229,44,255,.08);
+
+    color: #e7a1ff;
+}
+
+
+/* =========================================================
+   CART
+   ========================================================= */
+
+.cart-thumb {
+    width: 70px;
+
+    height: 70px;
+
+    border-radius: 12px;
+
+    display: inline-block;
+
+    margin-right: 10px;
+}
+
+.qty-controls {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+.small-btn {
+    border: 1px solid rgba(0,168,255,.25);
+
+    background:
+        rgba(0,168,255,.12);
+
+    color: #62dfff;
+
+    border-radius: 999px;
+
+    width: 32px;
+
+    height: 32px;
+
+    font-size: 1rem;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.small-btn:hover {
+    background: var(--blue);
+
+    color: white;
+
+    box-shadow:
+        0 0 20px rgba(0,168,255,.35);
+}
+
+.price-block {
+    text-align: right;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.empty-card {
+    text-align: center;
+
+    padding: 35px 16px;
+
+    color: var(--muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+
+    margin-bottom: 8px;
+}
+
+
+/* =========================================================
+   ORDERS
+   ========================================================= */
+
+.order-card {
+    display: block;
+}
+
+.order-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+.timeline {
+    display: grid;
+
+    gap: 10px;
+
+    padding: 12px 0;
+}
+
+.timeline-step {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: var(--muted);
+}
+
+.timeline-step.active {
+    color: #5ddcff;
+
+    font-weight: 700;
+}
+
+.timeline-dot {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 24px;
+
+    height: 24px;
+
+    border-radius: 999px;
+
+    background: #101632;
+
+    border: 1px solid var(--border);
+}
+
+.timeline-dot.current {
+    background: var(--purple);
+
+    color: white;
+
+    box-shadow:
+        0 0 18px rgba(123,44,255,.45);
+}
+
+.timeline-dot.cancelled {
+    background: #351321;
+
+    color: #ff7898;
+}
+
+.timeline-dot.done {
+    background: var(--blue);
+
+    color: white;
+
+    box-shadow:
+        0 0 18px rgba(0,168,255,.35);
+}
+
+
+/* =========================================================
+   META TEXT
+   ========================================================= */
+
+.meta,
+.subtle {
+    color: var(--muted);
+
+    font-size: .92rem;
+}
+
+
+/* =========================================================
+   LISTING
+   ========================================================= */
+
+.listing-card {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px;
+
+    margin-top: 12px;
+
+    transition: .25s;
+}
+
+
+/* =========================================================
+   PRODUCT DETAIL
+   ========================================================= */
+
+.detail-panel {
+    padding: 16px;
+
+    margin-bottom: 14px;
+}
+
+.product-detail-card {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+    padding: 18px;
+}
+
+.detail-image {
+    height: 280px;
+}
+
+.image-placeholder {
+    display: grid;
+
+    place-items: center;
+
+    height: 280px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,168,255,.15),
+            transparent 50%
+        ),
+        #090d22;
+
+    color: #58d9ff;
+
+    font-weight: 700;
+
+    border-radius: 16px;
+
+    border: 1px solid var(--border);
+}
+
+.quantity-row select {
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 8px 10px;
+
+    background: #080c20;
+
+    color: white;
+
+    outline: none;
+}
+
+
+/* =========================================================
+   BOTTOM NAVIGATION
+   ========================================================= */
+
+.bottom-nav {
+    position: sticky;
+
+    bottom: 12px;
+
+    z-index: 50;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
+    gap: 8px;
+
+    margin-top: 25px;
+
+    padding: 9px;
+
+    background:
+        rgba(7, 10, 28, .94);
+
+    border: 1px solid
+        rgba(100,130,220,.25);
+
+    border-radius: 999px;
+
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.50),
+        0 0 30px rgba(0,168,255,.08);
+
+    backdrop-filter: blur(18px);
+}
+
+.nav-item {
+    text-align: center;
+
+    padding: 9px;
+
+    border-radius: 999px;
+
+    font-size: .9rem;
+
+    color: #9fa8c8;
+
+    transition: .2s;
+}
+
+.nav-item:hover {
+    color: white;
+
+    background: rgba(255,255,255,.05);
+}
+
+.nav-item.active {
+    background:
+        var(--gradient);
+
+    color: white;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 0 20px rgba(123,44,255,.30);
+}
+
+
+/* =========================================================
+   AUTH / LOGIN / REGISTER
+   ========================================================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 40px 20px;
+
+    background:
+        radial-gradient(
+            circle at 15% 10%,
+            rgba(0,168,255,.20),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 85% 90%,
+            rgba(229,44,255,.18),
+            transparent 32%
+        ),
+        #050816;
+}
+
+.auth-card,
+.card {
+    position: relative;
+
+    width: 100%;
+
+    max-width: 460px;
+
+    margin: 60px auto;
+
+    padding: 42px 40px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17,22,51,.96),
+            rgba(7,10,27,.96)
+        );
+
+    border:
+        1px solid rgba(99,133,220,.25);
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.55),
+        0 0 45px rgba(0,168,255,.08);
+
+    color: white;
+}
+
+.auth-card::before,
+.card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: -1px;
+
+    border-radius: 24px;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,168,255,.25),
+            transparent 35%,
+            rgba(229,44,255,.20)
+        );
+
+    opacity: .7;
+}
+
+.auth-logo {
+    text-align: center;
+
+    margin-bottom: 25px;
+
+    position: relative;
+    z-index: 2;
+}
+
+.auth-logo h2 {
+    margin: 0;
+
+    font-size: 32px;
+
+    font-weight: 900;
+
+    color: white;
+
+    letter-spacing: -1px;
+
+    text-shadow:
+        0 0 18px rgba(0,168,255,.30);
+}
+
+.auth-logo span {
+    color: var(--pink);
+}
+
+.auth-card h1,
+.card h1 {
+    margin: 0 0 10px;
+
+    text-align: center;
+
+    font-size: 28px;
+
+    font-weight: 900;
+
+    color: white;
+}
+
+.auth-subtitle,
+.card .subtle {
+    text-align: center;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    margin-bottom: 30px;
+}
+
+.auth-field,
+.card .field {
+    margin-bottom: 18px;
+}
+
+.auth-field label,
+.card .field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-weight: 600;
+
+    color: #dce4ff;
+
+    font-size: 14px;
+}
+
+.auth-field input,
+.card .field input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 14px 15px;
+
+    border:
+        1px solid rgba(116,133,210,.25);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    font-size: 15px;
+
+    background:
+        #080c20;
+
+    color: white;
+
+    transition: .2s;
+}
+
+.auth-field input::placeholder,
+.card .field input::placeholder {
+    color: #626c8e;
+}
+
+.auth-field input:focus,
+.card .field input:focus {
+    border-color: var(--blue);
+
+    background: #090e25;
+
+    box-shadow:
+        0 0 0 3px rgba(0,168,255,.10),
+        0 0 22px rgba(0,168,255,.12);
+}
+
+.auth-btn,
+.card .btn {
+    width: 100%;
+
+    padding: 14px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: var(--gradient);
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+.auth-footer,
+.card .link-row {
+    text-align: center;
+
+    margin-top: 25px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+.auth-footer a,
+.card .link-row a {
+    color: #55d8ff;
+
+    font-weight: 700;
+}
+
+.auth-footer a:hover,
+.card .link-row a:hover {
+    color: var(--pink);
+
+    text-decoration: none;
+}
+
+.card .alert {
+    padding: 12px;
+
+    margin-bottom: 18px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,180,0,.08);
+
+    border:
+        1px solid rgba(255,180,0,.20);
+
+    color: #ffd36b;
+}
+
+.card .error {
+    color: #ff7e9c;
+
+    font-size: 13px;
+
+    margin-top: 5px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .page-shell {
+        width: min(100% - 18px, 1100px);
+
+        padding-top: 12px;
+
+        padding-bottom: 100px;
+    }
+
+    .hero-card {
+        min-height: 330px;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        justify-content: center;
+
+        padding: 28px 22px;
+    }
+
+    .hero-card h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-illustration {
+        position: absolute;
+
+        right: 18px;
+
+        bottom: 20px;
+
+        font-size: 4rem;
+    }
+
+    .info-grid,
+    .card-grid,
+    .product-grid,
+    .product-detail-card {
+        grid-template-columns: 1fr;
+    }
+
+    .search-form {
+        flex-direction: column;
+    }
+
+    .search-form button {
+        width: 100%;
+    }
+
+    .listing-card {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .bottom-nav {
+        bottom: 8px;
+
+        margin-left: -2px;
+
+        margin-right: -2px;
+    }
+
+    .nav-item {
+        font-size: .76rem;
+
+        padding: 8px 3px;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .auth-card,
+    .card {
+        margin: 25px auto;
+
+        padding: 30px 22px;
+
+        border-radius: 20px;
+    }
+
+    .auth-card h1,
+    .card h1 {
+        font-size: 24px;
+    }
+
+    .section-card {
+        padding: 14px;
+    }
+
+    .hero-card h1 {
+        font-size: 2.1rem;
+
+        letter-spacing: -1px;
+    }
+
+    .product-card img {
+        height: 170px;
+    }
+}
+
+
+/* =========================================================
+   EXTRA NEON EFFECTS
+   ========================================================= */
+
+h1,
+h2,
+h3 {
+    letter-spacing: -.3px;
+}
+
+::selection {
+    background: rgba(123,44,255,.55);
+
+    color: white;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #050816;
+}
+
+::-webkit-scrollbar-thumb {
+    background:
+        linear-gradient(
+            var(--blue),
+            var(--purple)
+        );
+
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background:
+        linear-gradient(
+            var(--purple),
+            var(--pink)
+        );
+}

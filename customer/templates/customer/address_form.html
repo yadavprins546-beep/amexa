@@ -1,0 +1,1495 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ title }} | AMEXA</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'customer/styles.css' %}"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #030615;
+            --card: #0b1025;
+            --white: #ffffff;
+            --muted: #aab1c7;
+            --cyan: #00e5ff;
+            --purple: #762cff;
+            --green: #19d98b;
+            --red: #ff416c;
+        }
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            color: white;
+
+            background:
+
+                radial-gradient(
+                    circle at 10% 0%,
+                    rgba(0,229,255,.09),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 90% 20%,
+                    rgba(118,44,255,.13),
+                    transparent 32%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #02040e,
+                    #050817,
+                    #030313
+                );
+        }
+
+
+        body::before {
+
+            content: "AMEXA";
+
+            position: fixed;
+
+            left: 50%;
+
+            bottom: 70px;
+
+            transform:
+                translateX(-50%)
+                rotate(-10deg);
+
+            font-size:
+                clamp(
+                    75px,
+                    16vw,
+                    180px
+                );
+
+            font-weight: 1000;
+
+            letter-spacing: 12px;
+
+            color:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .018
+                );
+
+            pointer-events: none;
+        }
+
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+
+        .page {
+
+            width:
+                min(
+                    760px,
+                    100%
+                );
+
+            margin: auto;
+
+            padding:
+                22px
+                18px
+                60px;
+        }
+
+
+        /* TOP */
+
+
+        .top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            margin-bottom: 20px;
+        }
+
+
+        .back {
+
+            width: 44px;
+
+            height: 44px;
+
+            display: grid;
+
+            place-items: center;
+
+            border-radius: 13px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .06
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .10
+                );
+
+            font-size: 20px;
+        }
+
+
+        .top-title {
+
+            text-align: center;
+        }
+
+
+        .top-title strong {
+
+            display: block;
+
+            font-size: 17px;
+
+            font-weight: 950;
+        }
+
+
+        .top-title span {
+
+            font-size: 9px;
+
+            color: var(--muted);
+        }
+
+
+        /* MAIN CARD */
+
+
+        .address-card {
+
+            padding: 22px;
+
+            border-radius: 26px;
+
+            background:
+
+                radial-gradient(
+                    circle at 95% 0%,
+                    rgba(0,229,255,.07),
+                    transparent 27%
+                ),
+
+                linear-gradient(
+                    145deg,
+                    rgba(16,23,47,.97),
+                    rgba(7,11,27,.97)
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .10
+                );
+
+            box-shadow:
+                0 22px 70px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    .35
+                );
+        }
+
+
+        .title {
+
+            margin: 0;
+
+            font-size: 28px;
+
+            font-weight: 950;
+        }
+
+
+        .subtitle {
+
+            margin:
+                6px
+                0
+                20px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            line-height: 1.5;
+        }
+
+
+        /* LOCATION */
+
+
+        .location-box {
+
+            padding: 15px;
+
+            margin-bottom: 20px;
+
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,229,255,.08),
+                    rgba(118,44,255,.08)
+                );
+
+            border:
+                1px solid
+                rgba(
+                    0,
+                    229,
+                    255,
+                    .14
+                );
+        }
+
+
+        .location-head {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        .location-title {
+
+            font-size: 13px;
+
+            font-weight: 900;
+        }
+
+
+        .gps-btn {
+
+            border: 0;
+
+            padding:
+                10px
+                13px;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00aaff,
+                    #762cff
+                );
+
+            color: white;
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+        }
+
+
+        .gps-btn:disabled {
+
+            opacity: .6;
+
+            cursor: wait;
+        }
+
+
+        .location-status {
+
+            margin-top: 10px;
+
+            color: #aeb7ca;
+
+            font-size: 10px;
+
+            line-height: 1.45;
+        }
+
+
+        .location-success {
+
+            color: #9bffd0;
+        }
+
+
+        .location-error {
+
+            color: #ff9aad;
+        }
+
+
+        /* FORM */
+
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    1fr
+                );
+
+            gap: 13px;
+        }
+
+
+        .field {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .field.full {
+
+            grid-column:
+                1 / -1;
+        }
+
+
+        .field label {
+
+            color: #dce2ef;
+
+            font-size: 10px;
+
+            font-weight: 850;
+        }
+
+
+        .field input,
+        .field select {
+
+            width: 100%;
+
+            min-height: 48px;
+
+            padding:
+                0
+                13px;
+
+            outline: 0;
+
+            color: white;
+
+            border-radius: 13px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .045
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    .09
+                );
+
+            font-size: 12px;
+        }
+
+
+        .field input:focus,
+        .field select:focus {
+
+            border-color:
+                rgba(
+                    0,
+                    229,
+                    255,
+                    .55
+                );
+
+            box-shadow:
+                0 0 0 3px
+                rgba(
+                    0,
+                    229,
+                    255,
+                    .06
+                );
+        }
+
+
+        .field select option {
+
+            color: black;
+        }
+
+
+        .error {
+
+            color: #ff8ca5;
+
+            font-size: 9px;
+        }
+
+
+        .check-row {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            padding:
+                13px
+                14px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(
+                    25,
+                    217,
+                    139,
+                    .05
+                );
+
+            border:
+                1px solid
+                rgba(
+                    25,
+                    217,
+                    139,
+                    .10
+                );
+        }
+
+
+        .check-row input {
+
+            width: 18px;
+
+            height: 18px;
+
+            accent-color:
+                #19d98b;
+        }
+
+
+        .check-row label {
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+
+        /* SAVE */
+
+
+        .save-btn {
+
+            width: 100%;
+
+            min-height: 52px;
+
+            margin-top: 20px;
+
+            border: 0;
+
+            border-radius: 15px;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 950;
+
+            cursor: pointer;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #009cff,
+                    #762cff
+                );
+
+            box-shadow:
+                0 10px 30px
+                rgba(
+                    80,
+                    50,
+                    255,
+                    .22
+                );
+        }
+
+
+        .security-note {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            margin-top: 13px;
+
+            color: #8790a5;
+
+            font-size: 9px;
+        }
+
+
+        @media (
+            max-width: 600px
+        ) {
+
+            .page {
+
+                padding:
+                    14px
+                    12px
+                    40px;
+            }
+
+
+            .address-card {
+
+                padding: 17px;
+
+                border-radius: 21px;
+            }
+
+
+            .title {
+
+                font-size: 24px;
+            }
+
+
+            .form-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .field.full {
+
+                grid-column: auto;
+            }
+
+
+            .location-head {
+
+                align-items:
+                    flex-start;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="page">
+
+
+    <!-- TOP -->
+
+
+    <div class="top">
+
+        <a
+            href="javascript:history.back()"
+            class="back">
+            ←
+        </a>
+
+
+        <div class="top-title">
+
+            <strong>
+                {{ title }}
+            </strong>
+
+            <span>
+                AMEXA DELIVERY ADDRESS
+            </span>
+
+        </div>
+
+
+        <a
+            href="{% url 'home' %}"
+            class="back">
+            🏠
+        </a>
+
+    </div>
+
+
+
+    <div class="address-card">
+
+
+        <h1 class="title">
+
+            📍 {{ title }}
+
+        </h1>
+
+
+        <p class="subtitle">
+
+            Add your delivery details accurately.
+            Your location helps AMEXA show stores
+            available within the delivery service area.
+
+        </p>
+
+
+
+        <!-- GPS LOCATION -->
+
+
+        <div class="location-box">
+
+
+            <div class="location-head">
+
+
+                <div>
+
+                    <div class="location-title">
+
+                        ◎ Current Location
+
+                    </div>
+
+
+                    <div
+                        class="location-status"
+                        id="locationStatus">
+
+                        Location not selected yet.
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="gps-btn"
+                    id="gpsBtn"
+                    onclick="getCurrentLocation()">
+
+                    📍 Use Current Location
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <form method="post">
+
+
+            {% csrf_token %}
+
+            {% if next_url %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+            {% endif %}
+
+
+            {{ form.non_field_errors }}
+
+
+
+            <!-- Hidden GPS -->
+
+            {{ form.latitude }}
+
+            {{ form.longitude }}
+
+
+
+            <div class="form-grid">
+
+
+                <!-- FULL NAME -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.full_name.id_for_label }}">
+
+                        Full Name
+
+                    </label>
+
+
+                    {{ form.full_name }}
+
+
+                    {% if form.full_name.errors %}
+
+                        <div class="error">
+
+                            {{ form.full_name.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- MOBILE -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.mobile.id_for_label }}">
+
+                        Mobile Number
+
+                    </label>
+
+
+                    {{ form.mobile }}
+
+
+                    {% if form.mobile.errors %}
+
+                        <div class="error">
+
+                            {{ form.mobile.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- ADDRESS -->
+
+
+                <div class="field full">
+
+                    <label
+                        for="{{ form.address_line.id_for_label }}">
+
+                        House / Street / Area / Landmark
+
+                    </label>
+
+
+                    {{ form.address_line }}
+
+
+                    {% if form.address_line.errors %}
+
+                        <div class="error">
+
+                            {{ form.address_line.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- CITY -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.city.id_for_label }}">
+
+                        City
+
+                    </label>
+
+
+                    {{ form.city }}
+
+
+                    {% if form.city.errors %}
+
+                        <div class="error">
+
+                            {{ form.city.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- STATE -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.state.id_for_label }}">
+
+                        State
+
+                    </label>
+
+
+                    {{ form.state }}
+
+
+                    {% if form.state.errors %}
+
+                        <div class="error">
+
+                            {{ form.state.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- PINCODE -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.pincode.id_for_label }}">
+
+                        Pincode
+
+                    </label>
+
+
+                    {{ form.pincode }}
+
+
+                    {% if form.pincode.errors %}
+
+                        <div class="error">
+
+                            {{ form.pincode.errors|striptags }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- ADDRESS TYPE -->
+
+
+                <div class="field">
+
+                    <label
+                        for="{{ form.address_type.id_for_label }}">
+
+                        Address Type
+
+                    </label>
+
+
+                    {{ form.address_type }}
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <div
+                class="check-row"
+                style="margin-top:14px;">
+
+
+                {{ form.is_default }}
+
+
+                <label
+                    for="{{ form.is_default.id_for_label }}">
+
+                    Make this my default delivery address
+
+                </label>
+
+
+            </div>
+
+
+
+            <button
+                type="submit"
+                class="save-btn">
+
+                ✓ Save Address
+
+            </button>
+
+
+
+            <div class="security-note">
+
+                🔒 Your location is used
+                for delivery availability.
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+
+function setLocationStatus(message, type="") {
+
+    const status =
+        document.getElementById(
+            "locationStatus"
+        );
+
+    if (!status) return;
+
+    status.innerHTML =
+        message;
+
+    status.className =
+        "location-status";
+
+    if (type === "success") {
+        status.classList.add(
+            "location-success"
+        );
+    }
+
+    if (type === "error") {
+        status.classList.add(
+            "location-error"
+        );
+    }
+
+}
+
+
+function fillAddressField(
+    fieldId,
+    value
+) {
+
+    if (!value) return;
+
+    const field =
+        document.getElementById(
+            fieldId
+        );
+
+    if (!field) return;
+
+    /*
+        Existing typed data ko bina wajah overwrite
+        nahi karenge. Current-location flow me blank
+        fields ko smartly fill karenge.
+    */
+    if (!field.value.trim()) {
+        field.value =
+            value;
+    }
+
+}
+
+
+async function reverseGeocodeLocation(
+    latitude,
+    longitude
+) {
+
+    setLocationStatus(
+        "📍 Location mil gayi. Address details find ki ja rahi hain..."
+    );
+
+    try {
+
+        const url =
+            "https://nominatim.openstreetmap.org/reverse"
+            + "?format=jsonv2"
+            + "&lat="
+            + encodeURIComponent(latitude)
+            + "&lon="
+            + encodeURIComponent(longitude)
+            + "&zoom=18"
+            + "&addressdetails=1";
+
+        const response =
+            await fetch(
+                url,
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Address lookup failed"
+            );
+        }
+
+        const data =
+            await response.json();
+
+        const address =
+            data.address || {};
+
+        const areaParts = [
+            address.house_number,
+            address.road,
+            address.neighbourhood,
+            address.suburb,
+            address.village,
+            address.hamlet,
+            address.residential
+        ]
+        .filter(Boolean);
+
+        const uniqueAreaParts =
+            areaParts.filter(
+                function(value, index, arr) {
+                    return (
+                        arr.indexOf(value)
+                        === index
+                    );
+                }
+            );
+
+        const addressLine =
+            uniqueAreaParts
+            .slice(0, 4)
+            .join(", ");
+
+        const city =
+            address.city
+            || address.town
+            || address.village
+            || address.municipality
+            || address.county
+            || "";
+
+        const state =
+            address.state
+            || "";
+
+        const pincode =
+            address.postcode
+            || "";
+
+        fillAddressField(
+            "id_address_line",
+            addressLine
+        );
+
+        fillAddressField(
+            "id_city",
+            city
+        );
+
+        fillAddressField(
+            "id_state",
+            state
+        );
+
+        fillAddressField(
+            "id_pincode",
+            pincode
+        );
+
+        let shortAddress =
+            addressLine;
+
+        if (city) {
+            shortAddress +=
+                (
+                    shortAddress
+                    ? ", "
+                    : ""
+                )
+                + city;
+        }
+
+        if (state) {
+            shortAddress +=
+                (
+                    shortAddress
+                    ? ", "
+                    : ""
+                )
+                + state;
+        }
+
+        if (pincode) {
+            shortAddress +=
+                " - "
+                + pincode;
+        }
+
+        if (!shortAddress) {
+            shortAddress =
+                data.display_name
+                || "Location selected";
+        }
+
+        setLocationStatus(
+            "✓ "
+            + shortAddress,
+            "success"
+        );
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        setLocationStatus(
+            "✓ GPS location save ho gayi. Address details manually fill kar sakte hain.",
+            "success"
+        );
+
+        return false;
+
+    }
+
+}
+
+
+async function applyCurrentPosition(
+    position
+) {
+
+    const latitudeInput =
+        document.getElementById(
+            "id_latitude"
+        );
+
+    const longitudeInput =
+        document.getElementById(
+            "id_longitude"
+        );
+
+    const button =
+        document.getElementById(
+            "gpsBtn"
+        );
+
+    const latitude =
+        position.coords.latitude;
+
+    const longitude =
+        position.coords.longitude;
+
+    latitudeInput.value =
+        latitude.toFixed(6);
+
+    longitudeInput.value =
+        longitude.toFixed(6);
+
+    if (button) {
+        button.innerHTML =
+            "Finding address...";
+    }
+
+    await reverseGeocodeLocation(
+        latitude,
+        longitude
+    );
+
+    if (button) {
+        button.innerHTML =
+            "✓ Location Added";
+
+        button.disabled =
+            false;
+    }
+
+}
+
+
+function getCurrentLocation() {
+
+    const button =
+        document.getElementById(
+            "gpsBtn"
+        );
+
+    const latitudeInput =
+        document.getElementById(
+            "id_latitude"
+        );
+
+    const longitudeInput =
+        document.getElementById(
+            "id_longitude"
+        );
+
+    if (
+        !latitudeInput
+        || !longitudeInput
+    ) {
+
+        setLocationStatus(
+            "GPS fields are not available in this form.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!navigator.geolocation) {
+
+        setLocationStatus(
+            "Location is not supported by this browser.",
+            "error"
+        );
+
+        return;
+    }
+
+    button.disabled =
+        true;
+
+    button.innerHTML =
+        "Finding location...";
+
+    setLocationStatus(
+        "Getting your current location..."
+    );
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            applyCurrentPosition(
+                position
+            );
+
+        },
+
+        function(error) {
+
+            let message =
+                "Unable to access your location.";
+
+            if (
+                error.code ===
+                error.PERMISSION_DENIED
+            ) {
+
+                message =
+                    "Location permission denied. Browser me location allow karke dobara try karein.";
+
+            }
+
+            else if (
+                error.code ===
+                error.POSITION_UNAVAILABLE
+            ) {
+
+                message =
+                    "Current location unavailable hai. Device location ON karke try karein.";
+
+            }
+
+            else if (
+                error.code ===
+                error.TIMEOUT
+            ) {
+
+                message =
+                    "Location request timed out. Please try again.";
+
+            }
+
+            setLocationStatus(
+                message,
+                "error"
+            );
+
+            button.innerHTML =
+                "📍 Try Again";
+
+            button.disabled =
+                false;
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 30000
+        }
+
+    );
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const latitude =
+            document.getElementById(
+                "id_latitude"
+            );
+
+        const longitude =
+            document.getElementById(
+                "id_longitude"
+            );
+
+        const button =
+            document.getElementById(
+                "gpsBtn"
+            );
+
+        if (
+            latitude
+            && longitude
+            && latitude.value
+            && longitude.value
+            && latitude.value !== "0"
+            && longitude.value !== "0"
+        ) {
+
+            setLocationStatus(
+                "✓ Saved GPS location available",
+                "success"
+            );
+
+            if (button) {
+                button.innerHTML =
+                    "✓ Location Added";
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>

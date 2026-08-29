@@ -1,0 +1,276 @@
+{% extends "customer/base.html" %}
+
+{% block title %}About AMEXA{% endblock %}
+
+{% block content %}
+
+<style>
+    .about-page {
+        width: min(900px, 100%);
+        margin: 0 auto;
+        padding: 20px 14px 100px;
+    }
+
+    .about-hero {
+        padding: 26px 20px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #ffffff;
+        box-shadow: 0 15px 40px rgba(0,0,0,.18);
+    }
+
+    .about-hero h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+    .about-hero p {
+        margin-top: 10px;
+        margin-bottom: 0;
+        color: #cbd5e1;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .about-section {
+        margin-top: 18px;
+        padding: 20px;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    }
+
+    .about-section h2 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        color: #111827;
+    }
+
+    .about-section p {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.7;
+        font-size: 14px;
+        white-space: pre-line;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .contact-card {
+        padding: 14px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+    }
+
+    .contact-card small {
+        display: block;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .contact-card strong {
+        display: block;
+        margin-top: 5px;
+        color: #111827;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .empty-about {
+        padding: 30px 20px;
+        text-align: center;
+        color: #6b7280;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    }
+
+    @media (max-width: 600px) {
+        .about-page {
+            padding: 12px 10px 90px;
+        }
+
+        .about-hero {
+            padding: 20px 16px;
+        }
+
+        .about-hero h1 {
+            font-size: 24px;
+        }
+
+        .about-section {
+            padding: 16px;
+        }
+
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+
+<div class="about-page">
+
+    {% if about %}
+
+        <section class="about-hero">
+
+            <h1>
+                {{ about.title|default:"About AMEXA" }}
+            </h1>
+
+            {% if about.short_description %}
+                <p>
+                    {{ about.short_description }}
+                </p>
+            {% endif %}
+
+        </section>
+
+
+        {% if about.description %}
+
+            <section class="about-section">
+
+                <h2>
+                    About Us
+                </h2>
+
+                <p>
+                    {{ about.description }}
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        {% if about.mission %}
+
+            <section class="about-section">
+
+                <h2>
+                    Our Mission
+                </h2>
+
+                <p>
+                    {{ about.mission }}
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        {% if about.vision %}
+
+            <section class="about-section">
+
+                <h2>
+                    Our Vision
+                </h2>
+
+                <p>
+                    {{ about.vision }}
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        {% if about.phone or about.email or about.address %}
+
+            <section class="about-section">
+
+                <h2>
+                    Contact AMEXA
+                </h2>
+
+                <div class="contact-grid">
+
+                    {% if about.phone %}
+
+                        <div class="contact-card">
+
+                            <small>
+                                Phone
+                            </small>
+
+                            <strong>
+                                {{ about.phone }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if about.email %}
+
+                        <div class="contact-card">
+
+                            <small>
+                                Email
+                            </small>
+
+                            <strong>
+                                {{ about.email }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if about.address %}
+
+                        <div class="contact-card">
+
+                            <small>
+                                Address
+                            </small>
+
+                            <strong>
+                                {{ about.address }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+    {% else %}
+
+        <div class="empty-about">
+
+            <h2>
+                About AMEXA
+            </h2>
+
+            <p>
+                About information has not been added yet.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

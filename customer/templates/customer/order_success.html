@@ -1,0 +1,282 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Order Successful | AMEXA{% endblock %}
+
+{% block content %}
+
+<style>
+    .success-page{
+        min-height:78vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:25px 14px 100px;
+    }
+
+    .success-card{
+        width:min(620px,100%);
+        padding:32px 24px;
+        text-align:center;
+        border-radius:28px;
+        background:
+            radial-gradient(circle at 50% 0%,rgba(25,217,139,.16),transparent 30%),
+            linear-gradient(145deg,rgba(16,23,47,.98),rgba(6,11,27,.98));
+        border:1px solid rgba(255,255,255,.10);
+        box-shadow:0 25px 70px rgba(0,0,0,.35);
+    }
+
+    .success-icon{
+        width:100px;
+        height:100px;
+        margin:auto;
+        display:grid;
+        place-items:center;
+        border-radius:50%;
+        background:linear-gradient(145deg,#28e79b,#0eaf6e);
+        color:white;
+        font-size:54px;
+        font-weight:1000;
+        border:5px solid rgba(255,255,255,.18);
+        box-shadow:
+            0 15px 35px rgba(25,217,139,.28),
+            inset 5px 6px 12px rgba(255,255,255,.24);
+        animation:successPop .55s ease;
+    }
+
+    @keyframes successPop{
+        0%{transform:scale(.4);opacity:0}
+        70%{transform:scale(1.1)}
+        100%{transform:scale(1);opacity:1}
+    }
+
+    .success-card h1{
+        margin:20px 0 6px;
+        font-size:30px;
+        font-weight:1000;
+    }
+
+    .success-sub{
+        margin:0 auto;
+        max-width:450px;
+        color:#aab3c7;
+        font-size:12px;
+        line-height:1.55;
+    }
+
+    .order-box{
+        margin-top:20px;
+        padding:16px;
+        border-radius:17px;
+        text-align:left;
+        background:rgba(255,255,255,.035);
+        border:1px solid rgba(255,255,255,.07);
+    }
+
+    .order-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:7px 0;
+        color:#aeb7ca;
+        font-size:10px;
+    }
+
+    .order-row strong{
+        color:white;
+        text-align:right;
+        font-size:11px;
+    }
+
+    .redirect-box{
+        margin-top:20px;
+        padding:12px;
+        border-radius:13px;
+        background:rgba(0,229,255,.06);
+        border:1px solid rgba(0,229,255,.11);
+        color:#b8f8ff;
+        font-size:10px;
+        font-weight:800;
+    }
+
+    .countdown{
+        display:inline-grid;
+        place-items:center;
+        width:27px;
+        height:27px;
+        margin:0 4px;
+        border-radius:50%;
+        background:linear-gradient(135deg,#009cff,#7928ff);
+        color:white;
+        font-size:11px;
+        font-weight:950;
+    }
+
+    .progress{
+        height:5px;
+        margin-top:12px;
+        overflow:hidden;
+        border-radius:10px;
+        background:rgba(255,255,255,.08);
+    }
+
+    .progress-bar{
+        height:100%;
+        width:100%;
+        background:linear-gradient(90deg,#19d98b,#00d8ff,#762cff);
+        animation:redirectProgress 5s linear forwards;
+        transform-origin:left;
+    }
+
+    @keyframes redirectProgress{
+        from{transform:scaleX(1)}
+        to{transform:scaleX(0)}
+    }
+
+    .success-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+        margin-top:18px;
+    }
+
+    .success-btn{
+        min-height:46px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:13px;
+        font-size:10px;
+        font-weight:950;
+        text-decoration:none;
+    }
+
+    .primary-btn{
+        color:white;
+        background:linear-gradient(135deg,#009cff,#782cff);
+    }
+
+    .secondary-btn{
+        color:#bcefff;
+        background:rgba(0,229,255,.07);
+        border:1px solid rgba(0,229,255,.12);
+    }
+
+    @media(max-width:500px){
+        .success-card{
+            padding:26px 16px;
+        }
+
+        .success-card h1{
+            font-size:25px;
+        }
+
+        .success-actions{
+            grid-template-columns:1fr;
+        }
+
+        .success-icon{
+            width:88px;
+            height:88px;
+            font-size:46px;
+        }
+    }
+</style>
+
+<div class="success-page">
+
+    <div class="success-card">
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <h1>Order Placed Successfully!</h1>
+
+        <p class="success-sub">
+            Thank you for shopping with AMEXA.
+            Your order has been received and the store will start processing it shortly.
+        </p>
+
+        <div class="order-box">
+
+            <div class="order-row">
+                <span>Order ID</span>
+                <strong>{{ order.order_number }}</strong>
+            </div>
+
+            {% if order.shop %}
+                <div class="order-row">
+                    <span>Store</span>
+                    <strong>{{ order.shop.name }}</strong>
+                </div>
+            {% endif %}
+
+            <div class="order-row">
+                <span>Amount</span>
+                <strong>₹{{ order.total_amount }}</strong>
+            </div>
+
+            <div class="order-row">
+                <span>Payment</span>
+                <strong>
+                    {% if order.payment_method == "COD" %}
+                        Cash on Delivery
+                    {% else %}
+                        {{ order.payment_method }}
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="order-row">
+                <span>Status</span>
+                <strong>🟡 {{ order.status }}</strong>
+            </div>
+
+        </div>
+
+        <div class="redirect-box">
+            Redirecting to <strong>My Orders</strong> in
+            <span class="countdown" id="countdown">5</span>
+            seconds...
+
+            <div class="progress">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="success-actions">
+
+            <a href="{% url 'orders' %}" class="success-btn primary-btn">
+                📦 View My Orders
+            </a>
+
+            <a href="{% url 'home' %}" class="success-btn secondary-btn">
+                🏠 Continue Shopping
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    let seconds = 5;
+    const counter = document.getElementById("countdown");
+
+    const countdownTimer = setInterval(function () {
+        seconds -= 1;
+
+        if (counter) {
+            counter.textContent = seconds;
+        }
+
+        if (seconds <= 0) {
+            clearInterval(countdownTimer);
+            window.location.href = "{% url 'orders' %}";
+        }
+    }, 1000);
+</script>
+
+{% endblock %}

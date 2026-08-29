@@ -1,0 +1,405 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Delete Monthly Pack | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #030615;
+            --card: #0d1329;
+            --card2: #121a35;
+            --white: #ffffff;
+            --muted: #9da7bf;
+            --cyan: #00e5ff;
+            --purple: #762cff;
+            --red: #ff496d;
+            --border: rgba(255,255,255,.10);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--white);
+
+            background:
+                radial-gradient(
+                    circle at 10% 0%,
+                    rgba(0,229,255,.08),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(118,44,255,.13),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #02040e,
+                    #050817 55%,
+                    #030313
+                );
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .delete-card {
+            width: min(560px, 100%);
+
+            padding: 28px;
+
+            border-radius: 26px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,24,49,.97),
+                    rgba(7,11,27,.98)
+                );
+
+            border: 1px solid rgba(255,255,255,.10);
+
+            box-shadow:
+                0 25px 75px rgba(0,0,0,.40);
+
+            text-align: center;
+        }
+
+        .delete-icon {
+            width: 88px;
+            height: 88px;
+
+            margin: 0 auto;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 26px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,73,109,.14),
+                    rgba(118,44,255,.13)
+                );
+
+            border: 1px solid rgba(255,73,109,.16);
+
+            font-size: 42px;
+        }
+
+        .danger-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            margin-top: 18px;
+            padding: 6px 9px;
+
+            border-radius: 10px;
+
+            background: rgba(255,73,109,.08);
+            border: 1px solid rgba(255,73,109,.14);
+
+            color: #ff9fb2;
+
+            font-size: 9px;
+            font-weight: 950;
+        }
+
+        h1 {
+            margin: 13px 0 7px;
+
+            font-size: 27px;
+            line-height: 1.15;
+            font-weight: 1000;
+        }
+
+        .subtitle {
+            margin: 0 auto;
+
+            max-width: 430px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .pack-box {
+            margin-top: 20px;
+            padding: 15px;
+
+            text-align: left;
+
+            border-radius: 17px;
+
+            background: rgba(255,255,255,.035);
+            border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .pack-label {
+            color: #7f8aa1;
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .pack-name {
+            margin-top: 5px;
+
+            font-size: 16px;
+            font-weight: 950;
+        }
+
+        .shop-name {
+            margin-top: 5px;
+
+            color: #9befff;
+
+            font-size: 10px;
+            font-weight: 850;
+        }
+
+        .warning {
+            margin-top: 15px;
+            padding: 13px;
+
+            display: flex;
+            gap: 10px;
+
+            text-align: left;
+
+            border-radius: 14px;
+
+            background: rgba(255,216,77,.06);
+            border: 1px solid rgba(255,216,77,.12);
+        }
+
+        .warning-icon {
+            font-size: 20px;
+        }
+
+        .warning strong {
+            display: block;
+
+            color: #ffe993;
+
+            font-size: 10px;
+        }
+
+        .warning p {
+            margin: 4px 0 0;
+
+            color: #a8a18b;
+
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .cancel-btn,
+        .delete-btn {
+            min-height: 50px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 14px;
+
+            font-size: 11px;
+            font-weight: 950;
+        }
+
+        .cancel-btn {
+            background: rgba(255,255,255,.045);
+            border: 1px solid rgba(255,255,255,.09);
+
+            color: #c0c7d8;
+        }
+
+        .delete-btn {
+            width: 100%;
+
+            border: 0;
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ff496d,
+                    #cf1f4e
+                );
+
+            box-shadow:
+                0 8px 24px rgba(255,73,109,.20);
+        }
+
+        .delete-btn:hover {
+            filter: brightness(1.06);
+        }
+
+        .note {
+            margin-top: 15px;
+
+            color: #616b80;
+
+            font-size: 8px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+
+            .delete-card {
+                padding: 22px 16px;
+                border-radius: 21px;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="delete-card">
+
+    <div class="delete-icon">
+        🗑️
+    </div>
+
+
+    <div class="danger-badge">
+        ⚠ DELETE MONTHLY PACK
+    </div>
+
+
+    <h1>
+        Delete this pack?
+    </h1>
+
+
+    <p class="subtitle">
+        This monthly pack will be removed from your active
+        AMEXA packs. Your products and previous orders will
+        not be deleted.
+    </p>
+
+
+    <div class="pack-box">
+
+        <div class="pack-label">
+            Pack
+        </div>
+
+        <div class="pack-name">
+            {{ pack.name }}
+        </div>
+
+        <div class="shop-name">
+            🏪 {{ pack.shop.name }}
+        </div>
+
+    </div>
+
+
+    <div class="warning">
+
+        <div class="warning-icon">
+            ⚠️
+        </div>
+
+        <div>
+
+            <strong>
+                This action removes the saved pack
+            </strong>
+
+            <p>
+                If you need the same monthly pack again later,
+                you will need to create a new one.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <a
+            href="{% url 'monthly_pack_detail' pack.id %}"
+            class="cancel-btn"
+        >
+            ← Keep Pack
+        </a>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="delete-btn"
+            >
+                🗑 Yes, Delete Pack
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="note">
+        AMEXA keeps your previous order records safe even
+        after this pack is removed.
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,799 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Monthly Pack | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #030615;
+            --card: #0d1329;
+            --card2: #121a35;
+            --white: #ffffff;
+            --muted: #9da7bf;
+            --cyan: #00e5ff;
+            --blue: #168cff;
+            --purple: #762cff;
+            --green: #20dc91;
+            --red: #ff496d;
+            --border: rgba(255,255,255,.10);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--white);
+            font-family: "Segoe UI", Arial, sans-serif;
+
+            background:
+                radial-gradient(circle at 8% 0%,
+                    rgba(0,229,255,.09),
+                    transparent 28%),
+                radial-gradient(circle at 92% 10%,
+                    rgba(118,44,255,.14),
+                    transparent 30%),
+                linear-gradient(135deg,
+                    #02040e,
+                    #050817 55%,
+                    #030313);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        .page {
+            width: min(900px, 100%);
+            margin: auto;
+            padding: 22px 22px 70px;
+        }
+
+        /* TOP BAR */
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .back-btn,
+        .home-btn {
+            min-height: 43px;
+            padding: 0 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 13px;
+            background: rgba(13,19,41,.88);
+            border: 1px solid var(--border);
+
+            color: #e3e8f6;
+            font-size: 12px;
+            font-weight: 850;
+        }
+
+        .top-title {
+            text-align: center;
+        }
+
+        .top-title strong {
+            display: block;
+            font-size: 17px;
+            font-weight: 950;
+        }
+
+        .top-title span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* HERO */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+
+            padding: 27px;
+            border-radius: 27px;
+
+            background:
+                radial-gradient(circle at 90% 20%,
+                    rgba(0,229,255,.18),
+                    transparent 30%),
+                radial-gradient(circle at 100% 100%,
+                    rgba(118,44,255,.22),
+                    transparent 35%),
+                linear-gradient(135deg,
+                    #091c45,
+                    #241258 65%,
+                    #160b30);
+
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 22px 65px rgba(0,0,0,.34);
+        }
+
+        .hero::after {
+            content: "📦";
+            position: absolute;
+            right: 28px;
+            top: 14px;
+            font-size: 105px;
+            opacity: .09;
+            transform: rotate(-8deg);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 10px;
+            border-radius: 20px;
+
+            background: rgba(0,229,255,.09);
+            border: 1px solid rgba(0,229,255,.17);
+
+            color: #a4f6ff;
+            font-size: 9px;
+            font-weight: 950;
+        }
+
+        .hero h1 {
+            margin: 13px 0 7px;
+            font-size: clamp(27px, 5vw, 40px);
+            line-height: 1.08;
+            font-weight: 1000;
+        }
+
+        .hero p {
+            max-width: 570px;
+            margin: 0;
+
+            color: #c1c9dd;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* STEPS */
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 9px;
+            margin-top: 15px;
+        }
+
+        .step {
+            padding: 12px;
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.07);
+
+            color: #9ca7bc;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .step.active {
+            background: rgba(0,229,255,.08);
+            border-color: rgba(0,229,255,.18);
+            color: #a7f7ff;
+        }
+
+        .step-number {
+            display: block;
+            margin-bottom: 4px;
+            color: white;
+            font-size: 13px;
+            font-weight: 950;
+        }
+
+        /* FORM CARD */
+
+        .form-card {
+            margin-top: 18px;
+            padding: 24px;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(145deg,
+                    rgba(17,24,49,.97),
+                    rgba(7,11,27,.98));
+
+            border: 1px solid rgba(255,255,255,.09);
+            box-shadow: 0 18px 55px rgba(0,0,0,.25);
+        }
+
+        .form-head {
+            margin-bottom: 21px;
+        }
+
+        .form-head h2 {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 950;
+        }
+
+        .form-head p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .field {
+            margin-top: 18px;
+        }
+
+        .field:first-of-type {
+            margin-top: 0;
+        }
+
+        .label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+
+            margin-bottom: 8px;
+
+            color: #e9edf7;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .required {
+            color: #ff7593;
+            font-size: 9px;
+        }
+
+        .optional {
+            color: #727d95;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .input,
+        .select,
+        .textarea {
+            width: 100%;
+
+            border: 1px solid rgba(255,255,255,.10);
+            outline: none;
+
+            background: #090f25;
+            color: white;
+
+            border-radius: 14px;
+
+            transition: .2s;
+        }
+
+        .input,
+        .select {
+            height: 50px;
+            padding: 0 14px;
+        }
+
+        .textarea {
+            min-height: 105px;
+            padding: 14px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .input:focus,
+        .select:focus,
+        .textarea:focus {
+            border-color: rgba(0,229,255,.55);
+            box-shadow: 0 0 0 3px rgba(0,229,255,.06);
+        }
+
+        .input::placeholder,
+        .textarea::placeholder {
+            color: #59647c;
+        }
+
+        .select {
+            cursor: pointer;
+        }
+
+        .select option {
+            background: #0b1127;
+            color: white;
+        }
+
+        .hint {
+            margin-top: 7px;
+            color: #737e96;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        /* SELECTED SHOP */
+
+        .selected-shop {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 15px;
+            padding: 12px;
+
+            border-radius: 14px;
+
+            background: rgba(32,220,145,.07);
+            border: 1px solid rgba(32,220,145,.14);
+        }
+
+        .selected-icon {
+            width: 40px;
+            height: 40px;
+
+            display: grid;
+            place-items: center;
+
+            flex: 0 0 auto;
+
+            border-radius: 12px;
+            background: rgba(32,220,145,.10);
+
+            font-size: 20px;
+        }
+
+        .selected-info strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .selected-info span {
+            display: block;
+            margin-top: 3px;
+
+            color: #9da9bc;
+            font-size: 9px;
+        }
+
+        /* NOTICE */
+
+        .notice {
+            display: flex;
+            gap: 11px;
+
+            margin-top: 20px;
+            padding: 14px;
+
+            border-radius: 15px;
+
+            background: rgba(0,229,255,.055);
+            border: 1px solid rgba(0,229,255,.11);
+        }
+
+        .notice-icon {
+            font-size: 20px;
+        }
+
+        .notice strong {
+            display: block;
+            color: #c8faff;
+            font-size: 10px;
+        }
+
+        .notice p {
+            margin: 4px 0 0;
+            color: #8995aa;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        /* ACTIONS */
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .cancel-btn,
+        .create-btn {
+            min-height: 50px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 14px;
+
+            font-size: 11px;
+            font-weight: 950;
+        }
+
+        .cancel-btn {
+            background: rgba(255,255,255,.045);
+            border: 1px solid rgba(255,255,255,.09);
+            color: #aeb7c9;
+        }
+
+        .create-btn {
+            border: 0;
+            cursor: pointer;
+
+            background:
+                linear-gradient(135deg,
+                    #00aee8,
+                    #7034ff);
+
+            color: white;
+
+            box-shadow: 0 9px 28px rgba(76,54,255,.28);
+        }
+
+        .create-btn:hover {
+            filter: brightness(1.07);
+        }
+
+        /* EMPTY SHOPS */
+
+        .no-shop {
+            padding: 20px;
+
+            border-radius: 15px;
+            text-align: center;
+
+            background: rgba(255,73,109,.06);
+            border: 1px solid rgba(255,73,109,.13);
+
+            color: #ffb0c0;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 650px) {
+            .page {
+                padding: 14px 13px 45px;
+            }
+
+            .hero {
+                padding: 21px 18px;
+                border-radius: 22px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero::after {
+                right: -10px;
+                top: 40px;
+                font-size: 85px;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                padding: 18px 15px;
+                border-radius: 20px;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .back-btn span,
+            .home-btn span {
+                display: none;
+            }
+
+            .back-btn,
+            .home-btn {
+                width: 43px;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+
+        <a href="{% url 'monthly_packs' %}" class="back-btn">
+            ← <span>My Packs</span>
+        </a>
+
+        <div class="top-title">
+            <strong>Create Pack</strong>
+            <span>AMEXA Monthly Essentials</span>
+        </div>
+
+        <a href="{% url 'home' %}" class="home-btn">
+            🏠 <span>Home</span>
+        </a>
+
+    </div>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="badge">
+                📦 CREATE YOUR PACK
+            </div>
+
+            <h1>
+                Build your monthly
+                essentials pack.
+            </h1>
+
+            <p>
+                Select a local shop and give your pack a name.
+                After creating it, you can choose products and
+                quantities for your regular monthly shopping.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- STEPS -->
+    <div class="steps">
+
+        <div class="step active">
+            <span class="step-number">01</span>
+            Create Pack
+        </div>
+
+        <div class="step">
+            <span class="step-number">02</span>
+            Add Products
+        </div>
+
+        <div class="step">
+            <span class="step-number">03</span>
+            Add to Cart
+        </div>
+
+    </div>
+
+
+    <!-- FORM -->
+    <section class="form-card">
+
+        <div class="form-head">
+            <h2>Pack Details</h2>
+
+            <p>
+                Start by choosing the shop where you normally
+                purchase these products.
+            </p>
+        </div>
+
+
+        {% if selected_shop %}
+
+            <div class="selected-shop">
+
+                <div class="selected-icon">
+                    🏪
+                </div>
+
+                <div class="selected-info">
+
+                    <strong>
+                        Current selected shop
+                    </strong>
+
+                    <span>
+                        {{ selected_shop.name }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if shops %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+
+                <!-- SHOP -->
+                <div class="field">
+
+                    <div class="label">
+                        <span>🏪 Select Shop</span>
+                        <span class="required">Required</span>
+                    </div>
+
+                    <select
+                        name="shop_id"
+                        class="select"
+                        required
+                    >
+
+                        <option value="">
+                            Choose an AMEXA shop
+                        </option>
+
+                        {% for shop in shops %}
+
+                            <option
+                                value="{{ shop.id }}"
+                                {% if selected_shop and selected_shop.id == shop.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ shop.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <div class="hint">
+                        Products added to this pack will come
+                        from the selected shop.
+                    </div>
+
+                </div>
+
+
+                <!-- PACK NAME -->
+                <div class="field">
+
+                    <div class="label">
+                        <span>📦 Pack Name</span>
+                        <span class="required">Required</span>
+                    </div>
+
+                    <input
+                        type="text"
+                        name="name"
+                        class="input"
+                        maxlength="100"
+                        placeholder="Example: Home Monthly Grocery"
+                        value="Monthly Grocery Pack"
+                        required
+                    >
+
+                    <div class="hint">
+                        Give it a simple name so you can easily
+                        identify it next month.
+                    </div>
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+                <div class="field">
+
+                    <div class="label">
+                        <span>📝 Description</span>
+                        <span class="optional">OPTIONAL</span>
+                    </div>
+
+                    <textarea
+                        name="description"
+                        class="textarea"
+                        placeholder="Example: Rice, flour, oil, milk and other monthly home essentials..."
+                    ></textarea>
+
+                </div>
+
+
+                <!-- INFO -->
+                <div class="notice">
+
+                    <div class="notice-icon">
+                        💡
+                    </div>
+
+                    <div>
+                        <strong>
+                            Products are added in the next step
+                        </strong>
+
+                        <p>
+                            Creating the pack does not place an
+                            order. After this step you can select
+                            products and quantities from this shop.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+                <div class="actions">
+
+                    <a
+                        href="{% url 'monthly_packs' %}"
+                        class="cancel-btn"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="create-btn"
+                    >
+                        Create Pack & Add Products →
+                    </button>
+
+                </div>
+
+            </form>
+
+        {% else %}
+
+            <div class="no-shop">
+
+                <strong>
+                    No active shop is available.
+                </strong>
+
+                <br><br>
+
+                Add or activate a shop from the AMEXA admin
+                before creating a monthly pack.
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+</body>
+</html>

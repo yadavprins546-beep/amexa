@@ -1,0 +1,963 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile | AMEXA</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    overflow-x:hidden;
+}
+
+body{
+    min-height:100vh;
+    background:#070b17;
+    color:#f7f9ff;
+    font-family:Arial,"Segoe UI",sans-serif;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+button{
+    font:inherit;
+}
+
+.app{
+    width:100%;
+    max-width:480px;
+    margin:0 auto;
+    padding:12px 12px 100px;
+}
+
+/* TOP BAR */
+.topbar{
+    display:grid;
+    grid-template-columns:44px 1fr 44px;
+    align-items:center;
+    gap:8px;
+    margin-bottom:12px;
+}
+
+.top-btn{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #202a43;
+    border-radius:13px;
+    background:#0e1527;
+    color:#fff;
+    font-size:18px;
+}
+
+.top-title{
+    min-width:0;
+    text-align:center;
+}
+
+.top-title strong{
+    display:block;
+    font-size:16px;
+}
+
+.top-title span{
+    display:block;
+    margin-top:2px;
+    color:#8995ac;
+    font-size:10px;
+}
+
+/* PROFILE HERO */
+.hero{
+    width:100%;
+    padding:18px;
+    border:1px solid #263452;
+    border-radius:22px;
+    background:linear-gradient(135deg,#10264d,#271653);
+}
+
+.user-row{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    min-width:0;
+}
+
+.avatar{
+    width:64px;
+    height:64px;
+    flex:0 0 64px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:19px;
+    background:linear-gradient(135deg,#13c9ff,#7957ff);
+    font-size:28px;
+}
+
+.user-info{
+    min-width:0;
+    flex:1;
+}
+
+.user-name{
+    margin:0;
+    font-size:22px;
+    line-height:1.15;
+    overflow-wrap:anywhere;
+}
+
+.user-phone,
+.user-email{
+    margin-top:5px;
+    color:#c1cadb;
+    font-size:11px;
+    overflow-wrap:anywhere;
+}
+
+.verified{
+    display:inline-block;
+    margin-top:8px;
+    padding:5px 8px;
+    border-radius:8px;
+    background:#12392e;
+    color:#9ff0d0;
+    font-size:9px;
+    font-weight:700;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    margin-top:15px;
+}
+
+.stat{
+    padding:11px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:13px;
+    background:rgba(4,8,20,.45);
+}
+
+.stat b{
+    display:block;
+    font-size:17px;
+}
+
+.stat span{
+    display:block;
+    margin-top:3px;
+    color:#aab4c8;
+    font-size:9px;
+}
+
+/* SECTION */
+.section{
+    width:100%;
+    margin-top:20px;
+}
+
+.section-head{
+    margin-bottom:9px;
+}
+
+.section-head h2{
+    margin:0;
+    font-size:16px;
+}
+
+.section-head p{
+    margin:4px 0 0;
+    color:#8995ac;
+    font-size:10px;
+}
+
+/* QUICK ACTIONS */
+.quick-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+}
+
+.quick{
+    min-height:96px;
+    padding:12px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    border:1px solid #202a43;
+    border-radius:16px;
+    background:#0e1527;
+}
+
+.quick-icon{
+    font-size:23px;
+}
+
+.quick-title{
+    margin-top:7px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.quick-sub{
+    width:100%;
+    margin-top:4px;
+    color:#8995ac;
+    font-size:9px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+}
+
+/* MENU */
+.menu{
+    width:100%;
+    overflow:hidden;
+    border:1px solid #202a43;
+    border-radius:17px;
+    background:#0e1527;
+}
+
+.menu-item{
+    width:100%;
+    min-height:62px;
+    display:grid;
+    grid-template-columns:40px minmax(0,1fr) 24px;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border:0;
+    border-bottom:1px solid #1b2439;
+    background:transparent;
+    color:#fff;
+    text-align:left;
+}
+
+.menu-item:last-child{
+    border-bottom:0;
+}
+
+.menu-item.clickable{
+    cursor:pointer;
+}
+
+.menu-icon{
+    width:40px;
+    height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:#151e33;
+    font-size:18px;
+}
+
+.menu-copy{
+    min-width:0;
+}
+
+.menu-title{
+    font-size:11px;
+    font-weight:700;
+}
+
+.menu-sub{
+    margin-top:3px;
+    color:#8995ac;
+    font-size:9px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+}
+
+.arrow{
+    text-align:right;
+    color:#78849b;
+    font-size:20px;
+    transition:transform .2s ease;
+}
+
+.badge{
+    font-size:8px;
+    line-height:1.2;
+    text-align:center;
+    color:#ffe394;
+}
+
+/* WALLET */
+.wallet-trigger{
+    background:linear-gradient(90deg,rgba(255,202,71,.05),rgba(118,84,255,.06));
+}
+
+.wallet-trigger .menu-icon{
+    background:#2a2414;
+}
+
+.wallet-balance-small{
+    color:#ffd76a;
+    font-weight:700;
+}
+
+.wallet-panel{
+    display:none;
+    padding:14px;
+    border-top:1px solid #2d3449;
+    background:#0a1020;
+}
+
+.wallet-panel.open{
+    display:block;
+}
+
+.wallet-card{
+    padding:14px;
+    border:1px solid #5a4b22;
+    border-radius:16px;
+    background:linear-gradient(135deg,#2a220b,#171b2b);
+}
+
+.wallet-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.wallet-label{
+    color:#aab4c8;
+    font-size:9px;
+}
+
+.wallet-main{
+    margin-top:4px;
+    color:#ffd76a;
+    font-size:27px;
+    font-weight:800;
+    line-height:1;
+}
+
+.wallet-main span{
+    font-size:10px;
+    font-weight:700;
+}
+
+.wallet-note{
+    max-width:180px;
+    color:#8f9aae;
+    font-size:8px;
+    line-height:1.4;
+    text-align:right;
+}
+
+.wallet-stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:13px;
+}
+
+.wallet-stat{
+    padding:10px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:11px;
+    background:rgba(0,0,0,.18);
+}
+
+.wallet-stat span{
+    display:block;
+    color:#8995ac;
+    font-size:8px;
+}
+
+.wallet-stat b{
+    display:block;
+    margin-top:4px;
+    font-size:12px;
+}
+
+.wallet-history-title{
+    margin-top:14px;
+    margin-bottom:6px;
+    font-size:10px;
+    font-weight:700;
+}
+
+.wallet-transactions{
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:11px;
+}
+
+.wallet-tx{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;
+    align-items:center;
+    padding:10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.wallet-tx:last-child{
+    border-bottom:0;
+}
+
+.wallet-tx-title{
+    font-size:9px;
+    font-weight:700;
+}
+
+.wallet-tx-sub{
+    margin-top:3px;
+    color:#8995ac;
+    font-size:7px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+}
+
+.wallet-tx-amount{
+    font-size:10px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.credit{
+    color:#79e6b4;
+}
+
+.debit{
+    color:#ff9db1;
+}
+
+.wallet-empty{
+    padding:13px;
+    color:#8995ac;
+    font-size:8px;
+    text-align:center;
+}
+
+/* HELP */
+.help-card{
+    width:100%;
+    min-height:105px;
+    position:relative;
+    overflow:hidden;
+    display:block;
+    padding:17px 90px 17px 17px;
+    border:1px solid #314c79;
+    border-radius:18px;
+    background:linear-gradient(135deg,#0d2a56,#301968);
+}
+
+.help-card h3{
+    margin:0;
+    font-size:16px;
+}
+
+.help-card p{
+    margin:6px 0 0;
+    color:#cbd4e5;
+    font-size:10px;
+    line-height:1.45;
+}
+
+.help-icon{
+    position:absolute;
+    right:20px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:45px;
+}
+
+/* LOGOUT */
+.logout{
+    width:100%;
+    min-height:48px;
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #5a2637;
+    border-radius:14px;
+    background:#26111b;
+    color:#ff9db1;
+    font-size:11px;
+    font-weight:700;
+}
+
+.footer{
+    margin-top:17px;
+    text-align:center;
+    color:#59657b;
+    font-size:8px;
+    letter-spacing:1.3px;
+}
+
+/* BOTTOM NAV */
+.bottom-nav{
+    position:fixed;
+    left:50%;
+    bottom:8px;
+    transform:translateX(-50%);
+    z-index:100;
+    width:calc(100% - 16px);
+    max-width:464px;
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:3px;
+    padding:6px;
+    border:1px solid #263149;
+    border-radius:19px;
+    background:#0b1120;
+}
+
+.nav{
+    min-width:0;
+    min-height:53px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    border-radius:13px;
+    color:#9ba6ba;
+    font-size:8px;
+    text-align:center;
+}
+
+.nav-icon{
+    font-size:18px;
+}
+
+.nav.active{
+    color:#fff;
+    background:linear-gradient(135deg,#12bff5,#7654ff);
+}
+
+.cart-nav{
+    position:relative;
+}
+
+.cart-count{
+    position:absolute;
+    top:2px;
+    right:20%;
+    min-width:17px;
+    height:17px;
+    padding:0 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:20px;
+    background:#ff315b;
+    color:#fff;
+    font-size:8px;
+    font-weight:700;
+}
+
+@media(max-width:350px){
+    .app{
+        padding-left:8px;
+        padding-right:8px;
+    }
+
+    .hero{
+        padding:14px;
+    }
+
+    .avatar{
+        width:56px;
+        height:56px;
+        flex-basis:56px;
+    }
+
+    .user-name{
+        font-size:19px;
+    }
+
+    .quick-grid{
+        gap:7px;
+    }
+
+    .wallet-main{
+        font-size:23px;
+    }
+
+    .wallet-note{
+        max-width:140px;
+    }
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+
+    <header class="topbar">
+        <a href="javascript:history.back()" class="top-btn" aria-label="Back">←</a>
+
+        <div class="top-title">
+            <strong>My Profile</strong>
+            <span>AMEXA Account</span>
+        </div>
+
+        <a href="{% url 'home' %}" class="top-btn" aria-label="Home">🏠</a>
+    </header>
+
+    <section class="hero">
+        <div class="user-row">
+            <div class="avatar">👤</div>
+
+            <div class="user-info">
+                <h1 class="user-name">
+                    {{ request.user.name|default:"AMEXA Customer" }}
+                </h1>
+
+                <div class="user-phone">
+                    📱 {{ request.user.phone|default:"Mobile number not available" }}
+                </div>
+
+                {% if request.user.email %}
+                <div class="user-email">
+                    ✉ {{ request.user.email }}
+                </div>
+                {% endif %}
+
+                <span class="verified">✓ OTP Verified Account</span>
+            </div>
+        </div>
+
+        <div class="stats">
+            <a href="{% url 'orders' %}" class="stat">
+                <b>{{ request.user.orders.count }}</b>
+                <span>Orders</span>
+            </a>
+
+            <a href="{% url 'cart' %}" class="stat">
+                <b>{{ cart_count|default:0 }}</b>
+                <span>Cart Items</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>⚡ Quick Actions</h2>
+            <p>Your most-used AMEXA features</p>
+        </div>
+
+        <div class="quick-grid">
+            <a href="{% url 'orders' %}" class="quick">
+                <div class="quick-icon">📦</div>
+                <div class="quick-title">My Orders</div>
+                <div class="quick-sub">Track & manage orders</div>
+            </a>
+
+            <a href="{% url 'addresses' %}" class="quick">
+                <div class="quick-icon">📍</div>
+                <div class="quick-title">My Addresses</div>
+                <div class="quick-sub">
+                    {{ request.user.addresses.count }} saved address{{ request.user.addresses.count|pluralize:"es" }}
+                </div>
+            </a>
+
+            <a href="{% url 'cart' %}" class="quick">
+                <div class="quick-icon">🛒</div>
+                <div class="quick-title">My Cart</div>
+                <div class="quick-sub">
+                    {{ cart_count|default:0 }} item{{ cart_count|default:0|pluralize }}
+                </div>
+            </a>
+
+            <a href="{% url 'nearby_shops' %}" class="quick">
+                <div class="quick-icon">🏪</div>
+                <div class="quick-title">Nearby Shops</div>
+                <div class="quick-sub">Shop from local stores</div>
+            </a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>✨ My AMEXA</h2>
+            <p>Shopping tools around your account</p>
+        </div>
+
+        <div class="menu">
+
+            <button
+                type="button"
+                class="menu-item clickable wallet-trigger"
+                id="walletTrigger"
+                aria-expanded="false"
+                aria-controls="walletPanel"
+            >
+                <div class="menu-icon">🪙</div>
+
+                <div class="menu-copy">
+                    <div class="menu-title">AMEXA Coins</div>
+                    <div class="menu-sub">
+                        <span class="wallet-balance-small">
+                            {{ wallet.coin_balance|default:0 }} coins
+                        </span>
+                        available · Tap to open wallet
+                    </div>
+                </div>
+
+                <div class="arrow" id="walletArrow">›</div>
+            </button>
+
+            <div class="wallet-panel" id="walletPanel">
+                <div class="wallet-card">
+
+                    <div class="wallet-head">
+                        <div>
+                            <div class="wallet-label">Available balance</div>
+                            <div class="wallet-main">
+                                {{ wallet.coin_balance|default:0 }}
+                                <span>COINS</span>
+                            </div>
+                        </div>
+
+                        <div class="wallet-note">
+                            Your AMEXA reward balance and recent coin activity.
+                        </div>
+                    </div>
+
+                    <div class="wallet-stats">
+                        <div class="wallet-stat">
+                            <span>Lifetime Earned</span>
+                            <b>+{{ wallet.lifetime_earned|default:0 }}</b>
+                        </div>
+
+                        <div class="wallet-stat">
+                            <span>Lifetime Spent</span>
+                            <b>-{{ wallet.lifetime_spent|default:0 }}</b>
+                        </div>
+                    </div>
+
+                    <div class="wallet-history-title">
+                        Recent Transactions
+                    </div>
+
+                    {% if wallet_transactions %}
+                    <div class="wallet-transactions">
+                        {% for tx in wallet_transactions %}
+                        <div class="wallet-tx">
+                            <div>
+                                <div class="wallet-tx-title">
+                                    {{ tx.get_reason_display }}
+                                </div>
+
+                                <div class="wallet-tx-sub">
+                                    {{ tx.description|default:"AMEXA Coins transaction" }}
+                                    · {{ tx.created_at|date:"d M Y, h:i A" }}
+                                </div>
+                            </div>
+
+                            <div class="wallet-tx-amount {% if tx.transaction_type == 'CREDIT' %}credit{% else %}debit{% endif %}">
+                                {% if tx.transaction_type == "CREDIT" %}+{% else %}-{% endif %}{{ tx.coins }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="wallet-transactions">
+                        <div class="wallet-empty">
+                            No coin transactions yet.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{% url 'monthly_packs' %}" class="menu-item">
+                <div class="menu-icon">📦</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Monthly Grocery Packs</div>
+                    <div class="menu-sub">Create and manage your monthly ration packs</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+
+            <a href="{% url 'cart' %}" class="menu-item">
+                <div class="menu-icon">🎟️</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Coupons & Offers</div>
+                    <div class="menu-sub">Apply available coupons from your cart</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>⚙️ Account & Support</h2>
+            <p>Account information and customer tools</p>
+        </div>
+
+        <div class="menu">
+            <a href="{% url 'orders' %}" class="menu-item">
+                <div class="menu-icon">🧾</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Order History</div>
+                    <div class="menu-sub">See previous and current orders</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+
+            <div class="menu-item">
+                <div class="menu-icon">🔔</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Notifications</div>
+                    <div class="menu-sub">Order updates, offers and reminders</div>
+                </div>
+                <div class="badge">Soon</div>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">💳</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Payments</div>
+                    <div class="menu-sub">Payment history and saved methods</div>
+                </div>
+                <div class="badge">Soon</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <a href="{% url 'help_support' %}" class="help-card">
+            <h3>💬 Need help?</h3>
+            <p>Orders, delivery, payments, cancellations, refunds and FAQs.</p>
+            <div class="help-icon">🎧</div>
+        </a>
+    </section>
+
+    <section class="section">
+        <div class="menu">
+            <a href="{% url 'about' %}" class="menu-item">
+                <div class="menu-icon">ℹ️</div>
+                <div class="menu-copy">
+                    <div class="menu-title">About AMEXA</div>
+                    <div class="menu-sub">Learn about AMEXA and our local shopping mission</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+
+            <a href="{% url 'privacy_policy' %}" class="menu-item">
+                <div class="menu-icon">🔐</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Privacy Policy</div>
+                    <div class="menu-sub">How customer information is handled</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+
+            <a href="{% url 'terms_conditions' %}" class="menu-item">
+                <div class="menu-icon">📄</div>
+                <div class="menu-copy">
+                    <div class="menu-title">Terms & Conditions</div>
+                    <div class="menu-sub">AMEXA customer service terms</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+        </div>
+    </section>
+
+    <a href="{% url 'logout' %}" class="logout">
+        🚪 Logout from AMEXA
+    </a>
+
+    <div class="footer">
+        AMEXA • SMART LOCAL SHOPPING
+    </div>
+</main>
+
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+    </a>
+
+    <a href="{% url 'nearby_shops' %}" class="nav">
+        <span class="nav-icon">🏪</span>
+        <span>Shops</span>
+    </a>
+
+    <a href="{% url 'categories' %}" class="nav">
+        <span class="nav-icon">🏷️</span>
+        <span>Categories</span>
+    </a>
+
+    <a href="{% url 'profile' %}" class="nav active">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+    </a>
+
+    <a href="{% url 'cart' %}" class="nav cart-nav">
+        <span class="nav-icon">🛒</span>
+        {% if cart_count %}
+        <span class="cart-count">{{ cart_count }}</span>
+        {% endif %}
+        <span>Cart</span>
+    </a>
+</nav>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const trigger = document.getElementById("walletTrigger");
+    const panel = document.getElementById("walletPanel");
+    const arrow = document.getElementById("walletArrow");
+
+    if(!trigger || !panel || !arrow){
+        return;
+    }
+
+    function setWalletOpen(openWallet){
+        if(openWallet){
+            panel.classList.add("open");
+            trigger.setAttribute("aria-expanded", "true");
+            arrow.style.transform = "rotate(90deg)";
+        }else{
+            panel.classList.remove("open");
+            trigger.setAttribute("aria-expanded", "false");
+            arrow.style.transform = "rotate(0deg)";
+        }
+    }
+
+    trigger.addEventListener("click", function(){
+        setWalletOpen(!panel.classList.contains("open"));
+    });
+
+    if(window.location.hash === "#walletPanel"){
+        setWalletOpen(true);
+
+        setTimeout(function(){
+            trigger.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+        }, 100);
+    }
+});
+</script>
+
+</body>
+</html>

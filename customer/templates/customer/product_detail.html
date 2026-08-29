@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} | AMEXA</title>
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+    <style>
+        *{box-sizing:border-box}
+        :root{--bg:#030615;--card:#0d1329;--card2:#111a35;--text:#fff;--muted:#9fa8c1;--cyan:#00e5ff;--purple:#762cff;--green:#19d98b;--red:#ff416c;--border:rgba(255,255,255,.1)}
+        body{margin:0;min-height:100vh;color:var(--text);font-family:"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(0,229,255,.07),transparent 28%),radial-gradient(circle at 90% 12%,rgba(118,44,255,.12),transparent 30%),linear-gradient(135deg,#02040d,#06091b 55%,#070316);overflow-x:hidden}
+        a{color:inherit;text-decoration:none}
+        button,input{font:inherit}
+        button{cursor:pointer}
+        .page{width:min(1080px,100%);margin:auto;padding:16px 16px 105px}
+        .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+        .top-left{display:flex;align-items:center;gap:10px}
+        .round{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid var(--border);position:relative}
+        .brand-title{font-weight:950;font-size:20px}.brand-title span{color:var(--cyan)}
+        .tiny{font-size:9px;color:var(--muted);margin-top:2px}
+        .badge{position:absolute;right:-5px;top:-5px;min-width:19px;height:19px;padding:0 5px;display:grid;place-items:center;border-radius:999px;background:#ff355f;font-size:9px;font-weight:900}
+        .message{padding:11px 13px;margin-bottom:12px;border-radius:12px;background:rgba(25,217,139,.08);border:1px solid rgba(25,217,139,.13);font-size:10px}
+        .product-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .panel{border-radius:22px;background:linear-gradient(145deg,rgba(19,27,58,.97),rgba(8,12,30,.98));border:1px solid rgba(255,255,255,.09);box-shadow:0 16px 45px rgba(0,0,0,.22)}
+        .image-panel{padding:14px}
+        .main-image{height:390px;display:grid;place-items:center;overflow:hidden;border-radius:18px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 68%)}
+        .main-image img{width:100%;height:100%;object-fit:contain;padding:12px}
+        .fallback{font-size:84px}
+        .info-panel{padding:20px}
+        .crumb{font-size:9px;font-weight:900;letter-spacing:.8px;color:#7cefff}
+        h1{margin:8px 0 5px;font-size:clamp(27px,4vw,40px);line-height:1.08}
+        .brand{font-size:10px;color:#a9b1c4}
+        .shop-card{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:15px 0;padding:12px;border-radius:14px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.1)}
+        .shop-card strong{font-size:11px}.shop-card p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.4}
+        .shop-link{flex:0 0 auto;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.07);font-size:8px;font-weight:900}
+        .price-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+        .price{font-size:29px;font-weight:950}.mrp{color:#7e879b;text-decoration:line-through;font-size:13px}
+        .discount{padding:5px 8px;border-radius:8px;background:rgba(25,217,139,.1);color:#bfffdc;font-size:9px;font-weight:900}
+        .stock{margin-top:9px;color:#bfffdc;font-size:10px}.stock.out{color:#ff9aaa}
+        .buy-box{margin-top:17px;padding:13px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+        .qty-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+        .qty-control{display:flex;align-items:center;gap:4px;padding:4px;border-radius:11px;background:#070b19;border:1px solid var(--border)}
+        .qty-control button{width:34px;height:34px;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-weight:900}
+        .qty-control input{width:44px;border:0;outline:0;text-align:center;background:transparent;color:#fff;font-weight:900}
+        .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .btn{min-height:46px;border:0;border-radius:12px;color:#fff;font-size:10px;font-weight:950}
+        .add{background:linear-gradient(135deg,#00aaff,#762cff)}.buy{background:linear-gradient(135deg,#14c98b,#04a96f)}
+        .disabled{width:100%;opacity:.45;cursor:not-allowed;background:rgba(255,255,255,.08)}
+        .delivery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+        .mini{padding:10px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+        .mini b{display:block;font-size:9px}.mini span{display:block;margin-top:4px;font-size:7px;color:var(--muted);line-height:1.4}
+        .section{margin-top:18px}.section-title{margin:0 0 10px;font-size:19px;font-weight:950}
+        .detail-box{padding:17px}.detail-box p{margin:0;color:#c7ccda;font-size:11px;line-height:1.7;white-space:pre-line}
+        .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+        .detail-item{padding:10px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+        .detail-item span{display:block;color:var(--muted);font-size:7px}.detail-item strong{display:block;margin-top:3px;font-size:9px}
+        .product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .related{overflow:hidden;border-radius:16px;background:rgba(12,18,42,.92);border:1px solid rgba(255,255,255,.08)}
+        .related-img{height:125px;display:grid;place-items:center;background:radial-gradient(circle,rgba(255,255,255,.07),transparent 70%)}
+        .related-img img{width:100%;height:100%;object-fit:contain;padding:8px}
+        .related-body{padding:10px}.related-body b{display:block;font-size:10px;min-height:28px}
+        .related-shop{margin-top:3px;color:var(--muted);font-size:7px}.related-price{margin-top:6px;font-size:12px;font-weight:950}
+        .related-open{display:flex;align-items:center;justify-content:center;width:100%;min-height:32px;margin-top:8px;border-radius:8px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);color:#8fefff;font-size:8px;font-weight:900}
+        .related-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.related-actions form{margin:0}
+        .related-add,.related-buy{width:100%;min-height:33px;border:0;border-radius:8px;color:#fff;font-size:8px;font-weight:900}
+        .related-add{background:linear-gradient(135deg,#00aaff,#762cff)}.related-buy{background:linear-gradient(135deg,#14c98b,#04a96f)}
+        .out-btn{width:100%;min-height:33px;margin-top:7px;border:0;border-radius:8px;background:rgba(255,255,255,.06);color:#81899b;font-size:8px;font-weight:900}
+        .bottom-nav{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);width:min(850px,calc(100% - 16px));z-index:1000;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:7px;border-radius:22px;background:rgba(7,12,29,.95);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(18px);box-shadow:0 15px 50px rgba(0,0,0,.5)}
+        .nav{position:relative;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px;color:#a9b0c2;font-size:8px;font-weight:800}.nav i{font-style:normal;font-size:19px}
+        @media(max-width:800px){.product-layout{grid-template-columns:1fr}.main-image{height:320px}.product-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:520px){.page{padding:12px 10px 95px}.main-image{height:250px}.info-panel{padding:15px}.actions{grid-template-columns:1fr 1fr}.delivery,.detail-grid{grid-template-columns:1fr}.product-grid{gap:8px}.shop-card{align-items:flex-start}.shop-card p{max-width:190px}}
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <header class="topbar">
+        <div class="top-left">
+            <a href="javascript:history.back()" class="round">←</a>
+            <div>
+                <div class="brand-title">AM<span>E</span>XA</div>
+                <div class="tiny">Product details</div>
+            </div>
+        </div>
+
+        <a href="{% url 'cart' %}" class="round">
+            🛒
+            {% if cart_count %}
+                <span class="badge">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+    </header>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="product-layout">
+
+        <section class="panel image-panel">
+            <div class="main-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <div class="fallback">🛍️</div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="panel info-panel">
+            <div class="crumb">{{ product.category.name|default:"AMEXA PRODUCT" }}</div>
+            <h1>{{ product.name }}</h1>
+
+            {% if product.brand %}
+                <div class="brand">Brand: {{ product.brand.name }}</div>
+            {% endif %}
+
+            <div class="shop-card">
+                <div>
+                    <strong>🏪 {{ product.shop.name }}</strong>
+                    <p>{{ product.shop.address }}</p>
+                </div>
+                <a href="{% url 'shop_detail' product.shop.slug %}" class="shop-link">View Store</a>
+            </div>
+
+            <div class="price-row">
+                <span class="price">₹{{ product.price }}</span>
+
+                {% if product.mrp %}
+                    <span class="mrp">₹{{ product.mrp }}</span>
+                {% endif %}
+
+                {% if product.discount_percentage %}
+                    <span class="discount">{{ product.discount_percentage }}% OFF</span>
+                {% endif %}
+            </div>
+
+            {% if product.stock_quantity > 0 %}
+                <div class="stock">✓ In stock · {{ product.stock_quantity }} available</div>
+            {% else %}
+                <div class="stock out">Out of stock</div>
+            {% endif %}
+
+            <div class="buy-box">
+                {% if product.stock_quantity > 0 %}
+                    <form method="post" action="{% url 'cart_add' product.id %}">
+                        {% csrf_token %}
+
+                        <div class="qty-line">
+                            <strong style="font-size:10px;">Quantity</strong>
+
+                            <div class="qty-control">
+                                <button type="button" onclick="changeQty(-1)">−</button>
+                                <input id="qty" name="quantity" type="number" value="1" min="1" max="{{ product.stock_quantity }}" readonly>
+                                <button type="button" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="btn add">🛒 Add to Cart</button>
+                            <button type="submit" name="buy_now" value="1" class="btn buy">⚡ Buy Now</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn disabled" disabled>Currently Unavailable</button>
+                {% endif %}
+            </div>
+
+            <div class="delivery">
+                <div class="mini"><b>⚡ Fast delivery</b><span>From your nearby selected store.</span></div>
+                <div class="mini"><b>🔒 Secure checkout</b><span>Payment options are shown at checkout.</span></div>
+                <div class="mini"><b>📦 Order tracking</b><span>Track order status after placing it.</span></div>
+            </div>
+        </section>
+
+    </div>
+
+    <section class="section">
+        <h2 class="section-title">Product Details</h2>
+        <div class="panel detail-box">
+            {% if product.description %}
+                <p>{{ product.description }}</p>
+            {% else %}
+                <p>Product information will be updated by the store.</p>
+            {% endif %}
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span>Category</span>
+                    <strong>{{ product.category.name|default:"—" }}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Brand</span>
+                    <strong>{% if product.brand %}{{ product.brand.name }}{% else %}—{% endif %}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Sold by</span>
+                    <strong>{{ product.shop.name }}</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if related_products %}
+        <section class="section">
+            <h2 class="section-title">You may also like</h2>
+
+            <div class="product-grid">
+                {% for related in related_products %}
+                    <article class="related">
+
+                        <a href="{% url 'product_detail' related.slug %}" class="related-img">
+                            {% if related.image %}
+                                <img src="{{ related.image.url }}" alt="{{ related.name }}">
+                            {% else %}
+                                <span style="font-size:40px;">🛍️</span>
+                            {% endif %}
+                        </a>
+
+                        <div class="related-body">
+                            <a href="{% url 'product_detail' related.slug %}">
+                                <b>{{ related.name }}</b>
+                            </a>
+
+                            <div class="related-shop">🏪 {{ related.shop.name }}</div>
+                            <div class="related-price">₹{{ related.price }}</div>
+
+                            <a href="{% url 'product_detail' related.slug %}" class="related-open">
+                                👁 Open Product
+                            </a>
+
+                            {% if related.stock_quantity > 0 %}
+                                <div class="related-actions">
+                                    <form method="post" action="{% url 'cart_add' related.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <input type="hidden" name="next" value="{{ request.path }}">
+                                        <button type="submit" class="related-add">🛒 Add</button>
+                                    </form>
+
+                                    <form method="post" action="{% url 'cart_add' related.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <input type="hidden" name="buy_now" value="1">
+                                        <button type="submit" class="related-buy">⚡ Buy</button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <button type="button" class="out-btn" disabled>Out of Stock</button>
+                            {% endif %}
+                        </div>
+
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+</div>
+
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav"><i>🏠</i>Home</a>
+    <a href="{% url 'nearby_shops' %}" class="nav"><i>🏪</i>Shops</a>
+    <a href="{% url 'categories' %}" class="nav"><i>🏷️</i>Categories</a>
+    <a href="{% url 'profile' %}" class="nav"><i>👤</i>Profile</a>
+    <a href="{% url 'cart' %}" class="nav">
+        <i>🛒</i>
+        {% if cart_count %}<span class="badge">{{ cart_count }}</span>{% endif %}
+        Cart
+    </a>
+</nav>
+
+<script>
+function changeQty(amount){
+    const input = document.getElementById("qty");
+    if(!input) return;
+
+    const min = parseInt(input.min || "1", 10);
+    const max = parseInt(input.max || "999", 10);
+    let value = parseInt(input.value || "1", 10) + amount;
+
+    if(value < min) value = min;
+    if(value > max) value = max;
+
+    input.value = value;
+}
+</script>
+
+</body>
+</html>

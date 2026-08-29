@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Shops | AMEXA</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+</head>
+<body>
+    <div class="page-shell">
+        <div class="section-card">
+            <div class="page-head">
+                <h1>Nearby Shops</h1>
+                <a class="btn small" href="{% url 'categories' %}">Browse Categories</a>
+            </div>
+            {% if shops %}
+                <div class="stack-list">
+                    {% for shop in shops %}
+                        <article class="listing-card">
+                            <div>
+                                <h3>{{ shop.name }}</h3>
+                                <p class="subtle">{{ shop.address }}</p>
+                                <p class="meta">{{ shop.rating }} ★ · {{ shop.distance_km }} km away</p>
+                                <p class="meta">Phone: {{ shop.phone }}</p>
+                                <p class="meta">{% if shop.is_open %}Open now{% else %}Closed{% endif %}</p>
+                            </div>
+                            <a class="btn small" href="{% url 'shop_detail' shop.slug %}">View Shop</a>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="subtle">No shops available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

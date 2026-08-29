@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AMEXA{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+</head>
+<body>
+    <div class="page-shell">
+        {% block content %}{% endblock %}
+        <div class="bottom-nav">
+            <a class="nav-item {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">🏠 Home</a>
+            <a class="nav-item {% if '/shops/' in request.path or '/categories/' in request.path or '/products/' in request.path %}active{% endif %}" href="{% url 'nearby_shops' %}">🔎 Search</a>
+            <a class="nav-item {% if '/cart/' in request.path %}active{% endif %}" href="{% url 'cart' %}">🛒 Cart</a>
+            <a class="nav-item {% if '/orders' in request.path %}active{% endif %}" href="{% url 'orders' %}">📦 Orders</a>
+            <a class="nav-item {% if '/profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">👤 Profile</a>
+        </div>
+    </div>
+</body>
+</html>

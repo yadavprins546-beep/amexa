@@ -1,0 +1,1822 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Checkout | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+
+        * { box-sizing: border-box; }
+
+        :root{
+
+            --bg:#030615;
+
+            --card:#0b1025;
+
+            --white:#ffffff;
+
+            --muted:#aab1c7;
+
+            --cyan:#00e5ff;
+
+            --purple:#762cff;
+
+            --green:#19d98b;
+
+            --red:#ff416c;
+
+            --yellow:#ffd84d;
+
+            --border:rgba(255,255,255,.10);
+
+        }
+
+        body{
+
+            margin:0;
+
+            min-height:100vh;
+
+            color:var(--white);
+
+            font-family:"Segoe UI",Inter,Arial,sans-serif;
+
+            background:
+
+                radial-gradient(circle at 8% 0%,rgba(0,229,255,.08),transparent 28%),
+
+                radial-gradient(circle at 92% 16%,rgba(118,44,255,.12),transparent 30%),
+
+                linear-gradient(135deg,#02040e,#050817 55%,#030313);
+
+        }
+
+        body::before{
+
+            content:"AMEXA";
+
+            position:fixed;
+
+            left:50%;
+
+            bottom:90px;
+
+            transform:translateX(-50%) rotate(-11deg);
+
+            font-size:clamp(80px,16vw,190px);
+
+            font-weight:1000;
+
+            letter-spacing:12px;
+
+            color:rgba(255,255,255,.018);
+
+            pointer-events:none;
+
+            z-index:-1;
+
+            white-space:nowrap;
+
+        }
+
+        a{color:inherit;text-decoration:none}
+
+        button,input{font:inherit}
+
+        .page{
+
+            width:min(1140px,100%);
+
+            margin:auto;
+
+            padding:20px 20px 70px;
+
+        }
+
+        /* TOP */
+
+        .topbar{
+
+            display:flex;
+
+            align-items:center;
+
+            justify-content:space-between;
+
+            gap:12px;
+
+            margin-bottom:18px;
+
+        }
+
+        .title-wrap h1{
+
+            margin:0;
+
+            font-size:30px;
+
+            font-weight:950;
+
+        }
+
+        .title-wrap p{
+
+            margin:5px 0 0;
+
+            color:var(--muted);
+
+            font-size:11px;
+
+        }
+
+        .back-btn{
+
+            padding:10px 13px;
+
+            border-radius:12px;
+
+            background:rgba(255,255,255,.06);
+
+            border:1px solid rgba(255,255,255,.10);
+
+            color:#dfe4f4;
+
+            font-size:10px;
+
+            font-weight:900;
+
+        }
+
+        .alert{
+
+            margin-bottom:12px;
+
+            padding:11px 13px;
+
+            border-radius:12px;
+
+            background:rgba(0,229,255,.08);
+
+            border:1px solid rgba(0,229,255,.12);
+
+            color:#dffcff;
+
+            font-size:10px;
+
+        }
+
+        .checkout-layout{
+
+            display:grid;
+
+            grid-template-columns:minmax(0,1.5fr) minmax(320px,.75fr);
+
+            gap:16px;
+
+            align-items:start;
+
+        }
+
+        .checkout-left{
+
+            display:grid;
+
+            gap:14px;
+
+        }
+
+        .panel{
+
+            padding:16px;
+
+            border-radius:22px;
+
+            background:
+
+                radial-gradient(circle at 95% 0%,rgba(0,229,255,.05),transparent 25%),
+
+                linear-gradient(145deg,rgba(16,23,47,.97),rgba(7,11,27,.97));
+
+            border:1px solid rgba(255,255,255,.09);
+
+            box-shadow:0 16px 45px rgba(0,0,0,.18);
+
+        }
+
+        .panel-title{
+
+            display:flex;
+
+            align-items:flex-start;
+
+            justify-content:space-between;
+
+            gap:10px;
+
+            margin-bottom:12px;
+
+        }
+
+        .panel-title h2{
+
+            margin:0;
+
+            font-size:18px;
+
+            font-weight:950;
+
+        }
+
+        .panel-title p{
+
+            margin:4px 0 0;
+
+            color:#9fa8bd;
+
+            font-size:9px;
+
+        }
+
+        .small-link{
+
+            color:#7defff;
+
+            font-size:9px;
+
+            font-weight:900;
+
+            white-space:nowrap;
+
+        }
+
+        /* ADDRESS */
+
+        .address-list{
+
+            display:grid;
+
+            gap:10px;
+
+        }
+
+        .address-option{
+
+            position:relative;
+
+            display:block;
+
+            cursor:pointer;
+
+        }
+
+        .address-option input{
+
+            position:absolute;
+
+            opacity:0;
+
+            pointer-events:none;
+
+        }
+
+        .address-box{
+
+            display:flex;
+
+            gap:11px;
+
+            padding:13px;
+
+            border-radius:16px;
+
+            background:rgba(255,255,255,.035);
+
+            border:1px solid rgba(255,255,255,.08);
+
+            transition:.2s;
+
+        }
+
+        .address-option input:checked + .address-box{
+
+            border-color:rgba(0,229,255,.46);
+
+            background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(118,44,255,.07));
+
+            box-shadow:0 0 0 3px rgba(0,229,255,.035);
+
+        }
+
+        .address-icon{
+
+            width:42px;
+
+            height:42px;
+
+            flex:0 0 auto;
+
+            display:grid;
+
+            place-items:center;
+
+            border-radius:13px;
+
+            background:rgba(0,229,255,.08);
+
+            font-size:20px;
+
+        }
+
+        .address-main{
+
+            min-width:0;
+
+            flex:1;
+
+        }
+
+        .address-name{
+
+            font-size:11px;
+
+            font-weight:950;
+
+        }
+
+        .default-badge{
+
+            display:inline-block;
+
+            margin-left:6px;
+
+            padding:3px 6px;
+
+            border-radius:6px;
+
+            background:rgba(25,217,139,.11);
+
+            color:#bfffdc;
+
+            font-size:7px;
+
+            font-weight:950;
+
+        }
+
+        .address-text{
+
+            margin-top:4px;
+
+            color:#aeb6c9;
+
+            font-size:9px;
+
+            line-height:1.45;
+
+        }
+
+        .address-check{
+
+            align-self:center;
+
+            width:22px;
+
+            height:22px;
+
+            display:grid;
+
+            place-items:center;
+
+            border-radius:50%;
+
+            border:1px solid rgba(255,255,255,.16);
+
+            color:transparent;
+
+            font-size:10px;
+
+        }
+
+        .address-option input:checked + .address-box .address-check{
+
+            background:linear-gradient(135deg,#00b9ff,#762cff);
+
+            color:white;
+
+            border-color:transparent;
+
+        }
+
+        .add-address-btn{
+
+            display:inline-flex;
+
+            margin-top:11px;
+
+            min-height:38px;
+
+            padding:0 12px;
+
+            align-items:center;
+
+            justify-content:center;
+
+            border-radius:10px;
+
+            background:rgba(0,229,255,.07);
+
+            border:1px solid rgba(0,229,255,.12);
+
+            color:#82f0ff;
+
+            font-size:9px;
+
+            font-weight:900;
+
+        }
+
+        /* SHOP GROUPS */
+
+        .shop-list{
+
+            display:grid;
+
+            gap:10px;
+
+        }
+
+        .shop-box{
+
+            overflow:hidden;
+
+            border-radius:16px;
+
+            background:rgba(255,255,255,.03);
+
+            border:1px solid rgba(255,255,255,.07);
+
+        }
+
+        .shop-head{
+
+            display:flex;
+
+            align-items:center;
+
+            justify-content:space-between;
+
+            gap:10px;
+
+            padding:11px 12px;
+
+            border-bottom:1px solid rgba(255,255,255,.06);
+
+        }
+
+        .shop-name{
+
+            font-size:11px;
+
+            font-weight:950;
+
+        }
+
+        .shop-meta{
+
+            margin-top:3px;
+
+            color:#98a2b8;
+
+            font-size:8px;
+
+        }
+
+        .shop-total{
+
+            color:#dfe4f4;
+
+            font-size:10px;
+
+            font-weight:900;
+
+        }
+
+        .shop-items{
+
+            padding:9px 12px 11px;
+
+        }
+
+        .shop-item{
+
+            display:flex;
+
+            align-items:center;
+
+            justify-content:space-between;
+
+            gap:10px;
+
+            margin-top:7px;
+
+            color:#aeb6c9;
+
+            font-size:9px;
+
+        }
+
+        .shop-item:first-child{margin-top:0}
+
+        .shop-item strong{
+
+            color:#edf2fb;
+
+            font-size:9px;
+
+        }
+
+        /* PAYMENT */
+
+        .payment-grid{
+
+            display:grid;
+
+            grid-template-columns:repeat(2,1fr);
+
+            gap:9px;
+
+        }
+
+        .payment-option{
+
+            position:relative;
+
+            display:block;
+
+            cursor:pointer;
+
+        }
+
+        .payment-option input{
+
+            position:absolute;
+
+            opacity:0;
+
+            pointer-events:none;
+
+        }
+
+        .payment-box{
+
+            min-height:76px;
+
+            padding:12px;
+
+            border-radius:15px;
+
+            background:rgba(255,255,255,.035);
+
+            border:1px solid rgba(255,255,255,.08);
+
+            transition:.2s;
+
+        }
+
+        .payment-option input:checked + .payment-box{
+
+            border-color:rgba(0,229,255,.45);
+
+            background:linear-gradient(135deg,rgba(0,229,255,.07),rgba(118,44,255,.07));
+
+        }
+
+        .payment-icon{
+
+            font-size:20px;
+
+        }
+
+        .payment-name{
+
+            margin-top:7px;
+
+            font-size:10px;
+
+            font-weight:950;
+
+        }
+
+        .payment-sub{
+
+            margin-top:3px;
+
+            color:#919aaf;
+
+            font-size:8px;
+
+            line-height:1.35;
+
+        }
+
+        .gateway-note{
+
+            margin-top:10px;
+
+            padding:10px;
+
+            border-radius:11px;
+
+            background:rgba(255,216,77,.06);
+
+            border:1px solid rgba(255,216,77,.10);
+
+            color:#ffe69d;
+
+            font-size:8px;
+
+            line-height:1.45;
+
+        }
+
+        /* SUMMARY */
+
+        .summary-card{
+
+            position:sticky;
+
+            top:14px;
+
+            padding:17px;
+
+            border-radius:22px;
+
+            background:
+
+                radial-gradient(circle at 95% 0%,rgba(118,44,255,.10),transparent 28%),
+
+                linear-gradient(145deg,rgba(16,23,47,.98),rgba(7,11,27,.98));
+
+            border:1px solid rgba(255,255,255,.10);
+
+            box-shadow:0 18px 55px rgba(0,0,0,.24);
+
+        }
+
+        .summary-card h2{
+
+            margin:0;
+
+            font-size:18px;
+
+            font-weight:950;
+
+        }
+
+        .summary-card > p{
+
+            margin:4px 0 14px;
+
+            color:#9fa8bd;
+
+            font-size:9px;
+
+            line-height:1.45;
+
+        }
+
+        .bill-row{
+
+            display:flex;
+
+            justify-content:space-between;
+
+            gap:12px;
+
+            margin-top:10px;
+
+            color:#aeb6c9;
+
+            font-size:10px;
+
+        }
+
+        .bill-row strong{color:#eef2fb}
+
+        .bill-total{
+
+            margin-top:14px;
+
+            padding-top:14px;
+
+            border-top:1px dashed rgba(255,255,255,.11);
+
+            display:flex;
+
+            justify-content:space-between;
+
+            align-items:flex-end;
+
+            gap:12px;
+
+        }
+
+        .bill-total span{
+
+            font-size:11px;
+
+            font-weight:900;
+
+        }
+
+        .bill-total strong{
+
+            font-size:24px;
+
+            font-weight:1000;
+
+        }
+
+        .split-note{
+
+            margin-top:13px;
+
+            padding:10px;
+
+            border-radius:11px;
+
+            background:rgba(0,229,255,.06);
+
+            border:1px solid rgba(0,229,255,.10);
+
+            color:#b9f8ff;
+
+            font-size:8px;
+
+            line-height:1.5;
+
+        }
+
+        .place-btn{
+
+            width:100%;
+
+            min-height:52px;
+
+            margin-top:14px;
+
+            border:0;
+
+            border-radius:14px;
+
+            color:white;
+
+            font-size:11px;
+
+            font-weight:950;
+
+            background:linear-gradient(135deg,#009cff,#762cff);
+
+            box-shadow:0 10px 30px rgba(80,50,255,.22);
+
+        }
+
+        .place-btn:disabled{
+
+            opacity:.45;
+
+            cursor:not-allowed;
+
+        }
+
+        .secure-note{
+
+            margin-top:10px;
+
+            text-align:center;
+
+            color:#778197;
+
+            font-size:8px;
+
+        }
+
+        .empty-address{
+
+            padding:18px;
+
+            text-align:center;
+
+            border-radius:15px;
+
+            background:rgba(255,255,255,.035);
+
+            border:1px dashed rgba(255,255,255,.12);
+
+            color:#aab1c7;
+
+            font-size:9px;
+
+            line-height:1.5;
+
+        }
+
+        @media(max-width:850px){
+
+            .checkout-layout{
+
+                grid-template-columns:1fr;
+
+            }
+
+            .summary-card{
+
+                position:static;
+
+            }
+
+        }
+
+        @media(max-width:600px){
+
+            .page{
+
+                padding:14px 10px 40px;
+
+            }
+
+            .title-wrap h1{
+
+                font-size:25px;
+
+            }
+
+            .payment-grid{
+
+                grid-template-columns:1fr;
+
+            }
+
+        }
+
+    
+        /* =========================================================
+           AMEXA CHECKOUT PREMIUM POLISH
+        ========================================================= */
+        .panel,
+        .summary-card,
+        .address-box,
+        .payment-box,
+        .shop-box{
+            transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+        }
+
+        .panel:hover{
+            border-color:rgba(0,229,255,.14);
+        }
+
+        .address-option:hover .address-box,
+        .payment-option:hover .payment-box{
+            transform:translateY(-2px);
+            border-color:rgba(0,229,255,.18);
+        }
+
+        .address-option input:checked + .address-box,
+        .payment-option input:checked + .payment-box{
+            box-shadow:
+                0 10px 28px rgba(0,0,0,.20),
+                inset 0 1px 0 rgba(255,255,255,.06);
+        }
+
+        .address-icon,
+        .payment-icon{
+            filter:drop-shadow(0 7px 7px rgba(0,0,0,.25));
+        }
+
+        .place-btn{
+            position:relative;
+            overflow:hidden;
+            transition:transform .18s ease,filter .18s ease;
+        }
+
+        .place-btn:hover:not(:disabled){
+            transform:translateY(-2px);
+            filter:brightness(1.07);
+        }
+
+        .place-btn::before{
+            content:"";
+            position:absolute;
+            top:0;
+            left:-55%;
+            width:35%;
+            height:100%;
+            background:linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,.18),
+                transparent
+            );
+            transform:skewX(-18deg);
+            animation:checkoutShine 3.4s ease-in-out infinite;
+        }
+
+        @keyframes checkoutShine{
+            0%,65%{left:-55%}
+            100%{left:125%}
+        }
+
+        .checkout-coupon{
+            margin-top:12px;
+            padding:11px;
+            border-radius:12px;
+            background:rgba(25,217,139,.07);
+            border:1px solid rgba(25,217,139,.12);
+        }
+
+        .checkout-coupon-top{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+        }
+
+        .checkout-coupon-code{
+            color:#bfffdc;
+            font-size:9px;
+            font-weight:950;
+        }
+
+        .checkout-coupon-save{
+            margin-top:3px;
+            color:#8fb7a4;
+            font-size:8px;
+        }
+
+        .coupon-change{
+            color:#76efff;
+            font-size:8px;
+            font-weight:900;
+        }
+
+        .discount-bill-row{
+            color:#9ff0c3;
+        }
+
+        .discount-bill-row strong{
+            color:#aaffcf;
+        }
+
+        @media(max-width:600px){
+            .summary-card{
+                margin-top:2px;
+            }
+
+            .place-btn{
+                min-height:54px;
+                font-size:12px;
+            }
+        }
+
+    
+        /* =========================================================
+           DELIVERY LOCATION STATUS
+        ========================================================= */
+        .gps-status{
+            margin-top:8px;
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            padding:5px 7px;
+            border-radius:8px;
+            font-size:7px;
+            font-weight:900;
+        }
+
+        .gps-status.ok{
+            color:#bfffdc;
+            background:rgba(25,217,139,.08);
+            border:1px solid rgba(25,217,139,.12);
+        }
+
+        .gps-status.missing{
+            color:#ffd0da;
+            background:rgba(255,65,108,.08);
+            border:1px solid rgba(255,65,108,.12);
+        }
+
+        .gps-edit-link{
+            display:inline-flex;
+            margin-top:7px;
+            color:#7defff;
+            font-size:8px;
+            font-weight:900;
+        }
+
+
+        /* AMEXA COINS */
+        .coins-box{
+            margin-top:12px;
+            padding:13px;
+            border-radius:15px;
+            background:linear-gradient(135deg,rgba(255,216,77,.09),rgba(118,44,255,.08));
+            border:1px solid rgba(255,216,77,.16);
+        }
+        .coins-head{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:center;
+        }
+        .coins-title{font-size:10px;font-weight:950;color:#fff1a8}
+        .coins-balance{font-size:9px;font-weight:950;color:#ffd84d}
+        .coins-note{margin-top:4px;color:#9fa8bd;font-size:8px;line-height:1.45}
+        .coins-input-row{display:flex;gap:8px;margin-top:10px}
+        .coins-input{
+            flex:1;min-width:0;height:38px;padding:0 11px;border-radius:10px;
+            border:1px solid rgba(255,255,255,.11);outline:none;
+            background:rgba(0,0,0,.20);color:white;font-size:10px;font-weight:850;
+        }
+        .coins-max{
+            min-width:64px;border:0;border-radius:10px;padding:0 11px;
+            background:rgba(255,216,77,.12);color:#ffe785;font-size:9px;font-weight:950;
+            cursor:pointer;
+        }
+        .coins-saving{display:none;margin-top:8px;color:#bfffdc;font-size:8px;font-weight:900}
+        .coin-bill-row{color:#ffe785}
+        .coin-bill-row strong{color:#ffe785}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="topbar">
+
+        <div class="title-wrap">
+
+            <h1>💳 Checkout</h1>
+
+            <p>Choose address, review shop-wise order and select payment.</p>
+
+        </div>
+
+        <a href="{% url 'cart' %}" class="back-btn">
+
+            ← Back to Cart
+
+        </a>
+
+    </div>
+
+
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert">
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="checkout-layout">
+
+            <!-- LEFT -->
+
+            <div class="checkout-left">
+
+                <!-- ADDRESS -->
+
+                <section class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h2>📍 Delivery Address</h2>
+
+                            <p>Select where this order should be delivered.</p>
+
+                        </div>
+
+                        <a href="{% url 'addresses' %}" class="small-link">
+
+                            Manage →
+
+                        </a>
+
+                    </div>
+
+
+
+                    {% if addresses %}
+
+                        <div class="address-list">
+
+                            {% for address in addresses %}
+
+                                <label class="address-option">
+
+                                    <input
+
+                                        type="radio"
+
+                                        name="address_id"
+
+                                        value="{{ address.id }}"
+
+                                        {% if address.is_default %}checked{% endif %}
+
+                                        required
+
+                                    >
+
+                                    <div class="address-box">
+
+                                        <div class="address-icon">
+
+                                            {% if address.address_type == "Work" %}
+
+                                                💼
+
+                                            {% elif address.address_type == "Other" %}
+
+                                                📌
+
+                                            {% else %}
+
+                                                🏠
+
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="address-main">
+
+                                            <div class="address-name">
+
+                                                {{ address.address_type }}
+
+                                                {% if address.is_default %}
+
+                                                    <span class="default-badge">
+
+                                                        DEFAULT
+
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                            <div class="address-text">
+
+                                                <strong style="color:#eef2fb;">
+
+                                                    {{ address.full_name }}
+
+                                                </strong>
+
+                                                <br>
+
+                                                {{ address.address_line }},
+
+                                                {{ address.city }},
+
+                                                {{ address.state }} -
+
+                                                {{ address.pincode }}
+
+                                                <br>
+
+                                                📱 {{ address.mobile }}
+
+                                                {% if address.latitude and address.longitude and address.latitude != 0 and address.longitude != 0 %}
+                                                    <div class="gps-status ok">
+                                                        📍 Exact GPS location attached
+                                                    </div>
+                                                {% else %}
+                                                    <div class="gps-status missing">
+                                                        ⚠️ Current location not attached
+                                                    </div>
+
+                                                    <a
+                                                        href="{% url 'edit_address' address.pk %}"
+                                                        class="gps-edit-link"
+                                                    >
+                                                        Add Current Location →
+                                                    </a>
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="address-check">
+
+                                            ✓
+
+                                        </div>
+
+                                    </div>
+
+                                </label>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <a href="{% url 'add_address' %}" class="add-address-btn">
+
+                            + Add New Address
+
+                        </a>
+
+                    {% else %}
+
+                        <div class="empty-address">
+
+                            No delivery address is available yet.
+
+                            <br><br>
+
+                            <a
+
+                                href="{% url 'add_address' %}"
+
+                                style="color:#82f0ff;font-weight:900;">
+
+                                + Add Delivery Address
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+                </section>
+
+
+
+                <!-- SHOP ORDER SUMMARY -->
+
+                <section class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h2>🏪 Shop-wise Order</h2>
+
+                            <p>Your checkout will be split automatically by shop.</p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="shop-list">
+
+                        {% for group in shop_groups %}
+
+                            <div class="shop-box">
+
+                                <div class="shop-head">
+
+                                    <div>
+
+                                        <div class="shop-name">
+
+                                            {{ group.shop.name }}
+
+                                        </div>
+
+                                        <div class="shop-meta">
+
+                                            {{ group.items|length }} product line(s)
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="shop-total">
+
+                                        ₹{{ group.total }}
+
+                                    </div>
+
+                                </div>
+
+                                <div class="shop-items">
+
+                                    {% for item in group.items %}
+
+                                        <div class="shop-item">
+
+                                            <span>
+
+                                                {{ item.product.name }}
+
+                                                × {{ item.quantity }}
+
+                                            </span>
+
+                                            <strong>
+
+                                                ₹{{ item.line_total }}
+
+                                            </strong>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                    <div class="shop-item" style="margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.07);">
+
+                                        <span>Delivery + Platform</span>
+
+                                        <strong>
+
+                                            ₹{{ group.delivery_fee|add:group.platform_fee }}
+
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% empty %}
+
+                            <div class="empty-address">
+
+                                No shop items found in checkout.
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- PAYMENT -->
+
+                <section class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h2>💳 Payment Method</h2>
+
+                            <p>Select how you want to pay.</p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="payment-grid">
+
+                        <label class="payment-option">
+
+                            <input
+
+                                type="radio"
+
+                                name="payment_method"
+
+                                value="COD"
+
+                                checked
+
+                            >
+
+                            <div class="payment-box">
+
+                                <div class="payment-icon">💵</div>
+
+                                <div class="payment-name">
+
+                                    Cash on Delivery
+
+                                </div>
+
+                                <div class="payment-sub">
+
+                                    Pay when your order arrives.
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+
+                        <label class="payment-option">
+
+                            <input
+
+                                type="radio"
+
+                                name="payment_method"
+
+                                value="UPI"
+
+                            >
+
+                            <div class="payment-box">
+
+                                <div class="payment-icon">📲</div>
+
+                                <div class="payment-name">
+
+                                    UPI
+
+                                </div>
+
+                                <div class="payment-sub">
+
+                                    Pay using a supported UPI app.
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+
+                        <label class="payment-option">
+
+                            <input
+
+                                type="radio"
+
+                                name="payment_method"
+
+                                value="CARD"
+
+                            >
+
+                            <div class="payment-box">
+
+                                <div class="payment-icon">💳</div>
+
+                                <div class="payment-name">
+
+                                    Card
+
+                                </div>
+
+                                <div class="payment-sub">
+
+                                    Debit or credit card.
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+
+                        <label class="payment-option">
+
+                            <input
+
+                                type="radio"
+
+                                name="payment_method"
+
+                                value="NETBANKING"
+
+                            >
+
+                            <div class="payment-box">
+
+                                <div class="payment-icon">🏦</div>
+
+                                <div class="payment-name">
+
+                                    Net Banking
+
+                                </div>
+
+                                <div class="payment-sub">
+
+                                    Pay using internet banking.
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+
+
+                        <label class="payment-option">
+
+                            <input
+
+                                type="radio"
+
+                                name="payment_method"
+
+                                value="WALLET"
+
+                            >
+
+                            <div class="payment-box">
+
+                                <div class="payment-icon">👛</div>
+
+                                <div class="payment-name">
+
+                                    Wallet
+
+                                </div>
+
+                                <div class="payment-sub">
+
+                                    Wallet support can be connected later.
+
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+
+
+                    <div class="gateway-note">
+
+                        ⚠️ COD is fully usable with the current backend.
+
+                        Online payment options are prepared in the checkout flow,
+
+                        but a real payment gateway must be connected before live Play Store payments.
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+
+            <!-- RIGHT SUMMARY -->
+
+            <aside class="summary-card">
+
+                <h2>
+
+                    Order Summary
+
+                </h2>
+
+                <p>
+
+                    Review charges, coupon savings and the final payable amount.
+
+                </p>
+
+
+
+                <div class="bill-row">
+
+                    <span>Products subtotal</span>
+
+                    <strong>₹{{ subtotal }}</strong>
+
+                </div>
+
+                <div class="bill-row">
+
+                    <span>Delivery fee</span>
+
+                    <strong>₹{{ delivery_fee }}</strong>
+
+                </div>
+
+                <div class="bill-row">
+
+                    <span>Platform fee</span>
+
+                    <strong>₹{{ platform_fee }}</strong>
+
+                </div>
+
+                {% if tax_amount %}
+
+                    <div class="bill-row">
+
+                        <span>Tax</span>
+
+                        <strong>₹{{ tax_amount }}</strong>
+
+                    </div>
+
+                {% endif %}
+                {% if applied_coupon %}
+                    <div class="checkout-coupon">
+                        <div class="checkout-coupon-top">
+                            <div>
+                                <div class="checkout-coupon-code">
+                                    🎟️ {{ applied_coupon.code }} APPLIED
+                                </div>
+                                <div class="checkout-coupon-save">
+                                    {% if discount_amount %}
+                                        Coupon saving: ₹{{ discount_amount }}
+                                    {% else %}
+                                        Coupon is attached to this checkout.
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <a href="{% url 'cart' %}" class="coupon-change">
+                                Change
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if discount_amount %}
+                    <div class="bill-row discount-bill-row">
+                        <span>Coupon discount</span>
+                        <strong>− ₹{{ discount_amount }}</strong>
+                    </div>
+                {% endif %}
+
+                <div class="coins-box">
+                    <div class="coins-head">
+                        <div class="coins-title">🪙 Use AMEXA Coins</div>
+                        <div class="coins-balance">{{ available_coins|default:0 }} Coins</div>
+                    </div>
+                    <div class="coins-note">
+                        1 Coin = ₹1 · Coins apply to products only, not delivery/platform fees.
+                        Maximum usable now: {{ max_coin_usable|default:0 }} Coins.
+                    </div>
+                    <div class="coins-input-row">
+                        <input
+                            id="useCoinsInput"
+                            class="coins-input"
+                            type="number"
+                            name="use_coins"
+                            min="0"
+                            max="{{ max_coin_usable|default:0 }}"
+                            value="0"
+                            inputmode="numeric"
+                        >
+                        <button type="button" class="coins-max" id="useMaxCoins">USE MAX</button>
+                    </div>
+                    <div class="coins-saving" id="coinsSaving"></div>
+                </div>
+
+                <div class="bill-row coin-bill-row" id="coinDiscountRow" style="display:none;">
+                    <span>AMEXA Coins</span>
+                    <strong id="coinDiscountText">− ₹0</strong>
+                </div>
+
+                <div class="bill-total">
+                    <span>Payable Total</span>
+                    <strong id="payableTotalValue">₹{{ payable_total|default:total }}</strong>
+                </div>
+
+
+
+
+                {% if shop_count > 1 %}
+
+                    <div class="split-note">
+
+                        🏪 This checkout contains {{ shop_count }} shops.
+
+                        AMEXA will create separate shop orders automatically,
+
+                        while you place the order once.
+
+                    </div>
+
+                {% else %}
+
+                    <div class="split-note">
+
+                        ✓ Your checkout currently contains one shop,
+
+                        which keeps pickup and delivery simple.
+
+                    </div>
+
+                {% endif %}
+
+
+
+                <button
+
+                    type="submit"
+
+                    class="place-btn"
+
+                    {% if not addresses %}disabled{% endif %}>
+
+                    Place Order →
+
+                </button>
+
+
+
+                <div class="secure-note">
+
+                    🔒 Stock and prices are verified again before order creation.
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+(function(){
+    const input = document.getElementById("useCoinsInput");
+    const maxBtn = document.getElementById("useMaxCoins");
+    const row = document.getElementById("coinDiscountRow");
+    const text = document.getElementById("coinDiscountText");
+    const saving = document.getElementById("coinsSaving");
+    const totalEl = document.getElementById("payableTotalValue");
+
+    if(!input || !totalEl) return;
+
+    const baseTotal = Number("{{ payable_total|default:total }}") || 0;
+    const maxCoins = Number("{{ max_coin_usable|default:0 }}") || 0;
+
+    function updateCoins(){
+        let coins = parseInt(input.value || "0", 10);
+        if(!Number.isFinite(coins) || coins < 0) coins = 0;
+        if(coins > maxCoins) coins = maxCoins;
+        input.value = coins;
+
+        const finalTotal = Math.max(0, baseTotal - coins);
+        totalEl.textContent = "₹" + finalTotal.toFixed(2);
+
+        if(coins > 0){
+            row.style.display = "flex";
+            text.textContent = "− ₹" + coins;
+            saving.style.display = "block";
+            saving.textContent = "You will save ₹" + coins + " using " + coins + " AMEXA Coins.";
+        }else{
+            row.style.display = "none";
+            saving.style.display = "none";
+        }
+    }
+
+    input.addEventListener("input", updateCoins);
+    maxBtn?.addEventListener("click", function(){
+        input.value = maxCoins;
+        updateCoins();
+    });
+    updateCoins();
+})();
+</script>
+
+</body>
+
+</html>

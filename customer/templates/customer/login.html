@@ -1,0 +1,820 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #030615;
+            --card: rgba(10, 16, 38, 0.92);
+            --card-soft: rgba(255, 255, 255, 0.055);
+            --border: rgba(255, 255, 255, 0.12);
+
+            --white: #ffffff;
+            --muted: #aab3c8;
+
+            --cyan: #00e5ff;
+            --blue: #168cff;
+            --purple: #762cff;
+            --pink: #d72cff;
+
+            --green: #19d98b;
+            --red: #ff496c;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family:
+                "Segoe UI",
+                Inter,
+                Arial,
+                sans-serif;
+
+            color: var(--white);
+
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(0, 229, 255, .12),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 90% 15%,
+                    rgba(118, 44, 255, .16),
+                    transparent 32%
+                ),
+                linear-gradient(
+                    135deg,
+                    #02040e,
+                    #050817 55%,
+                    #08031a
+                );
+
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "AMEXA";
+
+            position: fixed;
+
+            left: 50%;
+            bottom: 40px;
+
+            transform:
+                translateX(-50%)
+                rotate(-10deg);
+
+            font-size: clamp(90px, 18vw, 230px);
+
+            font-weight: 1000;
+
+            letter-spacing: 14px;
+
+            color:
+                rgba(255, 255, 255, .018);
+
+            pointer-events: none;
+
+            white-space: nowrap;
+        }
+
+        .auth-page {
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px 16px;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+
+            max-width: 470px;
+        }
+
+        .brand-area {
+            text-align: center;
+
+            margin-bottom: 18px;
+        }
+
+        .brand-icon {
+            width: 72px;
+            height: 72px;
+
+            margin: 0 auto 12px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 22px;
+
+            font-size: 34px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00ccff,
+                    #762cff
+                );
+
+            box-shadow:
+                0 0 32px
+                rgba(0, 210, 255, .24),
+                0 12px 45px
+                rgba(70, 40, 255, .25);
+        }
+
+        .brand-name {
+            margin: 0;
+
+            font-size: 34px;
+
+            font-weight: 950;
+
+            letter-spacing: 1px;
+        }
+
+        .brand-tagline {
+            margin-top: 4px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+        .auth-card {
+            width: 100%;
+
+            padding: 30px;
+
+            border-radius: 27px;
+
+            background: var(--card);
+
+            border:
+                1px solid
+                var(--border);
+
+            box-shadow:
+                0 25px 80px
+                rgba(0, 0, 0, .48);
+
+            backdrop-filter: blur(22px);
+        }
+
+        .step-pill {
+            width: fit-content;
+
+            margin-bottom: 16px;
+
+            padding: 7px 11px;
+
+            border-radius: 999px;
+
+            color: #8ef4ff;
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            letter-spacing: 1px;
+
+            background:
+                rgba(0, 229, 255, .08);
+
+            border:
+                1px solid
+                rgba(0, 229, 255, .15);
+        }
+
+        .auth-card h1 {
+            margin: 0;
+
+            font-size: 31px;
+
+            line-height: 1.1;
+
+            font-weight: 950;
+        }
+
+        .auth-subtitle {
+            margin:
+                10px 0 24px;
+
+            color: var(--muted);
+
+            font-size: 14px;
+
+            line-height: 1.55;
+        }
+
+        .phone-highlight {
+            color: #73ecff;
+
+            font-weight: 800;
+        }
+
+        .auth-field {
+            margin-bottom: 17px;
+        }
+
+        .auth-field label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: #e8ebf4;
+
+            font-size: 13px;
+
+            font-weight: 800;
+        }
+
+        .auth-field input {
+            width: 100%;
+
+            border: 1px solid var(--border);
+
+            outline: none;
+
+            padding: 14px 15px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255, 255, 255, .055);
+
+            color: white;
+
+            font-size: 15px;
+
+            transition: .22s;
+        }
+
+        .auth-field input::placeholder {
+            color: #7e879f;
+        }
+
+        .auth-field input:focus {
+            border-color:
+                rgba(0, 229, 255, .55);
+
+            background:
+                rgba(255, 255, 255, .075);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(0, 229, 255, .08);
+        }
+
+        .auth-btn {
+            width: 100%;
+
+            border: 0;
+
+            padding: 14px 18px;
+
+            border-radius: 14px;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00aaff,
+                    #762cff
+                );
+
+            box-shadow:
+                0 10px 30px
+                rgba(64, 80, 255, .28);
+
+            transition: .22s;
+        }
+
+        .auth-btn:hover {
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 14px 35px
+                rgba(64, 80, 255, .34);
+        }
+
+        .auth-btn:active {
+            transform:
+                translateY(0);
+        }
+
+        .alert {
+            margin-bottom: 15px;
+
+            padding: 11px 13px;
+
+            border-radius: 12px;
+
+            background:
+                rgba(25, 217, 139, .10);
+
+            border:
+                1px solid
+                rgba(25, 217, 139, .20);
+
+            color: #baf8dc;
+
+            font-size: 12px;
+
+            line-height: 1.45;
+        }
+
+        .errorlist {
+            list-style: none;
+
+            padding: 0;
+
+            margin:
+                7px 0 0;
+
+            color: #ff849a;
+
+            font-size: 12px;
+        }
+
+        .error {
+            margin-top: 7px;
+
+            color: #ff849a;
+
+            font-size: 12px;
+        }
+
+        .otp-info {
+            margin:
+                4px 0 18px;
+
+            padding: 12px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .04);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, .08);
+
+            color: #c2c9db;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+        .change-number {
+            display: inline-block;
+
+            margin-top: 14px;
+
+            color: #72edff;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .security-note {
+            margin-top: 18px;
+
+            display: flex;
+
+            gap: 8px;
+
+            align-items: flex-start;
+
+            color: #8f98ae;
+
+            font-size: 11px;
+
+            line-height: 1.45;
+        }
+
+        .login-benefits {
+            margin-top: 15px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 7px;
+        }
+
+        .benefit {
+            padding: 10px 5px;
+
+            text-align: center;
+
+            border-radius: 12px;
+
+            background:
+                rgba(255, 255, 255, .035);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, .06);
+
+            color: #b9c0d1;
+
+            font-size: 10px;
+        }
+
+        .benefit-icon {
+            display: block;
+
+            margin-bottom: 5px;
+
+            font-size: 20px;
+        }
+
+        @media (max-width: 520px) {
+
+            .auth-page {
+                align-items: flex-start;
+
+                padding-top: 28px;
+            }
+
+            .auth-card {
+                padding: 24px 19px;
+
+                border-radius: 23px;
+            }
+
+            .brand-icon {
+                width: 62px;
+                height: 62px;
+
+                font-size: 29px;
+
+                border-radius: 19px;
+            }
+
+            .brand-name {
+                font-size: 29px;
+            }
+
+            .auth-card h1 {
+                font-size: 27px;
+            }
+
+            .auth-subtitle {
+                font-size: 13px;
+            }
+
+            .auth-field input {
+                min-height: 50px;
+
+                font-size: 16px;
+            }
+
+            .auth-btn {
+                min-height: 50px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="auth-page">
+
+    <div class="auth-wrapper">
+
+
+        <!-- =========================
+             AMEXA BRAND
+        ========================== -->
+
+        <div class="brand-area">
+
+            <div class="brand-icon">
+                🛍️
+            </div>
+
+            <h2 class="brand-name">
+                AMEXA
+            </h2>
+
+            <div class="brand-tagline">
+                Smart • Local • Fast
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             LOGIN CARD
+        ========================== -->
+
+        <div class="auth-card">
+
+
+            {% if otp_sent %}
+
+                <div class="step-pill">
+                    STEP 2 OF 2 • VERIFY OTP
+                </div>
+
+                <h1>
+                    Enter your OTP
+                </h1>
+
+                <p class="auth-subtitle">
+
+                    We sent a 6-digit OTP to
+
+                    <span class="phone-highlight">
+                        +91 {{ otp_phone }}
+                    </span>.
+
+                    Enter it below to continue.
+
+                </p>
+
+            {% else %}
+
+                <div class="step-pill">
+                    SECURE CUSTOMER LOGIN
+                </div>
+
+                <h1>
+                    Welcome to AMEXA 👋
+                </h1>
+
+                <p class="auth-subtitle">
+                    Enter your name and mobile number.
+                    We'll send you a secure OTP to login.
+                </p>
+
+            {% endif %}
+
+
+
+            <!-- =========================
+                 DJANGO MESSAGES
+            ========================== -->
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+
+            <!-- =========================
+                 FORM
+            ========================== -->
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+
+
+                {% if not otp_sent %}
+
+                    <!-- NAME -->
+
+                    <div class="auth-field">
+
+                        <label for="{{ form.name.id_for_label }}">
+                            Your Name
+                        </label>
+
+                        {{ form.name }}
+
+                        {% if form.name.errors %}
+
+                            <div class="error">
+                                {{ form.name.errors|striptags }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <!-- PHONE -->
+
+                    <div class="auth-field">
+
+                        <label for="{{ form.phone.id_for_label }}">
+                            Mobile Number
+                        </label>
+
+                        {{ form.phone }}
+
+                        {% if form.phone.errors %}
+
+                            <div class="error">
+                                {{ form.phone.errors|striptags }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <button
+                        type="submit"
+                        class="auth-btn">
+
+                        Send OTP →
+
+                    </button>
+
+
+                {% else %}
+
+
+                    <!-- IMPORTANT:
+                         session values POST me wapas bhejne hain -->
+
+                    <input
+                        type="hidden"
+                        name="name"
+                        value="{{ otp_name }}">
+
+                    <input
+                        type="hidden"
+                        name="phone"
+                        value="{{ otp_phone }}">
+
+
+
+                    <div class="otp-info">
+                        🔐 OTP 5 minutes ke liye valid hai.
+                        Wrong OTP enter hone par dobara try kar sakte ho.
+                    </div>
+
+
+
+                    <!-- OTP -->
+
+                    <div class="auth-field">
+
+                        <label for="{{ form.otp_code.id_for_label }}">
+                            6-Digit OTP
+                        </label>
+
+                        {{ form.otp_code }}
+
+                        {% if form.otp_code.errors %}
+
+                            <div class="error">
+                                {{ form.otp_code.errors|striptags }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <button
+                        type="submit"
+                        class="auth-btn">
+
+                        Verify & Login →
+
+                    </button>
+
+
+                    <!-- RESET LOGIN FLOW -->
+
+                    <a
+                        href="{% url 'login' %}?change=1"
+                        class="change-number">
+
+                        ← Change mobile number
+
+                    </a>
+
+
+                {% endif %}
+
+
+            </form>
+
+
+
+            <!-- =========================
+                 BENEFITS
+            ========================== -->
+
+            <div class="login-benefits">
+
+                <div class="benefit">
+
+                    <span class="benefit-icon">
+                        🔐
+                    </span>
+
+                    Secure Login
+
+                </div>
+
+
+                <div class="benefit">
+
+                    <span class="benefit-icon">
+                        ⚡
+                    </span>
+
+                    Fast Access
+
+                </div>
+
+
+                <div class="benefit">
+
+                    <span class="benefit-icon">
+                        🛒
+                    </span>
+
+                    Easy Shopping
+
+                </div>
+
+            </div>
+
+
+
+            <div class="security-note">
+
+                <span>
+                    🛡️
+                </span>
+
+                <span>
+                    AMEXA will never ask you to share your OTP
+                    with another person.
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</body>
+</html>

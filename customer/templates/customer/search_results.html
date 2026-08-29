@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search{% if query %} - {{ query }}{% endif %} | AMEXA</title>
+<link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#030615;--card:#0b1025;--card2:#10172f;--white:#fff;--muted:#aab1c7;--cyan:#00e5ff;--purple:#762cff;--green:#19d98b;--border:rgba(255,255,255,.10)}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:#fff;font-family:"Segoe UI",Inter,Arial,sans-serif;background:radial-gradient(circle at 10% 0%,rgba(0,229,255,.09),transparent 28%),radial-gradient(circle at 90% 15%,rgba(118,44,255,.12),transparent 30%),linear-gradient(135deg,#02040e,#050817 55%,#030313)}
+a{color:inherit;text-decoration:none}button,input,select{font:inherit}.page{width:min(1320px,100%);margin:auto;padding:20px 24px 110px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:10px}.brand-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#00cfff,#712cff)}.brand-name{font-size:26px;font-weight:950}.brand-sub{font-size:9px;color:var(--muted)}
+.top-actions{display:flex;gap:8px}.top-btn{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(12,18,40,.85);border:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;padding:6px;border-radius:17px;background:rgba(13,18,40,.92);border:1px solid rgba(255,255,255,.15);margin-bottom:18px}.search-icon{padding-left:12px;font-size:21px}.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#fff;padding:13px 3px}.search button{border:0;padding:12px 22px;border-radius:12px;color:#fff;font-weight:900;background:linear-gradient(135deg,#009cff,#782cff);cursor:pointer}
+.breadcrumb{font-size:11px;color:#8f98af;margin-bottom:10px}.headline{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:16px}.headline h1{margin:0;font-size:26px}.headline p{margin:5px 0 0;color:var(--muted);font-size:12px}.result-count{font-size:12px;color:#7cefff;font-weight:900}
+.layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:17px}.filters{position:sticky;top:14px;align-self:start;padding:16px;border-radius:20px;background:linear-gradient(145deg,rgba(15,22,45,.98),rgba(7,11,27,.98));border:1px solid var(--border)}.filters-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.filters h2{margin:0;font-size:18px}.clear{font-size:10px;color:#74efff;font-weight:900}.filter-group{padding:14px 0;border-top:1px solid rgba(255,255,255,.08)}.filter-group:first-of-type{border-top:0}.filter-title{font-size:12px;font-weight:950;margin-bottom:8px}.filter-group select,.price-row input{width:100%;border:1px solid rgba(255,255,255,.12);background:#0b1128;color:#fff;border-radius:10px;padding:10px;outline:0;font-size:11px}.price-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.apply{width:100%;margin-top:12px;border:0;border-radius:11px;padding:11px;color:#fff;font-weight:900;background:linear-gradient(135deg,#00a9ff,#7928ff);cursor:pointer}
+.mobile-filter{display:none;border:1px solid rgba(0,229,255,.18);background:rgba(0,229,255,.08);color:#79f1ff;border-radius:11px;padding:9px 12px;font-weight:900}
+.results{min-width:0}.sort-row{display:flex;justify-content:flex-end;margin-bottom:12px}.sort-row select{border:1px solid rgba(255,255,255,.12);background:#0b1128;color:#fff;border-radius:10px;padding:9px 10px;font-size:11px}
+.store-section{margin-bottom:17px;padding:15px;border-radius:22px;background:radial-gradient(circle at 95% 0%,rgba(0,229,255,.06),transparent 25%),linear-gradient(145deg,rgba(15,22,45,.96),rgba(7,11,27,.96));border:1px solid var(--border)}.store-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.store-id{display:flex;align-items:center;gap:10px;min-width:0}.store-logo{width:48px;height:48px;flex:0 0 48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#fff,#dffaff);font-size:23px}.store-name{font-size:16px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.store-meta{margin-top:4px;color:#aeb5c8;font-size:10px;display:flex;gap:7px;flex-wrap:wrap}.distance{color:#75efff}.rating{color:#bfffd9}.store-link{padding:8px 10px;border-radius:10px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.14);color:#72efff;font-size:10px;font-weight:900}
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.product{position:relative;overflow:hidden;min-width:0;min-height:260px;border-radius:17px;background:linear-gradient(145deg,#10162d,#070b1d);border:1px solid rgba(255,255,255,.09);transition:.2s}.product:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.24)}.product-image{height:135px;display:grid;place-items:center;font-size:60px;background:radial-gradient(circle,rgba(255,255,255,.07),transparent 65%)}.product-image img{width:100%;height:100%;object-fit:contain;padding:8px}.product-info{padding:10px 10px 55px}.product-name{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product-category{margin-top:4px;color:#969eb4;font-size:9px}.product-shop{margin-top:4px;color:#7deeff;font-size:9px}.price-line{margin-top:9px}.price{font-size:16px;font-weight:950}.mrp{margin-left:4px;color:#737b90;text-decoration:line-through;font-size:10px}.add-form{position:absolute;right:9px;bottom:9px}.add{height:35px;border:0;border-radius:10px;color:#fff;padding:0 10px;font-weight:900;background:linear-gradient(135deg,#6830ff,#a320ff);cursor:pointer}
+.empty{padding:35px 18px;text-align:center;border-radius:20px;background:rgba(255,255,255,.035);border:1px dashed rgba(255,255,255,.13)}.empty-icon{font-size:45px}.empty h3{margin:10px 0 5px}.empty p{margin:0;color:var(--muted);font-size:11px}
+.bottom-nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);width:min(900px,calc(100% - 20px));z-index:50;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:7px;border-radius:22px;background:rgba(8,13,30,.94);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(20px)}.nav-item{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:14px;color:#b8bfd1;font-size:9px;font-weight:800}.nav-item.active{color:#fff;background:linear-gradient(135deg,#00a9ff,#7928ff)}.nav-icon{font-size:18px}
+@media(max-width:1000px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.page{padding:10px 10px 85px}.brand-icon{width:38px;height:38px;font-size:19px}.brand-name{font-size:18px}.brand-sub{display:none}.top-btn{width:38px;height:38px}.search{margin-bottom:12px}.search input{font-size:11px;padding:10px 2px}.search button{padding:10px 11px;font-size:10px}.headline{align-items:center}.headline h1{font-size:18px}.headline p{font-size:9px}.result-count{font-size:9px}.layout{grid-template-columns:1fr}.mobile-filter{display:inline-block}.filters{display:none;position:relative;top:auto}.filters.open{display:block}.sort-row{justify-content:space-between}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.store-section{padding:10px;border-radius:16px}.store-logo{width:40px;height:40px;flex-basis:40px;font-size:19px}.store-name{font-size:12px}.store-meta{font-size:8px}.store-link{padding:7px 8px;font-size:8px}.product{min-height:205px;border-radius:13px}.product-image{height:98px;font-size:45px}.product-info{padding:8px 8px 45px}.product-name{font-size:10px}.product-category,.product-shop{font-size:7px}.price{font-size:13px}.mrp{font-size:8px}.add{height:31px;font-size:9px}.bottom-nav{bottom:5px;width:calc(100% - 10px);padding:5px;border-radius:17px}.nav-item{min-height:47px;font-size:7px}.nav-icon{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="top">
+<a href="{% url 'home' %}" class="brand"><div class="brand-icon">🛍️</div><div><div class="brand-name">AMEXA</div><div class="brand-sub">SMART • LOCAL • FAST</div></div></a>
+<div class="top-actions"><a href="{% url 'cart' %}" class="top-btn">🛒</a><a href="{% url 'profile' %}" class="top-btn">👤</a></div>
+</header>
+
+<form class="search" method="get" action="{% url 'search_results' %}">
+<div class="search-icon">🔍</div>
+<input type="text" name="q" value="{{ query }}" placeholder="Search products, stores, categories or brands..." autocomplete="off">
+<button type="submit">Search</button>
+</form>
+
+<div class="breadcrumb"><a href="{% url 'home' %}">Home</a> › Search{% if query %} › {{ query }}{% endif %}</div>
+<div class="headline"><div><h1>{% if query %}Results for “{{ query }}”{% else %}Search Products{% endif %}</h1><p>Nearby stores within {{ service_radius_km|default:"5" }} km</p></div><div class="result-count">{{ product_count }} product{{ product_count|pluralize }} found</div></div>
+
+<div class="layout">
+<form class="filters" id="filters" method="get" action="{% url 'search_results' %}">
+<input type="hidden" name="q" value="{{ query }}">
+<div class="filters-head"><h2>Filters</h2><a class="clear" href="{% url 'search_results' %}?q={{ query|urlencode }}">CLEAR ALL</a></div>
+<div class="filter-group"><div class="filter-title">Store</div><select name="shop"><option value="">All nearby stores</option>{% for shop in nearby_shops %}<option value="{{ shop.slug }}" {% if selected_shop_slug == shop.slug %}selected{% endif %}>{{ shop.name }}</option>{% endfor %}</select></div>
+<div class="filter-group"><div class="filter-title">Category</div><select name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.slug }}" {% if selected_category == category.slug %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
+<div class="filter-group"><div class="filter-title">Brand</div><select name="brand"><option value="">All brands</option>{% for brand in brands %}<option value="{{ brand.slug }}" {% if selected_brand == brand.slug %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select></div>
+<div class="filter-group"><div class="filter-title">Price</div><div class="price-row"><input type="number" min="0" name="min_price" value="{{ min_price }}" placeholder="Min ₹"><input type="number" min="0" name="max_price" value="{{ max_price }}" placeholder="Max ₹"></div></div>
+<div class="filter-group"><div class="filter-title">Sort by</div><select name="sort"><option value="relevance" {% if sort == "relevance" %}selected{% endif %}>Relevance</option><option value="price_low" {% if sort == "price_low" %}selected{% endif %}>Price: Low to High</option><option value="price_high" {% if sort == "price_high" %}selected{% endif %}>Price: High to Low</option><option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest First</option></select></div>
+<button class="apply" type="submit">Apply Filters</button>
+</form>
+
+<main class="results">
+<div class="sort-row"><button type="button" class="mobile-filter" onclick="document.getElementById('filters').classList.toggle('open')">☰ Filters</button></div>
+
+{% if not location_ready %}
+<div class="empty"><div class="empty-icon">📍</div><h3>Select your delivery location</h3><p>AMEXA shows products only from stores within your service area.</p><br><a class="store-link" href="{% url 'location_picker' %}">Select Location →</a></div>
+{% elif store_groups %}
+{% for group in store_groups %}
+<section class="store-section">
+<div class="store-head">
+<div class="store-id"><div class="store-logo">🏪</div><div><div class="store-name">{{ group.shop.name }}</div><div class="store-meta">{% if group.distance_km != None %}<span class="distance">📍 {{ group.distance_km|floatformat:1 }} km</span>{% endif %}{% if group.shop.rating %}<span class="rating">★ {{ group.shop.rating }}</span>{% endif %}<span>{{ group.products|length }} matching item{{ group.products|length|pluralize }}</span></div></div></div>
+<a href="{% url 'shop_detail' group.shop.slug %}" class="store-link">View Store →</a>
+</div>
+<div class="products">
+{% for product in group.products %}
+<article class="product">
+<a href="{% url 'product_detail' product.slug %}">
+<div class="product-image">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}🛍️{% endif %}</div>
+<div class="product-info"><div class="product-name">{{ product.name }}</div><div class="product-category">{% if product.category %}{{ product.category.name }}{% endif %}{% if product.brand %} • {{ product.brand.name }}{% endif %}</div><div class="product-shop">🏪 {{ product.shop.name }}</div><div class="price-line"><span class="price">₹{{ product.price }}</span>{% if product.mrp and product.mrp > product.price %}<span class="mrp">₹{{ product.mrp }}</span>{% endif %}</div></div>
+</a>
+<form class="add-form" method="post" action="{% url 'cart_add' product.id %}">{% csrf_token %}<input type="hidden" name="quantity" value="1"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="add" type="submit">ADD</button></form>
+</article>
+{% endfor %}
+</div>
+</section>
+{% endfor %}
+{% else %}
+<div class="empty"><div class="empty-icon">🔎</div><h3>No products found</h3><p>Try another word or clear some filters.</p></div>
+{% endif %}
+</main>
+</div>
+</div>
+
+<nav class="bottom-nav">
+<a href="{% url 'home' %}" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
+<a href="{% url 'categories' %}" class="nav-item"><span class="nav-icon">▦</span>Categories</a>
+<a href="{% url 'search_results' %}?q={{ query|urlencode }}" class="nav-item active"><span class="nav-icon">🔍</span>Search</a>
+<a href="{% url 'orders' %}" class="nav-item"><span class="nav-icon">📦</span>Orders</a>
+<a href="{% url 'cart' %}" class="nav-item"><span class="nav-icon">🛒</span>Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+</nav>
+</body>
+</html>

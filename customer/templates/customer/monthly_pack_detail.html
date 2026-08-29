@@ -1,0 +1,1123 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ pack.name }} | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #030615;
+            --card: #0c1228;
+            --card2: #111a35;
+            --white: #fff;
+            --muted: #98a3ba;
+            --cyan: #00e5ff;
+            --purple: #762cff;
+            --green: #19d98b;
+            --red: #ff496d;
+            --yellow: #ffd84d;
+            --border: rgba(255,255,255,.10);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: white;
+
+            background:
+                radial-gradient(circle at 8% 0%,
+                    rgba(0,229,255,.08),
+                    transparent 28%),
+                radial-gradient(circle at 92% 10%,
+                    rgba(118,44,255,.14),
+                    transparent 30%),
+                linear-gradient(135deg,
+                    #02040e,
+                    #050817 55%,
+                    #030313);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .page {
+            width: min(1150px, 100%);
+            margin: auto;
+            padding: 20px 22px 80px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .top-btn {
+            min-height: 43px;
+            padding: 0 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 13px;
+            background: rgba(13,19,41,.88);
+            border: 1px solid var(--border);
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .top-title {
+            text-align: center;
+        }
+
+        .top-title strong {
+            display: block;
+            font-size: 16px;
+        }
+
+        .top-title span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+
+            padding: 27px;
+            border-radius: 27px;
+
+            background:
+                radial-gradient(circle at 88% 20%,
+                    rgba(0,229,255,.16),
+                    transparent 28%),
+                radial-gradient(circle at 100% 100%,
+                    rgba(118,44,255,.22),
+                    transparent 35%),
+                linear-gradient(135deg,
+                    #091d45,
+                    #25125b 68%,
+                    #170b30);
+
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 22px 65px rgba(0,0,0,.3);
+        }
+
+        .hero::after {
+            content: "📦";
+            position: absolute;
+            right: 35px;
+            top: 5px;
+            font-size: 130px;
+            opacity: .08;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            padding: 7px 10px;
+            border-radius: 20px;
+
+            background: rgba(0,229,255,.09);
+            border: 1px solid rgba(0,229,255,.16);
+
+            color: #a9f8ff;
+            font-size: 9px;
+            font-weight: 950;
+        }
+
+        .hero h1 {
+            margin: 12px 0 6px;
+            font-size: clamp(27px, 5vw, 39px);
+            line-height: 1.08;
+            font-weight: 1000;
+        }
+
+        .hero p {
+            margin: 0;
+            color: #c2cade;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .shop-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            margin-top: 15px;
+            padding: 8px 11px;
+
+            border-radius: 11px;
+            background: rgba(25,217,139,.09);
+            border: 1px solid rgba(25,217,139,.15);
+
+            color: #baffdc;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        /* =========================
+           MESSAGES
+        ========================= */
+
+        .messages {
+            margin-top: 14px;
+            display: grid;
+            gap: 7px;
+        }
+
+        .message {
+            padding: 11px 13px;
+            border-radius: 12px;
+
+            background: rgba(25,217,139,.08);
+            border: 1px solid rgba(25,217,139,.14);
+
+            color: #c4ffdf;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 26px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 950;
+        }
+
+        .section-title p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================
+           PACK ITEMS
+        ========================= */
+
+        .pack-items {
+            display: grid;
+            gap: 10px;
+        }
+
+        .pack-item {
+            display: grid;
+            grid-template-columns: 65px 1fr auto;
+            align-items: center;
+            gap: 13px;
+
+            padding: 13px;
+
+            border-radius: 18px;
+            background: linear-gradient(
+                145deg,
+                rgba(17,24,49,.97),
+                rgba(7,11,27,.98)
+            );
+
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .pack-image {
+            width: 65px;
+            height: 65px;
+
+            display: grid;
+            place-items: center;
+
+            overflow: hidden;
+            border-radius: 14px;
+
+            background: rgba(255,255,255,.05);
+            font-size: 27px;
+        }
+
+        .pack-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-name {
+            font-size: 12px;
+            font-weight: 950;
+        }
+
+        .item-price {
+            margin-top: 5px;
+            color: #79edff;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .item-stock {
+            margin-top: 4px;
+            color: #77839a;
+            font-size: 9px;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .qty-form {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qty-input {
+            width: 60px;
+            height: 38px;
+
+            text-align: center;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.10);
+
+            outline: none;
+            background: #080e22;
+            color: white;
+
+            font-weight: 900;
+        }
+
+        .update-btn {
+            height: 38px;
+            padding: 0 11px;
+
+            border: 0;
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            background: rgba(0,229,255,.10);
+            color: #92f5ff;
+
+            font-size: 9px;
+            font-weight: 950;
+        }
+
+        .remove-form {
+            margin: 0;
+        }
+
+        .remove-btn {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255,73,109,.15);
+
+            cursor: pointer;
+
+            background: rgba(255,73,109,.08);
+            color: #ff8ca4;
+
+            font-size: 15px;
+        }
+
+        /* =========================
+           EMPTY PACK
+        ========================= */
+
+        .empty-pack {
+            padding: 25px;
+            text-align: center;
+
+            border-radius: 18px;
+            border: 1px dashed rgba(255,255,255,.13);
+
+            background: rgba(255,255,255,.025);
+        }
+
+        .empty-icon {
+            font-size: 45px;
+        }
+
+        .empty-pack h3 {
+            margin: 10px 0 5px;
+            font-size: 16px;
+        }
+
+        .empty-pack p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================
+           PACK ACTIONS
+        ========================= */
+
+        .pack-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .cart-btn {
+            min-height: 50px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border: 0;
+            border-radius: 14px;
+
+            cursor: pointer;
+
+            background:
+                linear-gradient(135deg, #00b7e9, #7135ff);
+
+            color: white;
+
+            font-size: 11px;
+            font-weight: 950;
+
+            box-shadow: 0 9px 28px rgba(76,54,255,.27);
+        }
+
+        .delete-link {
+            min-height: 50px;
+            padding: 0 17px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background: rgba(255,73,109,.07);
+            border: 1px solid rgba(255,73,109,.14);
+
+            color: #ff91a8;
+
+            font-size: 10px;
+            font-weight: 950;
+        }
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        .search-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            height: 48px;
+            padding: 0 15px;
+
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+
+            outline: none;
+
+            background: #090f24;
+            color: white;
+
+            font-size: 11px;
+        }
+
+        .search-input:focus {
+            border-color: rgba(0,229,255,.45);
+        }
+
+        .search-btn {
+            min-width: 105px;
+            border: 0;
+            border-radius: 14px;
+
+            cursor: pointer;
+
+            background: rgba(0,229,255,.10);
+            color: #91f4ff;
+
+            font-size: 10px;
+            font-weight: 950;
+        }
+
+        /* =========================
+           PRODUCT GRID
+        ========================= */
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .product-card {
+            overflow: hidden;
+
+            border-radius: 19px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,24,49,.96),
+                    rgba(7,11,27,.98)
+                );
+
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .product-image {
+            position: relative;
+            height: 150px;
+
+            display: grid;
+            place-items: center;
+
+            background: rgba(255,255,255,.035);
+            overflow: hidden;
+
+            font-size: 43px;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .added-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+
+            padding: 5px 7px;
+            border-radius: 8px;
+
+            background: rgba(25,217,139,.90);
+            color: #02150d;
+
+            font-size: 8px;
+            font-weight: 1000;
+        }
+
+        .product-body {
+            padding: 13px;
+        }
+
+        .product-brand {
+            min-height: 13px;
+            color: #78849c;
+            font-size: 8px;
+            font-weight: 850;
+        }
+
+        .product-name {
+            margin-top: 4px;
+            min-height: 32px;
+
+            font-size: 11px;
+            line-height: 1.4;
+            font-weight: 950;
+        }
+
+        .product-price {
+            margin-top: 7px;
+
+            color: #80efff;
+            font-size: 13px;
+            font-weight: 1000;
+        }
+
+        .stock {
+            margin-top: 3px;
+            color: #77839a;
+            font-size: 8px;
+        }
+
+        .add-form {
+            display: grid;
+            grid-template-columns: 55px 1fr;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .product-qty {
+            width: 100%;
+            height: 37px;
+
+            text-align: center;
+
+            border-radius: 9px;
+            border: 1px solid rgba(255,255,255,.10);
+
+            outline: none;
+
+            background: #080e22;
+            color: white;
+
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .add-btn {
+            border: 0;
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            background: rgba(0,229,255,.10);
+            color: #93f6ff;
+
+            font-size: 9px;
+            font-weight: 950;
+        }
+
+        .add-btn:hover {
+            background: rgba(0,229,255,.17);
+        }
+
+        /* =========================
+           NO PRODUCTS
+        ========================= */
+
+        .no-products {
+            grid-column: 1 / -1;
+
+            padding: 28px;
+            text-align: center;
+
+            border-radius: 18px;
+
+            background: rgba(255,255,255,.025);
+            border: 1px dashed rgba(255,255,255,.12);
+
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 900px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 14px 13px 55px;
+            }
+
+            .hero {
+                padding: 21px 18px;
+                border-radius: 22px;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pack-item {
+                grid-template-columns: 55px 1fr;
+            }
+
+            .pack-image {
+                width: 55px;
+                height: 55px;
+            }
+
+            .item-actions {
+                grid-column: 1 / -1;
+                justify-content: flex-end;
+            }
+
+            .pack-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .top-btn span {
+                display: none;
+            }
+
+            .top-btn {
+                width: 43px;
+                padding: 0;
+            }
+
+            .product-image {
+                height: 125px;
+            }
+
+            .product-body {
+                padding: 10px;
+            }
+
+            .add-form {
+                grid-template-columns: 45px 1fr;
+            }
+
+            .search-btn {
+                min-width: 78px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- TOP -->
+    <div class="topbar">
+
+        <a href="{% url 'monthly_packs' %}" class="top-btn">
+            ← <span>My Packs</span>
+        </a>
+
+        <div class="top-title">
+            <strong>Monthly Pack</strong>
+            <span>AMEXA Essentials</span>
+        </div>
+
+        <a href="{% url 'cart' %}" class="top-btn">
+            🛒 <span>Cart</span>
+        </a>
+
+    </div>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="hero-badge">
+                📦 YOUR MONTHLY PACK
+            </div>
+
+            <h1>{{ pack.name }}</h1>
+
+            {% if pack.description %}
+                <p>{{ pack.description }}</p>
+            {% else %}
+                <p>
+                    Add your regular monthly products and
+                    reuse this pack whenever you need them.
+                </p>
+            {% endif %}
+
+            <div class="shop-pill">
+                🏪 {{ pack.shop.name }}
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DJANGO MESSAGES -->
+    {% if messages %}
+        <div class="messages">
+
+            {% for message in messages %}
+                <div class="message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+        </div>
+    {% endif %}
+
+
+    <!-- CURRENT PACK -->
+    <section class="section">
+
+        <div class="section-head">
+
+            <div class="section-title">
+                <h2>📦 Products in Pack</h2>
+                <p>
+                    Change quantities or remove products.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="pack-items">
+
+            {% for item in pack.items.all %}
+
+                <div class="pack-item">
+
+                    <div class="pack-image">
+
+                        {% if item.product.image %}
+                            <img
+                                src="{{ item.product.image.url }}"
+                                alt="{{ item.product.name }}"
+                            >
+                        {% else %}
+                            🛍️
+                        {% endif %}
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="item-name">
+                            {{ item.product.name }}
+                        </div>
+
+                        <div class="item-price">
+                            ₹{{ item.product.price }}
+                        </div>
+
+                        <div class="item-stock">
+                            Available:
+                            {{ item.product.stock_quantity }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="item-actions">
+
+                        <form
+                            method="post"
+                            action="{% url 'monthly_pack_update_item' pack.id item.id %}"
+                            class="qty-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <input
+                                type="number"
+                                name="quantity"
+                                value="{{ item.quantity }}"
+                                min="1"
+                                max="{{ item.product.stock_quantity }}"
+                                class="qty-input"
+                            >
+
+                            <button
+                                type="submit"
+                                class="update-btn"
+                            >
+                                Update
+                            </button>
+
+                        </form>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'monthly_pack_remove_item' pack.id item.id %}"
+                            class="remove-form"
+                            onsubmit="return confirm('Remove this product from your monthly pack?');"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="remove-btn"
+                                title="Remove"
+                            >
+                                ×
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="empty-pack">
+
+                    <div class="empty-icon">
+                        🛒
+                    </div>
+
+                    <h3>
+                        Your pack is empty
+                    </h3>
+
+                    <p>
+                        Choose products from the shop below
+                        to build your monthly grocery pack.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% if pack.items.all %}
+
+            <div class="pack-actions">
+
+                <form
+                    method="post"
+                    action="{% url 'monthly_pack_add_to_cart' pack.id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="cart-btn"
+                        style="width:100%;"
+                    >
+                        🛒 Add Entire Pack to Cart
+                    </button>
+
+                </form>
+
+
+                <a
+                    href="{% url 'monthly_pack_delete' pack.id %}"
+                    class="delete-link"
+                >
+                    🗑 Delete Pack
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ADD PRODUCTS -->
+    <section class="section">
+
+        <div class="section-head">
+
+            <div class="section-title">
+
+                <h2>
+                    🛍️ Add Products
+                </h2>
+
+                <p>
+                    Products available from {{ pack.shop.name }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- SEARCH -->
+        <form method="get" class="search-form">
+
+            <input
+                type="search"
+                name="q"
+                value="{{ query }}"
+                class="search-input"
+                placeholder="Search product, brand or category..."
+            >
+
+            <button
+                type="submit"
+                class="search-btn"
+            >
+                🔍 Search
+            </button>
+
+        </form>
+
+
+        <!-- PRODUCTS -->
+        <div class="product-grid">
+
+            {% for product in products %}
+
+                <div class="product-card">
+
+                    <div class="product-image">
+
+                        {% if product.image %}
+
+                            <img
+                                src="{{ product.image.url }}"
+                                alt="{{ product.name }}"
+                            >
+
+                        {% else %}
+
+                            🛍️
+
+                        {% endif %}
+
+
+                        {% if product.id in pack_product_ids %}
+
+                            <div class="added-badge">
+                                ✓ IN PACK
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="product-body">
+
+                        <div class="product-brand">
+
+                            {% if product.brand %}
+                                {{ product.brand.name }}
+                            {% else %}
+                                AMEXA
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="product-name">
+                            {{ product.name }}
+                        </div>
+
+
+                        <div class="product-price">
+                            ₹{{ product.price }}
+                        </div>
+
+
+                        <div class="stock">
+                            {{ product.stock_quantity }}
+                            available
+                        </div>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'monthly_pack_add_product' pack.id product.id %}"
+                            class="add-form"
+                        >
+
+                            {% csrf_token %}
+
+                            <input
+                                type="number"
+                                name="quantity"
+                                value="1"
+                                min="1"
+                                max="{{ product.stock_quantity }}"
+                                class="product-qty"
+                            >
+
+                            <button
+                                type="submit"
+                                class="add-btn"
+                            >
+                                {% if product.id in pack_product_ids %}
+                                    + Add More
+                                {% else %}
+                                    + Add
+                                {% endif %}
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="no-products">
+
+                    {% if query %}
+
+                        No products found for
+                        "<strong>{{ query }}</strong>".
+
+                    {% else %}
+
+                        No available products found in this shop.
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>

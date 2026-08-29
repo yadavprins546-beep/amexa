@@ -1,0 +1,3403 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AMEXA | Smart Local Shopping</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+
+        * { box-sizing: border-box; }
+
+        :root{
+
+            --bg:#030615;
+
+            --bg2:#070b20;
+
+            --card:#0b1025;
+
+            --card2:#10172f;
+
+            --white:#fff;
+
+            --muted:#aab1c7;
+
+            --cyan:#00e5ff;
+
+            --blue:#168cff;
+
+            --purple:#762cff;
+
+            --pink:#ff2f81;
+
+            --green:#19d98b;
+
+            --yellow:#ffd43b;
+
+            --border:rgba(255,255,255,.10);
+
+        }
+
+        html{scroll-behavior:smooth}
+
+        body{
+
+            margin:0;
+
+            min-height:100vh;
+
+            color:var(--white);
+
+            font-family:"Segoe UI",Inter,Arial,sans-serif;
+
+            background:
+
+                radial-gradient(circle at 10% 0%,rgba(0,229,255,.09),transparent 28%),
+
+                radial-gradient(circle at 90% 15%,rgba(118,44,255,.12),transparent 30%),
+
+                linear-gradient(135deg,#02040e,#050817 55%,#030313);
+
+            overflow-x:hidden;
+
+        }
+
+        body::before{
+
+            content:"AMEXA";
+
+            position:fixed;
+
+            left:50%;
+
+            bottom:85px;
+
+            transform:translateX(-50%) rotate(-12deg);
+
+            font-size:clamp(70px,14vw,180px);
+
+            font-weight:1000;
+
+            letter-spacing:12px;
+
+            color:rgba(255,255,255,.018);
+
+            pointer-events:none;
+
+            z-index:-1;
+
+            white-space:nowrap;
+
+        }
+
+        a{color:inherit;text-decoration:none}
+
+        button,input{font:inherit}
+
+        button{cursor:pointer}
+
+        .page{width:min(1220px,100%);margin:auto;padding:22px 30px 125px}
+
+        /* HEADER */
+
+        .top{
+
+            display:flex;align-items:center;justify-content:space-between;
+
+            gap:16px;margin-bottom:24px;
+
+        }
+
+        .brand{display:flex;align-items:center;gap:12px}
+
+        .brand-icon{
+
+            width:52px;height:52px;border-radius:16px;display:grid;place-items:center;
+
+            font-size:27px;background:linear-gradient(135deg,#00cfff,#712cff);
+
+            box-shadow:0 0 30px rgba(0,205,255,.30)
+
+        }
+
+        .brand-name{font-size:29px;font-weight:950;letter-spacing:.5px}
+
+        .brand-sub{font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.6px}
+
+        .top-actions{display:flex;align-items:center;gap:11px}
+
+        .notification-button,.profile-circle{
+
+            width:48px;height:48px;display:grid;place-items:center;
+
+            border:1px solid var(--border);background:rgba(12,18,40,.82);
+
+            color:white;backdrop-filter:blur(15px);
+
+        }
+
+        .notification-button{position:relative;border-radius:15px;font-size:22px}
+
+        .profile-circle{border-radius:50%;font-size:21px}
+
+        .notification-badge{
+
+            position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;
+
+            padding:0 5px;border-radius:50%;display:grid;place-items:center;
+
+            background:linear-gradient(135deg,#ff315b,#ff006e);
+
+            font-size:10px;font-weight:900;border:2px solid #070b20;
+
+        }
+
+        /* WELCOME */
+
+        .welcome{margin-bottom:20px}
+
+        .welcome h1{
+
+            margin:0;font-size:clamp(34px,5vw,56px);line-height:1.04;
+
+            font-weight:950;letter-spacing:-1.3px;
+
+        }
+
+        .wave{display:inline-block;animation:wave .8s ease-in-out infinite alternate}
+
+        @keyframes wave{from{transform:rotate(-8deg)}to{transform:rotate(15deg)}}
+
+        .location-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}
+
+        .location{
+
+            color:#63edff;font-size:13px;font-weight:800;
+
+            padding:7px 10px;border-radius:10px;background:rgba(0,229,255,.07);
+
+            border:1px solid rgba(0,229,255,.12)
+
+        }
+
+        .delivery-chip{
+
+            font-size:11px;font-weight:800;color:#caffdb;background:rgba(25,217,139,.10);
+
+            border:1px solid rgba(25,217,139,.16);padding:7px 10px;border-radius:10px;
+
+        }
+
+        .welcome-text{margin:10px 0 0;color:#cbd0df;font-size:15px}
+
+        /* SEARCH */
+
+        .search{
+
+            display:flex;align-items:center;gap:10px;padding:7px;margin-bottom:24px;
+
+            border-radius:19px;background:rgba(13,18,40,.86);
+
+            border:1px solid rgba(255,255,255,.16);
+
+            box-shadow:0 15px 50px rgba(0,0,0,.25);backdrop-filter:blur(18px);
+
+        }
+
+        .search-icon{padding-left:15px;font-size:24px;color:#cdd3e4}
+
+        .search input{
+
+            flex:1;min-width:0;border:0;outline:0;background:transparent;color:white;
+
+            padding:15px 4px;font-size:16px;
+
+        }
+
+        .search input::placeholder{color:#929ab0}
+
+        .search button{
+
+            border:0;padding:13px 24px;border-radius:14px;color:white;font-weight:900;
+
+            background:linear-gradient(135deg,#009cff,#782cff);
+
+        }
+
+        /* HERO */
+
+        .slider{
+
+            position:relative;height:350px;overflow:hidden;border-radius:28px;
+
+            border:1px solid rgba(255,255,255,.14);
+
+            box-shadow:0 25px 80px rgba(0,0,0,.42);margin-bottom:28px;
+
+        }
+
+        .slide{
+
+            position:absolute;inset:0;opacity:0;pointer-events:none;
+
+            transition:opacity .65s ease;display:flex;align-items:center;
+
+            justify-content:space-between;padding:35px 65px;
+
+        }
+
+        .slide.active{opacity:1;pointer-events:auto}
+
+        .slide1{
+
+            background:
+
+                radial-gradient(circle at 76% 50%,rgba(0,238,255,.20),transparent 30%),
+
+                radial-gradient(circle at 92% 50%,rgba(238,0,255,.22),transparent 33%),
+
+                linear-gradient(120deg,#08135d,#16066a,#210329);
+
+        }
+
+        .slide2{
+
+            background:
+
+                radial-gradient(circle at 75% 45%,rgba(0,255,170,.22),transparent 30%),
+
+                linear-gradient(120deg,#062c38,#075b63,#102c55);
+
+        }
+
+        .slide3{
+
+            background:
+
+                radial-gradient(circle at 75% 50%,rgba(255,0,190,.22),transparent 30%),
+
+                linear-gradient(120deg,#21032e,#571067,#16092e);
+
+        }
+
+        .slide-content{width:56%;position:relative;z-index:3}
+
+        .slide-label{color:#00eaff;font-size:11px;font-weight:950;letter-spacing:2px}
+
+        .slide h2{
+
+            margin:11px 0 10px;font-size:clamp(36px,5vw,58px);
+
+            line-height:1.04;font-weight:950;
+
+        }
+
+        .highlight{color:var(--cyan)}
+
+        .slide p{max-width:470px;margin:0;color:#d7daea;font-size:15px;line-height:1.55}
+
+        .shop-btn{
+
+            display:inline-block;margin-top:18px;padding:13px 21px;border-radius:14px;
+
+            font-weight:900;background:linear-gradient(135deg,#00bfff,#792bff);
+
+            box-shadow:0 9px 30px rgba(0,170,255,.25);
+
+        }
+
+        .banner-image{
+
+            width:290px;height:290px;display:grid;place-items:center;border-radius:50%;
+
+            font-size:118px;background:radial-gradient(circle,rgba(255,255,255,.10),rgba(255,255,255,.015));
+
+            border:3px solid rgba(255,255,255,.12);
+
+            box-shadow:0 0 25px #00d9ff,0 0 65px #bb22ff,inset 0 0 40px rgba(255,255,255,.05);
+
+            animation:floating 4s ease-in-out infinite;
+
+        }
+
+        @keyframes floating{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+        .dots{
+
+            position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+
+            display:flex;gap:9px;z-index:10;
+
+        }
+
+        .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:.3s}
+
+        .dot.active{width:28px;border-radius:20px;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+
+        /* SECTION */
+
+        .section{margin-top:30px}
+
+        .section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}
+
+        .section-title-wrap h2{margin:0;font-size:25px;font-weight:950}
+
+        .section-sub{margin-top:4px;color:var(--muted);font-size:12px}
+
+        .view-all{color:#00e9ff;font-size:13px;font-weight:900;white-space:nowrap}
+
+        /* CATEGORIES */
+
+        .categories{
+
+            display:grid;grid-template-columns:repeat(8,minmax(90px,1fr));gap:10px;
+
+        }
+
+        .category{
+
+            min-height:118px;display:flex;flex-direction:column;justify-content:center;
+
+            align-items:center;text-align:center;padding:10px;border-radius:18px;
+
+            background:linear-gradient(145deg,rgba(18,24,48,.95),rgba(8,12,28,.95));
+
+            border:1px solid rgba(255,255,255,.09);transition:.25s;
+
+        }
+
+        .category:hover{transform:translateY(-4px);border-color:rgba(0,225,255,.42)}
+
+        .category-icon{font-size:38px;margin-bottom:7px}
+
+        .category-icon img{width:52px;height:52px;object-fit:contain;border-radius:13px}
+
+        .category-name{font-size:12px;font-weight:850}
+
+        /* BRANDS */
+
+        .brands-scroll,.products-scroll{
+
+            display:grid;grid-auto-flow:column;overflow-x:auto;scrollbar-width:none;
+
+            padding-bottom:8px;
+
+        }
+
+        .brands-scroll::-webkit-scrollbar,.products-scroll::-webkit-scrollbar{display:none}
+
+        .brands-scroll{grid-auto-columns:105px;gap:12px}
+
+        .brand-card{
+
+            display:flex;flex-direction:column;align-items:center;gap:7px;padding:8px;border-radius:17px;transition:.25s;
+
+        }
+
+        .brand-card:hover{background:rgba(255,255,255,.05);transform:translateY(-3px)}
+
+        .brand-logo{
+
+            width:66px;height:66px;display:grid;place-items:center;border-radius:20px;font-size:30px;
+
+            background:linear-gradient(145deg,#ffffff,#dfe8ff);overflow:hidden;
+
+            box-shadow:0 8px 25px rgba(0,0,0,.25);
+
+        }
+
+        .brand-logo img{width:100%;height:100%;object-fit:contain;padding:7px}
+
+        .brand-title{font-size:11px;font-weight:850;color:#e8ebf4;text-align:center}
+
+
+
+        /* NEARBY STORE SELECTOR */
+
+        .store-selector{
+
+            margin-top:28px;padding:18px;border-radius:26px;
+
+            background:
+
+                radial-gradient(circle at 90% 0%,rgba(0,229,255,.08),transparent 25%),
+
+                linear-gradient(145deg,rgba(15,22,45,.98),rgba(7,11,27,.98));
+
+            border:1px solid rgba(255,255,255,.10);
+
+            box-shadow:0 18px 55px rgba(0,0,0,.22);
+
+        }
+
+        .store-selector-top{
+
+            display:flex;align-items:flex-end;justify-content:space-between;
+
+            gap:12px;margin-bottom:14px;
+
+        }
+
+        .store-selector h2{margin:0;font-size:25px;font-weight:950}
+
+        .store-selector p{margin:5px 0 0;color:var(--muted);font-size:12px}
+
+        .gps-btn{
+
+            border:1px solid rgba(0,229,255,.18);color:#7cf2ff;
+
+            background:rgba(0,229,255,.08);padding:10px 13px;
+
+            border-radius:12px;font-size:11px;font-weight:900;
+
+        }
+
+        .store-list{
+
+            display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,260px);
+
+            gap:11px;overflow-x:auto;padding-bottom:5px;scrollbar-width:none;
+
+        }
+
+        .store-list::-webkit-scrollbar{display:none}
+
+        .store-choice{
+
+            position:relative;padding:14px;border-radius:18px;
+
+            background:rgba(255,255,255,.04);
+
+            border:1px solid rgba(255,255,255,.08);transition:.2s;
+
+        }
+
+        .store-choice:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.26)}
+
+        .store-choice.selected{
+
+            border-color:rgba(0,229,255,.55);
+
+            background:linear-gradient(145deg,rgba(0,229,255,.09),rgba(118,44,255,.09));
+
+            box-shadow:0 10px 30px rgba(0,229,255,.07);
+
+        }
+
+        .selected-tag{
+
+            position:absolute;top:9px;right:9px;padding:4px 7px;border-radius:8px;
+
+            background:#173e31;color:#bfffd9;font-size:9px;font-weight:900;
+
+        }
+
+        .store-choice-name{font-size:15px;font-weight:950;padding-right:62px}
+
+        .store-choice-meta{
+
+            margin-top:7px;display:flex;flex-wrap:wrap;gap:6px;
+
+            color:#b8bfd1;font-size:10px;
+
+        }
+
+        .distance-pill{
+
+            color:#74efff;background:rgba(0,229,255,.07);
+
+            padding:4px 6px;border-radius:7px;font-weight:900;
+
+        }
+
+        .range-note{
+
+            margin-top:10px;color:#8f98af;font-size:10px;line-height:1.4;
+
+        }
+
+        .location-empty{
+
+            padding:18px;border-radius:18px;text-align:center;
+
+            background:rgba(255,255,255,.035);
+
+            border:1px dashed rgba(255,255,255,.13);
+
+        }
+
+        .location-empty strong{display:block;font-size:15px;margin-bottom:5px}
+
+        .location-empty span{color:var(--muted);font-size:11px}
+
+        /* SHOP-FIRST */
+
+        .shop-stack{display:grid;gap:18px}
+
+        .shop-section{
+
+            border-radius:24px;padding:16px;
+
+            background:
+
+                radial-gradient(circle at 92% 0%,rgba(0,229,255,.06),transparent 26%),
+
+                linear-gradient(145deg,rgba(15,22,45,.96),rgba(7,11,27,.96));
+
+            border:1px solid rgba(255,255,255,.10);
+
+            box-shadow:0 18px 55px rgba(0,0,0,.20);
+
+        }
+
+        .shop-section-head{
+
+            display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;
+
+        }
+
+        .shop-identity{display:flex;align-items:center;gap:11px;min-width:0}
+
+        .shop-logo{
+
+            width:56px;height:56px;display:grid;place-items:center;border-radius:17px;
+
+            font-size:27px;background:linear-gradient(135deg,#fff,#dffaff);flex:0 0 auto;
+
+        }
+
+        .shop-name{font-size:17px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        .shop-meta{margin-top:4px;color:#aeb5c8;font-size:11px;display:flex;flex-wrap:wrap;gap:8px}
+
+        .shop-rating{
+
+            color:#caffdb;background:#173e31;border:1px solid rgba(87,255,160,.12);
+
+            padding:3px 7px;border-radius:7px;font-weight:900;
+
+        }
+
+        .shop-open{color:#7fffc4}
+
+        .shop-view{
+
+            padding:10px 13px;border-radius:11px;background:rgba(0,229,255,.09);
+
+            border:1px solid rgba(0,229,255,.14);color:#70efff;font-size:12px;font-weight:900;white-space:nowrap;
+
+        }
+
+        /* PRODUCTS */
+
+        .products-scroll{grid-auto-columns:minmax(165px,190px);gap:12px}
+
+        .product{
+
+            position:relative;overflow:hidden;min-height:265px;border-radius:19px;
+
+            background:linear-gradient(145deg,#10162d,#070b1d);
+
+            border:1px solid rgba(255,255,255,.09);transition:.25s;
+
+        }
+
+        .product:hover{transform:translateY(-4px);border-color:rgba(0,229,255,.24)}
+
+        .discount{
+
+            position:absolute;left:8px;top:8px;padding:5px 7px;border-radius:8px;
+
+            background:linear-gradient(135deg,#ff2453,#ff006e);font-size:10px;font-weight:950;z-index:4;
+
+        }
+
+        .product-image{
+
+            height:138px;display:grid;place-items:center;font-size:70px;
+
+            background:radial-gradient(circle at center,rgba(255,255,255,.07),transparent 65%);
+
+        }
+
+        .product-image img{width:100%;height:100%;object-fit:contain;padding:8px}
+
+        .product-info{padding:10px 11px 58px}
+
+        .product-name{
+
+            font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+
+        }
+
+        .product-unit{margin-top:5px;color:#b8becf;font-size:11px}
+
+        .product-shop{
+
+            margin-top:5px;color:#83eaff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+
+        }
+
+        .product-price{margin-top:10px}
+
+        .price{font-size:17px;font-weight:950}
+
+        .old-price{color:#71788c;text-decoration:line-through;font-size:11px;margin-left:4px}
+
+        .add-form{position:absolute;right:10px;bottom:10px;z-index:6}
+
+        .add{
+
+            min-width:42px;height:38px;border:0;border-radius:11px;color:white;font-size:16px;font-weight:900;
+
+            padding:0 11px;background:linear-gradient(135deg,#6830ff,#a320ff);
+
+            box-shadow:0 5px 20px rgba(120,30,255,.30);
+
+        }
+
+        /* DEALS */
+
+        .deal-shell{
+
+            padding:17px;border-radius:24px;
+
+            background:linear-gradient(135deg,rgba(255,33,106,.10),rgba(118,44,255,.10));
+
+            border:1px solid rgba(255,85,145,.13)
+
+        }
+
+        /* MONTHLY PACK */
+
+        .monthly-pack{
+
+            position:relative;overflow:hidden;padding:22px;border-radius:26px;
+
+            background:
+
+                radial-gradient(circle at 90% 20%,rgba(255,212,59,.14),transparent 27%),
+
+                linear-gradient(135deg,#102857,#38206f);
+
+            border:1px solid rgba(255,255,255,.12);
+
+        }
+
+        .monthly-grid{display:grid;grid-template-columns:1.1fr 1.9fr;gap:20px;align-items:center}
+
+        .monthly-copy h3{margin:0;font-size:30px;font-weight:950}
+
+        .monthly-copy p{color:#d8ddec;font-size:13px;line-height:1.55;margin:9px 0}
+
+        .pack-badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+
+        .pack-badge{
+
+            padding:7px 9px;border-radius:9px;background:rgba(255,255,255,.09);
+
+            font-size:10px;font-weight:850;color:#f2f4ff;
+
+        }
+
+        .monthly-products{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+
+        .mini-pack-item{
+
+            min-width:0;padding:10px;border-radius:14px;background:rgba(5,9,28,.55);
+
+            border:1px solid rgba(255,255,255,.08);
+
+        }
+
+        .mini-pack-name{font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        .mini-pack-price{margin-top:5px;color:#fff;font-size:12px;font-weight:900}
+
+        .monthly-note{margin-top:12px;color:#ffd86a;font-size:10px;font-weight:800}
+
+        /* PROMO */
+
+        .promo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+
+        .promo{
+
+            position:relative;min-height:170px;overflow:hidden;padding:24px;border-radius:23px;
+
+            border:1px solid rgba(255,255,255,.10);background:linear-gradient(135deg,#10235b,#331078);
+
+        }
+
+        .promo:nth-child(2){background:linear-gradient(135deg,#07504f,#103a6d)}
+
+        .promo h3{margin:0 0 8px;font-size:24px;font-weight:950}
+
+        .promo p{margin:0;max-width:67%;color:#d7dceb;font-size:12px;line-height:1.5}
+
+        .promo-icon{position:absolute;right:22px;bottom:14px;font-size:72px;opacity:.88}
+
+        .promo-btn{
+
+            display:inline-block;margin-top:12px;padding:8px 12px;border-radius:10px;
+
+            background:rgba(255,255,255,.13);font-size:11px;font-weight:900;
+
+        }
+
+        /* OFFER */
+
+        .offer-strip{
+
+            margin-top:28px;padding:14px 17px;display:flex;align-items:center;gap:12px;
+
+            border-radius:17px;background:linear-gradient(90deg,rgba(0,229,255,.10),rgba(118,44,255,.12));
+
+            border:1px solid rgba(0,229,255,.14);
+
+        }
+
+        .offer-icon{font-size:24px}
+
+        .offer-text{flex:1;font-size:12px;color:#dfe4f2;line-height:1.45}
+
+        .offer-action{font-size:11px;color:#7cf2ff;font-weight:900}
+
+        /* NOTIFICATION */
+
+        .notification-panel{
+
+            position:fixed;top:82px;right:25px;width:350px;max-width:calc(100% - 30px);
+
+            z-index:2000;padding:15px;border-radius:20px;background:rgba(8,13,31,.97);
+
+            border:1px solid rgba(255,255,255,.13);box-shadow:0 20px 70px rgba(0,0,0,.60);
+
+            backdrop-filter:blur(25px);opacity:0;visibility:hidden;
+
+            transform:translateY(-12px) scale(.97);transition:.25s;
+
+        }
+
+        .notification-panel.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+
+        .notification-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+
+        .notification-head h3{margin:0;font-size:18px}
+
+        .close-notification{
+
+            width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:white;
+
+        }
+
+        .notice{
+
+            display:flex;gap:11px;padding:11px;margin-top:7px;border-radius:14px;background:rgba(255,255,255,.045);
+
+            border:1px solid transparent;transition:.2s;
+
+        }
+
+        .notice:hover{border-color:rgba(0,229,255,.15);background:rgba(255,255,255,.065)}
+
+        .notice-icon{font-size:21px}
+
+        .notice-title{font-size:12px;font-weight:900}
+
+        .notice-text{margin-top:3px;color:#aeb6ca;font-size:10px;line-height:1.4}
+
+        /* BOTTOM NAV */
+
+        .bottom-nav{
+
+            position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
+
+            width:min(1000px,calc(100% - 25px));z-index:1000;display:grid;
+
+            grid-template-columns:repeat(5,1fr);gap:7px;padding:8px;border-radius:25px;
+
+            background:rgba(8,13,30,.92);border:1px solid rgba(255,255,255,.13);
+
+            box-shadow:0 15px 50px rgba(0,0,0,.55);backdrop-filter:blur(22px);
+
+        }
+
+        .nav-item{
+
+            position:relative;min-height:58px;display:flex;flex-direction:column;
+
+            align-items:center;justify-content:center;gap:3px;border-radius:16px;
+
+            color:#b8bfd1;font-size:10px;font-weight:800;
+
+        }
+
+        .nav-icon{font-size:20px}
+
+        .nav-item.active{
+
+            color:white;background:linear-gradient(135deg,#00a9ff,#7928ff);
+
+            box-shadow:0 5px 25px rgba(72,40,255,.35);
+
+        }
+
+        .cart-count{
+
+            position:absolute;top:4px;left:53%;min-width:19px;height:19px;padding:0 4px;
+
+            display:grid;place-items:center;border-radius:50%;background:#ff315b;
+
+            font-size:9px;font-weight:900;color:white;
+
+        }
+
+        /* EMPTY */
+
+        .empty-card{
+
+            padding:20px;border-radius:16px;color:var(--muted);
+
+            background:rgba(255,255,255,.035);border:1px dashed rgba(255,255,255,.12)
+
+        }
+
+        @media(max-width:760px){
+
+            .page{padding:15px 14px 110px}
+
+            .brand-icon{width:43px;height:43px;font-size:22px}
+
+            .brand-name{font-size:22px}
+
+            .brand-sub{display:none}
+
+            .notification-button,.profile-circle{width:42px;height:42px}
+
+            .welcome h1{font-size:34px}
+
+            .welcome-text{font-size:13px}
+
+            .search input{font-size:13px}
+
+            .search button{padding:11px 14px;font-size:12px}
+
+            .slider{height:300px;border-radius:22px}
+
+            .slide{padding:24px}
+
+            .slide-content{width:68%}
+
+            .slide h2{font-size:28px}
+
+            .slide p{font-size:11px}
+
+            .shop-btn{padding:10px 13px;font-size:11px}
+
+            .banner-image{
+
+                position:absolute;right:-45px;bottom:18px;width:180px;height:180px;font-size:72px;
+
+            }
+
+            .categories{grid-template-columns:repeat(4,1fr);gap:7px}
+
+            .category{min-height:94px;padding:7px 4px}
+
+            .category-icon{font-size:28px;margin-bottom:4px}
+
+            .category-icon img{width:42px;height:42px}
+
+            .category-name{font-size:9px}
+
+            .section-title-wrap h2{font-size:20px}
+
+            .view-all{font-size:11px}
+
+            .products-scroll{grid-auto-columns:155px}
+
+            .product{min-height:240px}
+
+            .product-image{height:120px;font-size:62px}
+
+            .product-info{padding-bottom:55px}
+
+            .shop-section{padding:13px;border-radius:20px}
+
+            .shop-logo{width:48px;height:48px;font-size:23px}
+
+            .shop-name{font-size:14px}
+
+            .shop-view{padding:8px 10px;font-size:10px}
+
+            .monthly-grid{grid-template-columns:1fr}
+
+            .monthly-copy h3{font-size:25px}
+
+            .monthly-products{grid-template-columns:repeat(4,1fr)}
+
+            .promo-grid{grid-template-columns:1fr}
+
+            .promo{min-height:155px}
+
+            .notification-panel{top:68px;right:10px}
+
+            .bottom-nav{bottom:7px;width:calc(100% - 16px)}
+
+            .nav-item{min-height:55px;font-size:9px}
+
+        }
+
+        @media(max-width:430px){
+
+            .welcome h1{font-size:30px}
+
+            .slider{height:280px}
+
+            .slide h2{font-size:25px}
+
+            .banner-image{width:150px;height:150px;font-size:58px;right:-35px}
+
+            .monthly-products{grid-template-columns:repeat(2,1fr)}
+
+            .shop-meta{gap:5px}
+
+        }
+
+    
+        /* HOME FIXES */
+        .location-action{
+            border:1px solid rgba(0,229,255,.16);
+            cursor:pointer;
+            font-family:inherit;
+            transition:.18s ease;
+        }
+
+        .location-action:hover{
+            transform:translateY(-1px);
+            background:rgba(0,229,255,.11);
+            border-color:rgba(0,229,255,.32);
+        }
+
+        .location-action:disabled{
+            opacity:.65;
+            cursor:wait;
+        }
+
+        .address-link{
+            text-decoration:none;
+        }
+
+        .wallet-chip{
+            height:48px;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            padding:4px 10px 4px 5px;
+            border-radius:15px;
+            background:rgba(12,18,40,.82);
+            border:1px solid rgba(255,216,77,.18);
+            box-shadow:0 8px 22px rgba(0,0,0,.20);
+        }
+
+        .wallet-coin{
+            width:34px;
+            height:34px;
+            display:grid;
+            place-items:center;
+            border-radius:50%;
+            color:#684500;
+            font-size:18px;
+            font-weight:1000;
+            background:linear-gradient(145deg,#fff29b,#f4bc25 60%,#b77800);
+            border:2px solid #ffd95b;
+            box-shadow:
+                inset 3px 3px 6px rgba(255,255,255,.45),
+                inset -4px -5px 7px rgba(125,75,0,.25),
+                0 5px 10px rgba(0,0,0,.24);
+        }
+
+        .wallet-text{
+            display:flex;
+            flex-direction:column;
+            line-height:1.05;
+        }
+
+        .wallet-text b{
+            color:#fff4c5;
+            font-size:9px;
+            font-weight:950;
+        }
+
+        .wallet-text small{
+            margin-top:3px;
+            color:#d5b759;
+            font-size:7px;
+            font-weight:850;
+        }
+
+        .monthly-actions-home{
+            display:flex;
+            flex-wrap:wrap;
+            gap:9px;
+            margin-top:14px;
+        }
+
+        .monthly-actions-home .shop-btn{
+            margin-top:0;
+        }
+
+        .monthly-create-btn{
+            min-height:42px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:0 14px;
+            border-radius:12px;
+            background:rgba(255,255,255,.09);
+            border:1px solid rgba(255,255,255,.12);
+            color:#eef2ff;
+            font-size:10px;
+            font-weight:900;
+        }
+
+        /* Keep monthly section useful but not oversized */
+        .monthly-pack{
+            padding:20px;
+        }
+
+        .monthly-copy h3{
+            font-size:26px;
+        }
+
+        @media(max-width:760px){
+            .wallet-chip{
+                width:42px;
+                height:42px;
+                padding:3px;
+                justify-content:center;
+            }
+
+            .wallet-text{
+                display:none;
+            }
+
+            .wallet-coin{
+                width:32px;
+                height:32px;
+            }
+
+            .monthly-actions-home{
+                display:grid;
+                grid-template-columns:1fr 1fr;
+            }
+
+            .monthly-actions-home a{
+                text-align:center;
+            }
+        }
+
+        @media(max-width:430px){
+            .monthly-actions-home{
+                grid-template-columns:1fr;
+            }
+        }
+
+    
+        /* =========================================================
+           AMEXA MOBILE APP FIT FIX
+           Mobile-first sizing for 320px–480px screens
+        ========================================================= */
+
+        @media(max-width:600px){
+
+            html,body{
+                width:100%;
+                max-width:100%;
+                overflow-x:hidden;
+            }
+
+            body{
+                font-size:14px;
+            }
+
+            .page{
+                width:100%;
+                max-width:100%;
+                margin:0;
+                padding:10px 10px 92px;
+                overflow:hidden;
+            }
+
+            /* HEADER */
+            .top{
+                gap:8px;
+                margin-bottom:12px;
+            }
+
+            .brand{
+                gap:8px;
+                min-width:0;
+            }
+
+            .brand-icon{
+                width:38px;
+                height:38px;
+                flex:0 0 38px;
+                border-radius:12px;
+                font-size:19px;
+            }
+
+            .brand-name{
+                font-size:18px;
+                line-height:1;
+            }
+
+            .brand-sub{
+                display:none;
+            }
+
+            .top-actions{
+                gap:6px;
+                flex:0 0 auto;
+            }
+
+            .notification-button,
+            .profile-circle,
+            .wallet-chip{
+                width:38px;
+                height:38px;
+                min-width:38px;
+                padding:0;
+            }
+
+            .notification-button{
+                font-size:18px;
+                border-radius:12px;
+            }
+
+            .profile-circle{
+                font-size:18px;
+            }
+
+            .wallet-text{
+                display:none;
+            }
+
+            .wallet-coin{
+                width:29px;
+                height:29px;
+                font-size:15px;
+            }
+
+            .notification-badge{
+                top:-4px;
+                right:-4px;
+                min-width:17px;
+                height:17px;
+                font-size:8px;
+            }
+
+            /* WELCOME */
+            .welcome{
+                margin-bottom:12px;
+            }
+
+            .welcome h1{
+                font-size:25px;
+                line-height:1.08;
+                letter-spacing:-.5px;
+            }
+
+            .location-row{
+                display:flex;
+                gap:6px;
+                flex-wrap:wrap;
+                align-items:center;
+                margin-top:8px;
+            }
+
+            .location,
+            .delivery-chip{
+                min-height:34px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:7px 9px;
+                border-radius:10px;
+                font-size:9px;
+                line-height:1.1;
+            }
+
+            .location-action{
+                max-width:100%;
+            }
+
+            .welcome-text{
+                margin-top:8px;
+                font-size:11px;
+                line-height:1.4;
+            }
+
+            /* SEARCH */
+            .search{
+                width:100%;
+                gap:5px;
+                padding:5px;
+                margin-bottom:14px;
+                border-radius:14px;
+            }
+
+            .search-icon{
+                padding-left:8px;
+                font-size:18px;
+            }
+
+            .search input{
+                min-width:0;
+                width:100%;
+                padding:10px 2px;
+                font-size:11px;
+            }
+
+            .search button{
+                flex:0 0 auto;
+                padding:10px 11px;
+                border-radius:10px;
+                font-size:10px;
+            }
+
+            /* HERO */
+            .slider{
+                width:100%;
+                height:220px;
+                border-radius:18px;
+                margin-bottom:16px;
+            }
+
+            .slide{
+                padding:17px 15px;
+                align-items:flex-start;
+            }
+
+            .slide-content{
+                width:68%;
+                max-width:68%;
+                padding-top:7px;
+            }
+
+            .slide-label{
+                font-size:8px;
+                letter-spacing:1.2px;
+            }
+
+            .slide h2{
+                margin:6px 0;
+                font-size:21px;
+                line-height:1.08;
+            }
+
+            .slide p{
+                max-width:100%;
+                font-size:9px;
+                line-height:1.35;
+            }
+
+            .shop-btn{
+                margin-top:10px;
+                padding:9px 10px;
+                border-radius:10px;
+                font-size:9px;
+            }
+
+            .banner-image{
+                position:absolute;
+                right:-10px;
+                bottom:18px;
+                width:108px;
+                height:108px;
+                font-size:43px;
+                border-width:2px;
+            }
+
+            .dots{
+                bottom:10px;
+            }
+
+            .dot{
+                width:7px;
+                height:7px;
+            }
+
+            .dot.active{
+                width:20px;
+            }
+
+            /* STORE SELECTOR */
+            .store-selector{
+                width:100%;
+                margin-top:16px;
+                padding:11px;
+                border-radius:17px;
+            }
+
+            .store-selector-top{
+                align-items:flex-start;
+                gap:8px;
+            }
+
+            .store-selector h2{
+                font-size:16px;
+                line-height:1.2;
+            }
+
+            .store-selector p{
+                font-size:9px;
+                line-height:1.35;
+            }
+
+            .gps-btn{
+                padding:8px 9px;
+                border-radius:10px;
+                font-size:8px;
+                white-space:nowrap;
+            }
+
+            .store-list{
+                grid-auto-columns:82%;
+                gap:8px;
+                overflow-x:auto;
+            }
+
+            .store-choice{
+                padding:11px;
+                border-radius:14px;
+            }
+
+            .store-choice-name{
+                font-size:12px;
+                padding-right:50px;
+            }
+
+            .store-choice-meta,
+            .range-note{
+                font-size:8px;
+            }
+
+            /* SECTION HEADINGS */
+            .section{
+                margin-top:17px;
+            }
+
+            .section-head{
+                gap:8px;
+                margin-bottom:9px;
+            }
+
+            .section-title-wrap h2{
+                font-size:17px;
+            }
+
+            .section-sub{
+                font-size:9px;
+                line-height:1.3;
+            }
+
+            .view-all{
+                font-size:9px;
+            }
+
+            /* CATEGORIES */
+            .categories{
+                width:100%;
+                grid-template-columns:repeat(4,minmax(0,1fr));
+                gap:6px;
+            }
+
+            .category{
+                min-width:0;
+                min-height:78px;
+                padding:6px 3px;
+                border-radius:13px;
+            }
+
+            .category-icon{
+                width:38px;
+                height:38px;
+                margin-bottom:4px;
+                border-radius:11px;
+                font-size:22px;
+            }
+
+            .category-icon img{
+                width:31px;
+                height:31px;
+            }
+
+            .category-name{
+                width:100%;
+                font-size:8px;
+                line-height:1.15;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+            }
+
+            /* BRANDS */
+            .brands-scroll{
+                grid-auto-columns:78px;
+                gap:8px;
+            }
+
+            .brand-logo{
+                width:52px;
+                height:52px;
+                border-radius:14px;
+                font-size:23px;
+            }
+
+            .brand-title{
+                font-size:8px;
+            }
+
+            /* SHOP SECTION */
+            .shop-section{
+                padding:10px;
+                border-radius:16px;
+            }
+
+            .shop-section-head{
+                align-items:flex-start;
+                gap:8px;
+            }
+
+            .shop-logo{
+                width:42px;
+                height:42px;
+                border-radius:12px;
+                font-size:20px;
+            }
+
+            .shop-name{
+                max-width:180px;
+                font-size:12px;
+            }
+
+            .shop-meta{
+                gap:4px;
+                font-size:8px;
+            }
+
+            .shop-view{
+                padding:7px 8px;
+                font-size:8px;
+                border-radius:9px;
+            }
+
+            /* PRODUCTS */
+            .products-scroll{
+                grid-auto-columns:138px;
+                gap:8px;
+            }
+
+            .product{
+                min-height:205px;
+                border-radius:14px;
+            }
+
+            .product-image{
+                height:98px;
+                font-size:48px;
+            }
+
+            .product-image img{
+                padding:6px;
+            }
+
+            .discount{
+                left:6px;
+                top:6px;
+                padding:4px 5px;
+                border-radius:6px;
+                font-size:7px;
+            }
+
+            .product-info{
+                padding:8px 8px 46px;
+            }
+
+            .product-name{
+                font-size:10px;
+            }
+
+            .product-unit,
+            .product-shop{
+                font-size:7px;
+            }
+
+            .product-price{
+                margin-top:7px;
+            }
+
+            .price{
+                font-size:13px;
+            }
+
+            .old-price{
+                font-size:8px;
+            }
+
+            .add-form{
+                right:7px;
+                bottom:7px;
+            }
+
+            .add{
+                height:32px;
+                min-width:36px;
+                padding:0 8px;
+                border-radius:9px;
+                font-size:9px;
+            }
+
+            /* DEALS */
+            .deal-shell{
+                padding:10px;
+                border-radius:16px;
+            }
+
+            /* MONTHLY */
+            .monthly-pack{
+                padding:14px;
+                border-radius:17px;
+            }
+
+            .monthly-grid{
+                grid-template-columns:1fr;
+                gap:12px;
+            }
+
+            .monthly-copy h3{
+                font-size:20px;
+                line-height:1.15;
+            }
+
+            .monthly-copy p{
+                font-size:9px;
+                line-height:1.4;
+            }
+
+            .pack-badges{
+                gap:5px;
+            }
+
+            .pack-badge{
+                padding:5px 6px;
+                border-radius:7px;
+                font-size:7px;
+            }
+
+            .monthly-actions-home{
+                grid-template-columns:1fr 1fr;
+                gap:7px;
+            }
+
+            .monthly-actions-home .shop-btn,
+            .monthly-create-btn{
+                width:100%;
+                min-height:38px;
+                margin:0;
+                padding:8px 7px;
+                font-size:8px;
+                border-radius:9px;
+            }
+
+            .monthly-products{
+                grid-template-columns:repeat(2,minmax(0,1fr));
+                gap:6px;
+            }
+
+            .mini-pack-item{
+                padding:8px;
+                border-radius:10px;
+            }
+
+            .mini-pack-name{
+                font-size:8px;
+            }
+
+            .mini-pack-price{
+                font-size:9px;
+            }
+
+            /* PROMO */
+            .promo-grid{
+                grid-template-columns:1fr;
+                gap:9px;
+            }
+
+            .promo{
+                min-height:125px;
+                padding:16px;
+                border-radius:16px;
+            }
+
+            .promo h3{
+                font-size:17px;
+            }
+
+            .promo p{
+                max-width:68%;
+                font-size:9px;
+            }
+
+            .promo-icon{
+                right:14px;
+                bottom:9px;
+                font-size:45px;
+            }
+
+            .promo-btn{
+                margin-top:9px;
+                padding:7px 9px;
+                font-size:8px;
+            }
+
+            /* OFFER */
+            .offer-strip{
+                margin-top:16px;
+                padding:10px 11px;
+                gap:8px;
+                border-radius:13px;
+            }
+
+            .offer-icon{
+                font-size:18px;
+            }
+
+            .offer-text{
+                font-size:9px;
+            }
+
+            .offer-action{
+                font-size:8px;
+            }
+
+            /* BOTTOM NAV */
+            .bottom-nav{
+                bottom:5px;
+                width:calc(100% - 10px);
+                max-width:none;
+                gap:3px;
+                padding:5px;
+                border-radius:17px;
+            }
+
+            .nav-item{
+                min-width:0;
+                min-height:48px;
+                gap:2px;
+                border-radius:11px;
+                font-size:7px;
+            }
+
+            .nav-icon{
+                font-size:17px;
+            }
+
+            .cart-count{
+                top:2px;
+                min-width:16px;
+                height:16px;
+                font-size:7px;
+            }
+
+            /* NEVER ALLOW CHILD ELEMENTS TO PUSH WIDTH */
+            .top,
+            .welcome,
+            .search,
+            .slider,
+            .store-selector,
+            .section,
+            .shop-section,
+            .deal-shell,
+            .monthly-pack,
+            .promo,
+            .offer-strip{
+                max-width:100%;
+            }
+        }
+
+        @media(max-width:360px){
+
+            .page{
+                padding-left:8px;
+                padding-right:8px;
+            }
+
+            .brand-name{
+                font-size:17px;
+            }
+
+            .notification-button,
+            .profile-circle,
+            .wallet-chip{
+                width:35px;
+                min-width:35px;
+                height:35px;
+            }
+
+            .wallet-coin{
+                width:27px;
+                height:27px;
+            }
+
+            .welcome h1{
+                font-size:23px;
+            }
+
+            .slider{
+                height:210px;
+            }
+
+            .slide h2{
+                font-size:19px;
+            }
+
+            .slide-content{
+                width:70%;
+                max-width:70%;
+            }
+
+            .banner-image{
+                width:95px;
+                height:95px;
+                font-size:38px;
+            }
+
+            .categories{
+                grid-template-columns:repeat(4,minmax(0,1fr));
+            }
+
+            .products-scroll{
+                grid-auto-columns:132px;
+            }
+
+            .monthly-actions-home{
+                grid-template-columns:1fr;
+            }
+        }
+
+
+        /* SINGLE CURRENT LOCATION CARD */
+        .single-location-row{
+            display:block;
+            margin-top:9px;
+        }
+
+        .current-location-card{
+            text-decoration:none;
+            color:white;
+            width:min(420px,100%);
+            min-height:54px;
+            display:grid;
+            grid-template-columns:40px minmax(0,1fr) 24px;
+            align-items:center;
+            gap:10px;
+            padding:7px 10px;
+            border-radius:15px;
+            border:1px solid rgba(0,229,255,.16);
+            background:
+                linear-gradient(145deg,rgba(12,23,47,.96),rgba(7,12,29,.96));
+            color:white;
+            text-align:left;
+            cursor:pointer;
+            box-shadow:
+                0 10px 28px rgba(0,0,0,.22),
+                inset 0 1px 0 rgba(255,255,255,.05);
+            transition:.18s ease;
+        }
+
+        .current-location-card:hover{
+            transform:translateY(-1px);
+            border-color:rgba(0,229,255,.34);
+            background:
+                linear-gradient(145deg,rgba(13,30,56,.98),rgba(8,14,34,.98));
+        }
+
+        .current-location-card:disabled{
+            opacity:.65;
+            cursor:wait;
+        }
+
+        .current-location-icon{
+            width:38px;
+            height:38px;
+            display:grid;
+            place-items:center;
+            border-radius:12px;
+            font-size:20px;
+            background:rgba(0,229,255,.08);
+            border:1px solid rgba(0,229,255,.12);
+        }
+
+        .current-location-copy{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            line-height:1.15;
+        }
+
+        .current-location-copy strong{
+            font-size:11px;
+            font-weight:950;
+            color:#f4f7ff;
+        }
+
+        .current-location-copy small{
+            margin-top:4px;
+            font-size:8px;
+            color:#8fdfea;
+            white-space:normal;
+        }
+
+        .current-location-arrow{
+            color:#77ebfb;
+            font-size:22px;
+            font-weight:800;
+            text-align:center;
+        }
+
+        @media(max-width:600px){
+            .single-location-row{
+                margin-top:7px;
+            }
+
+            .current-location-card{
+                width:100%;
+                min-height:50px;
+                grid-template-columns:36px minmax(0,1fr) 20px;
+                gap:8px;
+                padding:6px 8px;
+                border-radius:13px;
+            }
+
+            .current-location-icon{
+                width:34px;
+                height:34px;
+                border-radius:10px;
+                font-size:18px;
+            }
+
+            .current-location-copy strong{
+                font-size:10px;
+            }
+
+            .current-location-copy small{
+                font-size:7px;
+            }
+
+            .current-location-arrow{
+                font-size:20px;
+            }
+        }
+
+
+        .wallet-chip{
+            position:relative;
+        }
+
+        .wallet-home-balance{
+            position:absolute;
+            top:-6px;
+            right:-5px;
+            min-width:19px;
+            height:19px;
+            padding:0 5px;
+            display:grid;
+            place-items:center;
+            border-radius:999px;
+            background:#ffd43b;
+            color:#3a2900;
+            border:2px solid #070b20;
+            font-size:8px;
+            font-weight:950;
+            line-height:1;
+        }
+
+        @media(max-width:760px){
+            .wallet-home-balance{
+                display:grid;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- HEADER -->
+
+    <header class="top">
+
+        <a href="{% url 'home' %}" class="brand">
+
+            <div class="brand-icon">🛍️</div>
+
+            <div>
+
+                <div class="brand-name">AMEXA</div>
+
+                <div class="brand-sub">SMART • LOCAL • FAST</div>
+
+            </div>
+
+        </a>
+
+        <div class="top-actions">
+
+            <button
+
+                type="button"
+
+                class="notification-button"
+
+                onclick="toggleNotifications()"
+
+                aria-label="Notifications">
+
+                🔔
+
+                <span class="notification-badge">5</span>
+
+            </button>
+
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'profile' %}#walletPanel" class="wallet-chip" aria-label="Open AMEXA Coins Wallet">
+                <span class="wallet-coin">🪙</span>
+                <span class="wallet-home-balance">{{ coin_balance|default:0 }}</span>
+                <span class="wallet-text">
+                    <b>{{ coin_balance|default:0 }} Coins</b>
+                    <small>AMEXA Wallet</small>
+                </span>
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="wallet-chip" aria-label="Login to AMEXA Wallet">
+                <span class="wallet-coin">🪙</span>
+                <span class="wallet-home-balance">0</span>
+                <span class="wallet-text">
+                    <b>0 Coins</b>
+                    <small>Login to Wallet</small>
+                </span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'profile' %}" class="profile-circle">👤</a>
+
+        </div>
+
+    </header>
+
+    <!-- WELCOME -->
+
+    <section class="welcome">
+
+        <h1>
+
+            {% if request.user.is_authenticated %}
+
+                Hello, {{ request.user.name|default:"Customer" }}
+
+            {% else %}
+
+                Hello
+
+            {% endif %}
+
+            <span class="wave">👋</span>
+
+        </h1>
+
+        <div class="location-row single-location-row">
+            <a
+                href="{% url 'location_picker' %}"
+                class="current-location-card"
+                aria-label="Select or change delivery location"
+            >
+                <span class="current-location-icon">📍</span>
+
+                <span class="current-location-copy">
+                    <strong>
+                        {{ location_title|default:"Your Current Location" }}
+                    </strong>
+
+                    <small>
+                        {{ location_subtitle|default:"Tap to select live location" }}
+                    </small>
+                </span>
+
+                <span class="current-location-arrow">›</span>
+            </a>
+        </div>
+
+        <p class="welcome-text">
+
+            Choose a store within 5 km, then shop its products with a clear and simple local-delivery flow.
+
+        </p>
+
+    </section>
+
+    <!-- SEARCH -->
+
+    <form class="search" id="homeSearchForm" method="get" action="{% url 'search_results' %}">
+
+        <div class="search-icon">🔍</div>
+
+        <input
+
+            type="text"
+
+            name="q"
+
+            value="{{ query }}"
+
+            placeholder="Search product, shop, category or brand..."
+
+            autocomplete="off">
+
+        <button type="submit" id="homeSearchButton">Search</button>
+
+    </form>
+
+    <!-- HERO -->
+
+    <section class="slider" id="heroSlider">
+
+        <div class="slide slide1 active">
+
+            <div class="slide-content">
+
+                <div class="slide-label">AMEXA SMART SHOPPING ⚡</div>
+
+                <h2>Shop from your <span class="highlight">nearby store</span></h2>
+
+                <p>
+
+                    Choose a local shop, see its products together and add everything you need without confusion.
+
+                </p>
+
+                <a href="#shop-first" class="shop-btn">Explore Shops →</a>
+
+            </div>
+
+            <div class="banner-image">🏪</div>
+
+        </div>
+
+        <div class="slide slide2">
+
+            <div class="slide-content">
+
+                <div class="slide-label">MONTHLY ESSENTIALS</div>
+
+                <h2>Plan your monthly groceries</h2>
+
+                <p>
+
+                    Choose a nearby store first, then build monthly essentials from that same store.
+
+                </p>
+
+                <a href="{% url 'monthly_packs' %}" class="shop-btn">📦 Open Monthly Packs →</a>
+
+            </div>
+
+            <div class="banner-image">📦</div>
+
+        </div>
+
+        <div class="slide slide3">
+
+            <div class="slide-content">
+
+                <div class="slide-label">DEALS NEAR YOU</div>
+
+                <h2>Save more on <span class="highlight">local deals</span></h2>
+
+                <p>
+
+                    Check discounted products and open the exact product or store you want.
+
+                </p>
+
+                <a href="#deals" class="shop-btn">View Deals →</a>
+
+            </div>
+
+            <div class="banner-image">🔥</div>
+
+        </div>
+
+        <div class="dots">
+
+            <span class="dot active" onclick="goToSlide(0)"></span>
+
+            <span class="dot" onclick="goToSlide(1)"></span>
+
+            <span class="dot" onclick="goToSlide(2)"></span>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- SELECT YOUR NEARBY STORE -->
+
+    <section class="store-selector" id="nearby-store-selector">
+
+        <div class="store-selector-top">
+
+            <div>
+
+                <h2>📍 Select Your Nearby Store</h2>
+
+                <p>
+
+                    Only active stores within {{ service_radius_km|floatformat:0 }} km of your current location are shown.
+
+                </p>
+
+            </div>
+
+            <button type="button" class="gps-btn" onclick="useCurrentLocation()">
+
+                ◎ Refresh Location
+
+            </button>
+
+        </div>
+
+        {% if location_ready %}
+
+            {% if nearby_shops %}
+
+                <div class="store-list">
+
+                    {% for shop in nearby_shops %}
+
+                        <a
+
+                            href="{% url 'home' %}?shop={{ shop.slug }}"
+
+                            class="store-choice {% if selected_shop and selected_shop.id == shop.id %}selected{% endif %}">
+
+                            {% if selected_shop and selected_shop.id == shop.id %}
+
+                                <span class="selected-tag">✓ SELECTED</span>
+
+                            {% endif %}
+
+                            <div class="store-choice-name">
+
+                                🏪 {{ shop.name }}
+
+                            </div>
+
+                            <div class="store-choice-meta">
+
+                                <span class="distance-pill">
+
+                                    {{ shop.distance_km }} km
+
+                                </span>
+
+                                <span>★ {{ shop.rating }}</span>
+
+                                <span>
+
+                                    {% if shop.is_open %}
+
+                                        ● Open
+
+                                    {% else %}
+
+                                        ● Closed
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                            <div class="range-note">
+
+                                {{ shop.address|truncatechars:45 }}
+
+                            </div>
+
+                        </a>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="range-note">
+
+                    AMEXA is showing only stores inside the 5 km delivery service radius to keep pickup and rider travel practical.
+
+                </div>
+
+            {% else %}
+
+                <div class="location-empty">
+
+                    <strong>No active AMEXA store found within 5 km.</strong>
+
+                    <span>Try refreshing your location or add a closer delivery address.</span>
+
+                </div>
+
+            {% endif %}
+
+        {% else %}
+
+            <div class="location-empty">
+
+                <strong>Use your current location to find deliverable stores.</strong>
+
+                <span>AMEXA will show only stores within 5 km.</span>
+
+                <div style="margin-top:12px;">
+
+                    <button type="button" class="gps-btn" onclick="useCurrentLocation()">
+
+                        📍 Use Current Location
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- CATEGORIES -->
+
+    <section class="section">
+
+        <div class="section-head">
+
+            <div class="section-title-wrap">
+
+                <h2>🏷️ Shop by Category</h2>
+
+                <div class="section-sub">Open the category you actually want</div>
+
+            </div>
+
+            <a href="{% url 'categories' %}" class="view-all">View all →</a>
+
+        </div>
+
+        <div class="categories">
+
+            {% for category in categories %}
+
+                <a href="{% url 'category_products' category.slug %}" class="category">
+
+                    <div class="category-icon">
+
+                        {% if category.image %}
+
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+
+                        {% else %}
+
+                            🏷️
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="category-name">{{ category.name }}</div>
+
+                </a>
+
+            {% empty %}
+
+                <div class="empty-card">No categories available yet.</div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <!-- POPULAR BRANDS -->
+
+    <section class="section">
+
+        <div class="section-head">
+
+            <div class="section-title-wrap">
+
+                <h2>⭐ Popular Brands</h2>
+
+                <div class="section-sub">Tap a brand to search its products</div>
+
+            </div>
+
+        </div>
+
+        <div class="brands-scroll">
+
+            {% for brand in brands %}
+
+                <a href="{% url 'home' %}?q={{ brand.name|urlencode }}{% if selected_shop %}*&*shop={{ selected_shop.slug }}{% endif %}" class="brand-card">
+
+                    <div class="brand-logo">
+
+                        {% if brand.logo %}
+
+                            <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+
+                        {% else %}
+
+                            🛍️
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="brand-title">{{ brand.name }}</div>
+
+                </a>
+
+            {% empty %}
+
+                <a href="{% url 'home' %}?q=Amul" class="brand-card">
+
+                    <div class="brand-logo">🥛</div>
+
+                    <div class="brand-title">Amul</div>
+
+                </a>
+
+                <a href="{% url 'home' %}?q=Maggi" class="brand-card">
+
+                    <div class="brand-logo">🍜</div>
+
+                    <div class="brand-title">Maggi</div>
+
+                </a>
+
+                <a href="{% url 'home' %}?q=Britannia" class="brand-card">
+
+                    <div class="brand-logo">🍪</div>
+
+                    <div class="brand-title">Britannia</div>
+
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <!-- SELECTED SHOP PRODUCTS -->
+
+    <section class="section" id="shop-first">
+
+        <div class="section-head">
+
+            <div class="section-title-wrap">
+
+                {% if selected_shop %}
+
+                    <h2>🏪 {{ selected_shop.name }}</h2>
+
+                    <div class="section-sub">
+
+                        {{ selected_shop.distance_km }} km away • Products from your selected store
+
+                    </div>
+
+                {% else %}
+
+                    <h2>🏪 Store Products</h2>
+
+                    <div class="section-sub">
+
+                        Select a nearby store first
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            {% if selected_shop %}
+
+                <a href="{% url 'shop_detail' selected_shop.slug %}" class="view-all">
+
+                    View full store →
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+        {% if selected_shop %}
+
+            <div class="shop-section">
+
+                <div class="shop-section-head">
+
+                    <div class="shop-identity">
+
+                        <div class="shop-logo">🏪</div>
+
+                        <div style="min-width:0;">
+
+                            <div class="shop-name">{{ selected_shop.name }}</div>
+
+                            <div class="shop-meta">
+
+                                <span class="shop-rating">★ {{ selected_shop.rating }}</span>
+
+                                <span class="shop-open">
+
+                                    {% if selected_shop.is_open %}● Open{% else %}● Closed{% endif %}
+
+                                </span>
+
+                                <span>📍 {{ selected_shop.address|truncatechars:34 }}</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <a href="{% url 'shop_detail' selected_shop.slug %}" class="shop-view">
+
+                        More Products →
+
+                    </a>
+
+                </div>
+
+                <div class="products-scroll">
+
+                    {% for product in selected_shop_products %}
+
+                        <div class="product">
+
+                            <a href="{% url 'product_detail' product.slug %}">
+
+                                {% if product.discount_percentage > 0 %}
+
+                                    <div class="discount">
+
+                                        {{ product.discount_percentage }}% OFF
+
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="product-image">
+
+                                    {% if product.image %}
+
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+
+                                    {% else %}
+
+                                        🛍️
+
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="product-info">
+
+                                    <div class="product-name">{{ product.name }}</div>
+
+                                    <div class="product-unit">{{ product.category.name }}</div>
+
+                                    <div class="product-shop">🏪 {{ selected_shop.name }}</div>
+
+                                    <div class="product-price">
+
+                                        <span class="price">₹{{ product.price }}</span>
+
+                                        {% if product.mrp > product.price %}
+
+                                            <span class="old-price">₹{{ product.mrp }}</span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                            <form method="post" action="{% url 'cart_add' product.id %}" class="add-form">
+
+                                {% csrf_token %}
+
+                                <input type="hidden" name="quantity" value="1">
+
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+                                <button type="submit" class="add">+ Add</button>
+
+                            </form>
+
+                        </div>
+
+                    {% empty %}
+
+                        <div class="empty-card">
+
+                            No in-stock products are available in this store right now.
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-card">
+
+                Use current location and select a store within 5 km to start shopping.
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- DEALS -->
+
+    <section class="section" id="deals">
+
+        <div class="deal-shell">
+
+            <div class="section-head">
+
+                <div class="section-title-wrap">
+
+                    <h2>🔥 Deals for You</h2>
+
+                    <div class="section-sub">Real discounted products from available shops</div>
+
+                </div>
+
+            </div>
+
+            <div class="products-scroll">
+
+                {% for product in deal_products %}
+
+                    <div class="product">
+
+                        <a href="{% url 'product_detail' product.slug %}">
+
+                            {% if product.discount_percentage > 0 %}
+
+                                <div class="discount">{{ product.discount_percentage }}% OFF</div>
+
+                            {% endif %}
+
+                            <div class="product-image">
+
+                                {% if product.image %}
+
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+
+                                {% else %}
+
+                                    🎁
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="product-info">
+
+                                <div class="product-name">{{ product.name }}</div>
+
+                                <div class="product-unit">{{ product.category.name }}</div>
+
+                                <div class="product-shop">🏪 {{ product.shop.name }}</div>
+
+                                <div class="product-price">
+
+                                    <span class="price">₹{{ product.price }}</span>
+
+                                    {% if product.mrp > product.price %}
+
+                                        <span class="old-price">₹{{ product.mrp }}</span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                        <form method="post" action="{% url 'cart_add' product.id %}" class="add-form">
+
+                            {% csrf_token %}
+
+                            <input type="hidden" name="quantity" value="1">
+
+                            <input type="hidden" name="next" value="{{ request.path }}">
+
+                            <button type="submit" class="add">+ Add</button>
+
+                        </form>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="empty-card">
+
+                        New deals will appear here when a product's selling price is lower than its MRP.
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- MONTHLY ESSENTIALS -->
+
+    <section class="section" id="monthly-pack">
+
+        <div class="monthly-pack">
+
+            <div class="monthly-grid">
+
+                <div class="monthly-copy">
+
+                    <div class="slide-label">AMEXA MONTHLY</div>
+
+                    <h3>📦 Monthly Grocery Pack</h3>
+
+                    <p>
+                        Save your regular monthly grocery products once,
+                        update quantities anytime and add the complete pack
+                        to your cart when you need it.
+                    </p>
+
+                    <div class="pack-badges">
+                        <span class="pack-badge">🏪 Local shop</span>
+                        <span class="pack-badge">🛒 One-tap cart</span>
+                        <span class="pack-badge">🔁 Repeat monthly</span>
+                        <span class="pack-badge">📦 Saved pack</span>
+                    </div>
+
+                    <div class="monthly-actions-home">
+                        <a href="{% url 'monthly_packs' %}" class="shop-btn monthly-main-btn">
+                            📦 My Monthly Packs →
+                        </a>
+
+                        <a href="{% url 'monthly_pack_create' %}" class="monthly-create-btn">
+                            ＋ Create Pack
+                        </a>
+                    </div>
+
+                    <div class="monthly-note">
+                        Build once, reuse every month.
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <div class="monthly-products">
+
+                        {% for product in monthly_pack_products %}
+
+                            <a
+                                href="{% url 'product_detail' product.slug %}"
+                                class="mini-pack-item">
+
+                                <div class="mini-pack-name">
+                                    {{ product.name }}
+                                </div>
+
+                                <div class="mini-pack-price">
+                                    ₹{{ product.price }}
+                                </div>
+
+                            </a>
+
+                        {% empty %}
+
+                            <div class="mini-pack-item">
+                                <div class="mini-pack-name">
+                                    Create your first monthly pack
+                                </div>
+                                <div class="mini-pack-price">
+                                    Start now
+                                </div>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- TOP PRODUCTS -->
+
+    <section class="section" id="top-products">
+
+        <div class="section-head">
+
+            <div class="section-title-wrap">
+
+                <h2>✨ Latest Products</h2>
+
+                <div class="section-sub">Open the exact product or add it directly</div>
+
+            </div>
+
+            <a href="{% url 'categories' %}" class="view-all">Browse categories →</a>
+
+        </div>
+
+        <div class="products-scroll">
+
+            {% for product in top_products %}
+
+                <div class="product">
+
+                    <a href="{% url 'product_detail' product.slug %}">
+
+                        {% if product.discount_percentage > 0 %}
+
+                            <div class="discount">{{ product.discount_percentage }}% OFF</div>
+
+                        {% endif %}
+
+                        <div class="product-image">
+
+                            {% if product.image %}
+
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+
+                            {% else %}
+
+                                🛍️
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="product-info">
+
+                            <div class="product-name">{{ product.name }}</div>
+
+                            <div class="product-unit">{{ product.category.name }}</div>
+
+                            <div class="product-shop">🏪 {{ product.shop.name }}</div>
+
+                            <div class="product-price">
+
+                                <span class="price">₹{{ product.price }}</span>
+
+                                {% if product.mrp > product.price %}
+
+                                    <span class="old-price">₹{{ product.mrp }}</span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                    <form method="post" action="{% url 'cart_add' product.id %}" class="add-form">
+
+                        {% csrf_token %}
+
+                        <input type="hidden" name="quantity" value="1">
+
+                        <input type="hidden" name="next" value="{{ request.path }}">
+
+                        <button type="submit" class="add">+ Add</button>
+
+                    </form>
+
+                </div>
+
+            {% empty %}
+
+                <div class="empty-card">No products available yet.</div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    <!-- PROMO -->
+
+    <section class="section">
+
+        <div class="promo-grid">
+
+            <div class="promo">
+
+                <h3>🏪 Choose your shop</h3>
+
+                <p>
+
+                    Open a nearby store and browse only the products available from that store.
+
+                </p>
+
+                <a href="{% url 'nearby_shops' %}" class="promo-btn">Explore Shops →</a>
+
+                <div class="promo-icon">🏪</div>
+
+            </div>
+
+            <div class="promo">
+
+                <h3>🛒 One AMEXA Cart</h3>
+
+                <p>
+
+                    Add products and review your full basket before checkout.
+
+                </p>
+
+                <a href="{% url 'cart' %}" class="promo-btn">Open Cart →</a>
+
+                <div class="promo-icon">🛒</div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- OFFER STRIP -->
+
+    <a href="#deals" class="offer-strip">
+
+        <div class="offer-icon">🔔</div>
+
+        <div class="offer-text">
+
+            <strong>AMEXA Deals:</strong>
+
+            Discounted products are shown from real product prices and MRP.
+
+        </div>
+
+        <div class="offer-action">View →</div>
+
+    </a>
+
+</div>
+
+<!-- NOTIFICATION PANEL -->
+
+<div class="notification-panel" id="notificationPanel">
+
+    <div class="notification-head">
+
+        <h3>🔔 AMEXA Updates</h3>
+
+        <button type="button" class="close-notification" onclick="toggleNotifications()">×</button>
+
+    </div>
+
+    <a href="#shop-first" class="notice" onclick="toggleNotifications()">
+
+        <div class="notice-icon">🏪</div>
+
+        <div>
+
+            <div class="notice-title">Shop-first shopping</div>
+
+            <div class="notice-text">Browse products grouped under each nearby shop.</div>
+
+        </div>
+
+    </a>
+
+    <a href="#deals" class="notice" onclick="toggleNotifications()">
+
+        <div class="notice-icon">🔥</div>
+
+        <div>
+
+            <div class="notice-title">Current deals</div>
+
+            <div class="notice-text">See products whose selling price is lower than MRP.</div>
+
+        </div>
+
+    </a>
+
+    <a href="{% url 'cart' %}" class="notice">
+
+        <div class="notice-icon">🛒</div>
+
+        <div>
+
+            <div class="notice-title">Your cart</div>
+
+            <div class="notice-text">You have {{ cart_count|default:0 }} item(s) in your AMEXA cart.</div>
+
+        </div>
+
+    </a>
+
+    <a href="{% url 'orders' %}" class="notice">
+
+        <div class="notice-icon">📦</div>
+
+        <div>
+
+            <div class="notice-title">Track orders</div>
+
+            <div class="notice-text">Check order status and delivery progress.</div>
+
+        </div>
+
+    </a>
+
+    <a href="{% url 'addresses' %}" class="notice">
+
+        <div class="notice-icon">📍</div>
+
+        <div>
+
+            <div class="notice-title">Delivery address</div>
+
+            <div class="notice-text">Add or change your saved delivery address.</div>
+
+        </div>
+
+    </a>
+
+</div>
+
+<!-- BOTTOM NAV -->
+
+<nav class="bottom-nav">
+
+    <a href="{% url 'home' %}" class="nav-item active">
+
+        <span class="nav-icon">🏠</span>
+
+        Home
+
+    </a>
+
+    <a href="{% url 'nearby_shops' %}" class="nav-item">
+
+        <span class="nav-icon">🏪</span>
+
+        Shops
+
+    </a>
+
+    <a href="{% url 'categories' %}" class="nav-item">
+
+        <span class="nav-icon">🏷️</span>
+
+        Categories
+
+    </a>
+
+    <a href="{% url 'profile' %}" class="nav-item">
+
+        <span class="nav-icon">👤</span>
+
+        Profile
+
+    </a>
+
+    <a href="{% url 'cart' %}" class="nav-item">
+
+        <span class="nav-icon">🛒</span>
+
+        {% if cart_count %}
+
+            <span class="cart-count">{{ cart_count }}</span>
+
+        {% endif %}
+
+        Cart
+
+    </a>
+
+</nav>
+
+<script>
+
+    let currentSlide = 0;
+
+    let sliderTimer;
+
+    const slides = document.querySelectorAll(".slide");
+
+    const dots = document.querySelectorAll(".dot");
+
+    const slider = document.getElementById("heroSlider");
+
+    function showSlide(index) {
+
+        if (!slides.length) return;
+
+        slides.forEach(function(slide) {
+
+            slide.classList.remove("active");
+
+        });
+
+        dots.forEach(function(dot) {
+
+            dot.classList.remove("active");
+
+        });
+
+        currentSlide = (index + slides.length) % slides.length;
+
+        slides[currentSlide].classList.add("active");
+
+        if (dots[currentSlide]) {
+
+            dots[currentSlide].classList.add("active");
+
+        }
+
+    }
+
+    function goToSlide(index) {
+
+        showSlide(index);
+
+        restartSlider();
+
+    }
+
+    function startSlider() {
+
+        clearInterval(sliderTimer);
+
+        sliderTimer = setInterval(function() {
+
+            showSlide(currentSlide + 1);
+
+        }, 4500);
+
+    }
+
+    function restartSlider() {
+
+        clearInterval(sliderTimer);
+
+        startSlider();
+
+    }
+
+    startSlider();
+
+    let touchStartX = 0;
+
+    let touchEndX = 0;
+
+    if (slider) {
+
+        slider.addEventListener(
+
+            "touchstart",
+
+            function(event) {
+
+                touchStartX = event.changedTouches[0].screenX;
+
+            },
+
+            { passive: true }
+
+        );
+
+        slider.addEventListener(
+
+            "touchend",
+
+            function(event) {
+
+                touchEndX = event.changedTouches[0].screenX;
+
+                const difference = touchStartX - touchEndX;
+
+                if (Math.abs(difference) < 50) return;
+
+                if (difference > 0) {
+
+                    showSlide(currentSlide + 1);
+
+                } else {
+
+                    showSlide(currentSlide - 1);
+
+                }
+
+                restartSlider();
+
+            },
+
+            { passive: true }
+
+        );
+
+    }
+
+
+
+    function useCurrentLocation(clickedButton) {
+
+        if (!navigator.geolocation) {
+            alert("Is browser me location support nahi hai.");
+            return;
+        }
+
+        const buttons = document.querySelectorAll(
+            ".gps-btn, .location-action, .current-location-card"
+        );
+
+        buttons.forEach(function(btn) {
+            btn.disabled = true;
+        });
+
+        if (clickedButton) {
+            clickedButton.dataset.oldText = clickedButton.innerHTML;
+            clickedButton.innerHTML = `
+                <span class="current-location-icon">📡</span>
+                <span class="current-location-copy">
+                    <strong>Finding your location...</strong>
+                    <small>Please allow location permission</small>
+                </span>
+                <span class="current-location-arrow">…</span>
+            `;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+
+            function(position) {
+
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                if (
+                    !Number.isFinite(latitude) ||
+                    !Number.isFinite(longitude)
+                ) {
+                    alert("Location coordinates nahi mil paye.");
+                    resetLocationButtons();
+                    return;
+                }
+
+                const params = new URLSearchParams(
+                    window.location.search
+                );
+
+                params.set(
+                    "lat",
+                    latitude.toFixed(6)
+                );
+
+                params.set(
+                    "lon",
+                    longitude.toFixed(6)
+                );
+
+                params.delete("shop");
+
+                window.location.href =
+                    window.location.pathname
+                    + "?"
+                    + params.toString();
+            },
+
+            function(error) {
+
+                resetLocationButtons();
+
+                let message =
+                    "Location nahi mil payi. Browser me location permission allow karke dobara try karein.";
+
+                if (error && error.code === 1) {
+                    message =
+                        "Location permission BLOCK hai. Browser ke address bar ke paas Location permission ko Allow karo, phir dobara click karo.";
+                } else if (error && error.code === 2) {
+                    message =
+                        "Device location abhi available nahi hai. GPS/Location ON karke dobara try karo.";
+                } else if (error && error.code === 3) {
+                    message =
+                        "Location lene me time zyada lag gaya. Dobara try karo.";
+                }
+
+                alert(message);
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 30000
+            }
+        );
+    }
+
+
+    function resetLocationButtons() {
+
+        const buttons = document.querySelectorAll(
+            ".gps-btn, .location-action, .current-location-card"
+        );
+
+        buttons.forEach(function(btn) {
+
+            btn.disabled = false;
+
+            if (btn.classList.contains("gps-btn")) {
+                btn.innerHTML = "◎ Refresh Location";
+            }
+
+            if (
+                (
+                    btn.classList.contains("location-action") ||
+                    btn.classList.contains("current-location-card")
+                ) &&
+                btn.dataset.oldText
+            ) {
+                btn.innerHTML = btn.dataset.oldText;
+            }
+        });
+    }
+
+
+    function toggleNotifications() {
+
+        const panel = document.getElementById("notificationPanel");
+
+        if (panel) {
+
+            panel.classList.toggle("show");
+
+        }
+
+    }
+
+    // =====================================================
+    // SEARCH DOUBLE-SUBMIT / RELOAD GUARD
+    // =====================================================
+    const homeSearchForm = document.getElementById("homeSearchForm");
+    const homeSearchButton = document.getElementById("homeSearchButton");
+
+    if (homeSearchForm) {
+        let searchSubmitting = false;
+
+        homeSearchForm.addEventListener("submit", function(event) {
+            if (searchSubmitting) {
+                event.preventDefault();
+                return;
+            }
+
+            const searchInput = homeSearchForm.querySelector('input[name="q"]');
+
+            if (searchInput) {
+                searchInput.value = searchInput.value.trim();
+            }
+
+            searchSubmitting = true;
+
+            if (homeSearchButton) {
+                homeSearchButton.disabled = true;
+                homeSearchButton.textContent = "Searching...";
+            }
+        });
+    }
+
+
+    document.addEventListener("click", function(event) {
+
+        const panel = document.getElementById("notificationPanel");
+
+        const button = document.querySelector(".notification-button");
+
+        if (
+
+            panel &&
+
+            button &&
+
+            panel.classList.contains("show") &&
+
+            !panel.contains(event.target) &&
+
+            !button.contains(event.target)
+
+        ) {
+
+            panel.classList.remove("show");
+
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>

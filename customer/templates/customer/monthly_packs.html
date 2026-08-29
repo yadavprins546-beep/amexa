@@ -1,0 +1,962 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Monthly Packs | AMEXA</title>
+
+    <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #030615;
+            --card: #0d1329;
+            --card2: #121a35;
+            --white: #ffffff;
+            --muted: #9da7bf;
+            --cyan: #00e5ff;
+            --blue: #168cff;
+            --purple: #762cff;
+            --green: #20dc91;
+            --red: #ff496d;
+            --border: rgba(255,255,255,.10);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--white);
+
+            background:
+                radial-gradient(
+                    circle at 10% 0%,
+                    rgba(0,229,255,.09),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 95% 10%,
+                    rgba(118,44,255,.14),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #02040e,
+                    #050817 55%,
+                    #030313
+                );
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .page {
+            width: min(1100px, 100%);
+            margin: auto;
+            padding: 22px 22px 120px;
+        }
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .back-btn,
+        .home-btn {
+            min-height: 43px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 13px;
+            border: 1px solid var(--border);
+
+            background: rgba(13,19,41,.88);
+            color: #e4e8f5;
+
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .top-title {
+            text-align: center;
+        }
+
+        .top-title strong {
+            display: block;
+            font-size: 17px;
+            font-weight: 950;
+        }
+
+        .top-title span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+
+            padding: 30px;
+            border-radius: 28px;
+
+            background:
+                radial-gradient(
+                    circle at 85% 20%,
+                    rgba(0,229,255,.20),
+                    transparent 27%
+                ),
+                radial-gradient(
+                    circle at 100% 100%,
+                    rgba(118,44,255,.25),
+                    transparent 36%
+                ),
+                linear-gradient(
+                    135deg,
+                    #081d48,
+                    #24125d 62%,
+                    #190a32
+                );
+
+            border: 1px solid rgba(255,255,255,.12);
+
+            box-shadow:
+                0 25px 70px rgba(0,0,0,.35);
+        }
+
+        .hero::after {
+            content: "📦";
+            position: absolute;
+            right: 40px;
+            top: 15px;
+
+            font-size: 130px;
+            opacity: .10;
+            transform: rotate(-8deg);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 7px 11px;
+            border-radius: 20px;
+
+            background: rgba(0,229,255,.10);
+            border: 1px solid rgba(0,229,255,.18);
+
+            color: #a8f7ff;
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .hero h1 {
+            margin: 14px 0 8px;
+
+            font-size: clamp(29px, 5vw, 46px);
+            line-height: 1.05;
+            font-weight: 1000;
+        }
+
+        .hero p {
+            max-width: 570px;
+            margin: 0;
+
+            color: #c5cce0;
+            font-size: 12px;
+            line-height: 1.65;
+        }
+
+        .create-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            min-height: 48px;
+            margin-top: 20px;
+            padding: 0 18px;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00bce9,
+                    #6c35ff
+                );
+
+            color: white;
+            font-size: 12px;
+            font-weight: 950;
+
+            box-shadow:
+                0 10px 30px rgba(68,58,255,.30);
+        }
+
+        /* =========================
+           INFO STRIP
+        ========================= */
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 11px;
+            margin-top: 15px;
+        }
+
+        .info-card {
+            padding: 15px;
+            border-radius: 17px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,24,49,.96),
+                    rgba(8,12,29,.96)
+                );
+
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .info-icon {
+            font-size: 23px;
+        }
+
+        .info-title {
+            margin-top: 7px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .info-text {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 15px;
+
+            margin-bottom: 13px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+        }
+
+        .section-title p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .pack-count {
+            padding: 7px 10px;
+            border-radius: 10px;
+
+            background: rgba(0,229,255,.08);
+            color: #8af4ff;
+
+            border: 1px solid rgba(0,229,255,.12);
+
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        /* =========================
+           PACK GRID
+        ========================= */
+
+        .pack-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(270px, 1fr));
+            gap: 15px;
+        }
+
+        .pack-card {
+            position: relative;
+            overflow: hidden;
+
+            padding: 18px;
+            border-radius: 22px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,24,49,.97),
+                    rgba(7,11,27,.98)
+                );
+
+            border: 1px solid rgba(255,255,255,.09);
+
+            transition:
+                transform .22s,
+                border-color .22s;
+        }
+
+        .pack-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0,229,255,.28);
+        }
+
+        .pack-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .pack-icon {
+            width: 52px;
+            height: 52px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 16px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,229,255,.14),
+                    rgba(118,44,255,.17)
+                );
+
+            font-size: 27px;
+        }
+
+        .active-badge {
+            padding: 6px 8px;
+            border-radius: 9px;
+
+            background: rgba(32,220,145,.10);
+            border: 1px solid rgba(32,220,145,.16);
+
+            color: #9affd1;
+
+            font-size: 8px;
+            font-weight: 950;
+        }
+
+        .pack-name {
+            margin: 14px 0 0;
+
+            font-size: 18px;
+            font-weight: 950;
+        }
+
+        .shop-name {
+            margin-top: 5px;
+
+            color: #aeb7cb;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .pack-description {
+            min-height: 34px;
+            margin-top: 10px;
+
+            color: #8f99b0;
+            font-size: 10px;
+            line-height: 1.55;
+        }
+
+        .pack-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+
+            margin-top: 15px;
+        }
+
+        .stat {
+            padding: 10px;
+
+            border-radius: 12px;
+            background: rgba(255,255,255,.035);
+
+            border: 1px solid rgba(255,255,255,.055);
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 950;
+        }
+
+        .stat-label {
+            margin-top: 3px;
+
+            color: #7f899f;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .open-pack {
+            width: 100%;
+            min-height: 44px;
+            margin-top: 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #078fe8,
+                    #6335f5
+                );
+
+            color: white;
+
+            font-size: 11px;
+            font-weight: 950;
+        }
+
+        /* =========================
+           EMPTY
+        ========================= */
+
+        .empty-state {
+            padding: 42px 20px;
+
+            text-align: center;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(16,23,47,.90),
+                    rgba(7,11,27,.94)
+                );
+
+            border: 1px dashed rgba(255,255,255,.14);
+        }
+
+        .empty-icon {
+            width: 78px;
+            height: 78px;
+
+            margin: auto;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,229,255,.12),
+                    rgba(118,44,255,.16)
+                );
+
+            font-size: 38px;
+        }
+
+        .empty-state h3 {
+            margin: 17px 0 7px;
+            font-size: 20px;
+        }
+
+        .empty-state p {
+            max-width: 420px;
+            margin: auto;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           BOTTOM NAV
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            bottom: 10px;
+
+            transform: translateX(-50%);
+
+            width: min(900px, calc(100% - 22px));
+
+            z-index: 1000;
+
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 7px;
+
+            padding: 8px;
+
+            border-radius: 23px;
+
+            background: rgba(8,13,30,.94);
+
+            border: 1px solid rgba(255,255,255,.12);
+
+            box-shadow:
+                0 15px 50px rgba(0,0,0,.55);
+
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-item {
+            position: relative;
+
+            min-height: 56px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            gap: 3px;
+
+            border-radius: 14px;
+
+            color: #aeb6c9;
+
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .nav-icon {
+            font-size: 19px;
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #00a9ff,
+                    #7928ff
+                );
+        }
+
+        .cart-badge {
+            position: absolute;
+
+            top: 3px;
+            left: 54%;
+
+            min-width: 18px;
+            height: 18px;
+
+            padding: 0 4px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50%;
+
+            background: #ff315b;
+            color: white;
+
+            font-size: 8px;
+            font-weight: 950;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .page {
+                padding:
+                    14px
+                    13px
+                    108px;
+            }
+
+            .hero {
+                padding: 22px 18px;
+                border-radius: 22px;
+            }
+
+            .hero h1 {
+                font-size: 29px;
+            }
+
+            .hero::after {
+                right: -10px;
+                top: 40px;
+                font-size: 95px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pack-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom-nav {
+                bottom: 6px;
+                width: calc(100% - 14px);
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .back-btn span,
+            .home-btn span {
+                display: none;
+            }
+
+            .back-btn,
+            .home-btn {
+                width: 43px;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+
+        <a href="{% url 'profile' %}" class="back-btn">
+            ← <span>Profile</span>
+        </a>
+
+        <div class="top-title">
+            <strong>Monthly Packs</strong>
+            <span>AMEXA Smart Shopping</span>
+        </div>
+
+        <a href="{% url 'home' %}" class="home-btn">
+            🏠 <span>Home</span>
+        </a>
+
+    </div>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="hero-badge">
+                ✨ AMEXA MONTHLY ESSENTIALS
+            </div>
+
+            <h1>
+                Your monthly shopping,
+                made simple.
+            </h1>
+
+            <p>
+                Create your own grocery pack, save frequently
+                purchased products and add the complete pack
+                to your cart whenever you need it.
+            </p>
+
+            <a
+                href="{% url 'monthly_pack_create' %}"
+                class="create-btn"
+            >
+                ＋ Create New Pack
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- INFO -->
+    <div class="info-grid">
+
+        <div class="info-card">
+            <div class="info-icon">🛒</div>
+
+            <div class="info-title">
+                Save Essentials
+            </div>
+
+            <div class="info-text">
+                Keep your regular grocery products together
+                in one reusable pack.
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-icon">⚡</div>
+
+            <div class="info-title">
+                Faster Shopping
+            </div>
+
+            <div class="info-text">
+                Add your complete monthly grocery list to
+                cart without searching again.
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-icon">🏪</div>
+
+            <div class="info-title">
+                Local Shop Pack
+            </div>
+
+            <div class="info-text">
+                Each pack stays connected with its selected
+                AMEXA local shop.
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- PACKS -->
+    <section class="section">
+
+        <div class="section-head">
+
+            <div class="section-title">
+                <h2>📦 My Packs</h2>
+                <p>
+                    Your saved monthly shopping packs
+                </p>
+            </div>
+
+            <div class="pack-count">
+                {{ packs|length }} Pack{{ packs|length|pluralize }}
+            </div>
+
+        </div>
+
+
+        {% if packs %}
+
+            <div class="pack-grid">
+
+                {% for pack in packs %}
+
+                    <article class="pack-card">
+
+                        <div class="pack-top">
+
+                            <div class="pack-icon">
+                                📦
+                            </div>
+
+                            <div class="active-badge">
+                                ACTIVE
+                            </div>
+
+                        </div>
+
+
+                        <h3 class="pack-name">
+                            {{ pack.name }}
+                        </h3>
+
+
+                        <div class="shop-name">
+                            🏪 {{ pack.shop.name }}
+                        </div>
+
+
+                        <div class="pack-description">
+
+                            {% if pack.description %}
+
+                                {{ pack.description|truncatechars:90 }}
+
+                            {% else %}
+
+                                Your reusable AMEXA monthly
+                                grocery pack.
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="pack-stats">
+
+                            <div class="stat">
+
+                                <div class="stat-value">
+                                    {{ pack.items.count }}
+                                </div>
+
+                                <div class="stat-label">
+                                    PRODUCTS
+                                </div>
+
+                            </div>
+
+
+                            <div class="stat">
+
+                                <div class="stat-value">
+                                    {{ pack.updated_at|date:"d M" }}
+                                </div>
+
+                                <div class="stat-label">
+                                    UPDATED
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <a
+                            href="{% url 'monthly_pack_detail' pack.id %}"
+                            class="open-pack"
+                        >
+                            Open Pack →
+                        </a>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    📦
+                </div>
+
+                <h3>
+                    No monthly pack yet
+                </h3>
+
+                <p>
+                    Create your first monthly grocery pack.
+                    Add rice, flour, oil, milk, snacks and
+                    other products you regularly purchase.
+                </p>
+
+                <a
+                    href="{% url 'monthly_pack_create' %}"
+                    class="create-btn"
+                >
+                    ＋ Create My First Pack
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+
+    <a href="{% url 'home' %}" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        Home
+    </a>
+
+    <a href="{% url 'nearby_shops' %}" class="nav-item">
+        <span class="nav-icon">🏪</span>
+        Shops
+    </a>
+
+    <a href="{% url 'monthly_packs' %}" class="nav-item active">
+        <span class="nav-icon">📦</span>
+        Packs
+    </a>
+
+    <a href="{% url 'profile' %}" class="nav-item">
+        <span class="nav-icon">👤</span>
+        Profile
+    </a>
+
+    <a href="{% url 'cart' %}" class="nav-item">
+
+        <span class="nav-icon">
+            🛒
+        </span>
+
+        {% if cart_count %}
+            <span class="cart-badge">
+                {{ cart_count }}
+            </span>
+        {% endif %}
+
+        Cart
+
+    </a>
+
+</nav>
+
+</body>
+</html>

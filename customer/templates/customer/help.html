@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if support %}{{ support.title }}{% else %}Help & Support{% endif %} | AMEXA</title>
+
+    <style>
+        *{
+            box-sizing:border-box;
+            margin:0;
+            padding:0;
+        }
+
+        body{
+            font-family:Arial,Helvetica,sans-serif;
+            background:#07111f;
+            color:#fff;
+            min-height:100vh;
+        }
+
+        a{
+            color:inherit;
+            text-decoration:none;
+        }
+
+        .page{
+            width:min(100%,720px);
+            margin:0 auto;
+            min-height:100vh;
+            padding-bottom:40px;
+        }
+
+        .topbar{
+            position:sticky;
+            top:0;
+            z-index:20;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:16px;
+            background:rgba(7,17,31,.94);
+            backdrop-filter:blur(16px);
+            border-bottom:1px solid rgba(255,255,255,.08);
+        }
+
+        .back{
+            width:42px;
+            height:42px;
+            display:grid;
+            place-items:center;
+            border-radius:14px;
+            background:#111d31;
+            border:1px solid rgba(255,255,255,.08);
+            font-size:22px;
+            font-weight:900;
+        }
+
+        .topbar h1{
+            font-size:18px;
+            font-weight:900;
+        }
+
+        .hero{
+            margin:16px;
+            padding:24px 20px;
+            border-radius:24px;
+            background:
+                radial-gradient(circle at 90% 10%,rgba(0,219,255,.20),transparent 30%),
+                radial-gradient(circle at 10% 100%,rgba(154,60,255,.24),transparent 35%),
+                linear-gradient(135deg,#102a58,#31146a);
+            border:1px solid rgba(255,255,255,.10);
+            box-shadow:0 18px 45px rgba(0,0,0,.25);
+        }
+
+        .hero-icon{
+            width:54px;
+            height:54px;
+            display:grid;
+            place-items:center;
+            border-radius:18px;
+            font-size:28px;
+            background:rgba(255,255,255,.10);
+            margin-bottom:14px;
+        }
+
+        .hero h2{
+            font-size:24px;
+            line-height:1.2;
+            margin-bottom:8px;
+        }
+
+        .hero p{
+            color:#d6def0;
+            font-size:13px;
+            line-height:1.65;
+        }
+
+        .section{
+            padding:0 16px;
+            margin-top:18px;
+        }
+
+        .section-title{
+            font-size:15px;
+            font-weight:900;
+            margin:0 0 10px 2px;
+        }
+
+        .card{
+            border-radius:20px;
+            background:#0e192b;
+            border:1px solid rgba(255,255,255,.08);
+            overflow:hidden;
+        }
+
+        .help-item{
+            padding:16px;
+            border-bottom:1px solid rgba(255,255,255,.07);
+        }
+
+        .help-item:last-child{
+            border-bottom:0;
+        }
+
+        .help-head{
+            display:flex;
+            align-items:center;
+            gap:11px;
+            margin-bottom:7px;
+        }
+
+        .help-icon{
+            width:38px;
+            height:38px;
+            display:grid;
+            place-items:center;
+            border-radius:12px;
+            background:#172843;
+            font-size:19px;
+            flex:0 0 auto;
+        }
+
+        .help-head h3{
+            font-size:14px;
+            font-weight:900;
+        }
+
+        .help-text{
+            white-space:pre-line;
+            color:#bec9dc;
+            font-size:12px;
+            line-height:1.65;
+            padding-left:49px;
+        }
+
+        .contact-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+        }
+
+        .contact{
+            display:block;
+            min-height:96px;
+            padding:15px;
+            border-radius:18px;
+            background:#0e192b;
+            border:1px solid rgba(255,255,255,.08);
+        }
+
+        .contact .emoji{
+            font-size:23px;
+            margin-bottom:9px;
+        }
+
+        .contact strong{
+            display:block;
+            font-size:13px;
+            margin-bottom:5px;
+        }
+
+        .contact span{
+            display:block;
+            color:#aebbd0;
+            font-size:11px;
+            line-height:1.45;
+            overflow-wrap:anywhere;
+        }
+
+        .hours{
+            margin-top:10px;
+            padding:14px 16px;
+            border-radius:18px;
+            background:#0e192b;
+            border:1px solid rgba(255,255,255,.08);
+            color:#c4cfe1;
+            font-size:12px;
+            line-height:1.5;
+        }
+
+        .hours strong{
+            color:#fff;
+        }
+
+        .empty{
+            margin:16px;
+            padding:24px 18px;
+            text-align:center;
+            border-radius:22px;
+            background:#0e192b;
+            border:1px solid rgba(255,255,255,.08);
+            color:#b9c4d6;
+            line-height:1.6;
+            font-size:13px;
+        }
+
+        @media (max-width:420px){
+            .contact-grid{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="page">
+
+    <header class="topbar">
+        <a href="{% url 'profile' %}" class="back" aria-label="Back">‹</a>
+        <h1>Help & Support</h1>
+    </header>
+
+    {% if support %}
+        <section class="hero">
+            <div class="hero-icon">🎧</div>
+            <h2>{{ support.title }}</h2>
+            <p>
+                {% if support.short_description %}
+                    {{ support.short_description }}
+                {% else %}
+                    We are here to help with your AMEXA orders and deliveries.
+                {% endif %}
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">How can we help?</h2>
+
+            <div class="card">
+
+                {% if support.order_help %}
+                <div class="help-item">
+                    <div class="help-head">
+                        <div class="help-icon">📦</div>
+                        <h3>Order Help</h3>
+                    </div>
+                    <div class="help-text">{{ support.order_help }}</div>
+                </div>
+                {% endif %}
+
+                {% if support.delivery_help %}
+                <div class="help-item">
+                    <div class="help-head">
+                        <div class="help-icon">🛵</div>
+                        <h3>Delivery Help</h3>
+                    </div>
+                    <div class="help-text">{{ support.delivery_help }}</div>
+                </div>
+                {% endif %}
+
+                {% if support.payment_help %}
+                <div class="help-item">
+                    <div class="help-head">
+                        <div class="help-icon">💳</div>
+                        <h3>Payment Help</h3>
+                    </div>
+                    <div class="help-text">{{ support.payment_help }}</div>
+                </div>
+                {% endif %}
+
+                {% if support.cancellation_help %}
+                <div class="help-item">
+                    <div class="help-head">
+                        <div class="help-icon">↩️</div>
+                        <h3>Cancellation & Refund</h3>
+                    </div>
+                    <div class="help-text">{{ support.cancellation_help }}</div>
+                </div>
+                {% endif %}
+
+                {% if support.faq %}
+                <div class="help-item">
+                    <div class="help-head">
+                        <div class="help-icon">❓</div>
+                        <h3>Frequently Asked Questions</h3>
+                    </div>
+                    <div class="help-text">{{ support.faq }}</div>
+                </div>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Contact AMEXA</h2>
+
+            <div class="contact-grid">
+
+                {% if support.support_phone %}
+                <a class="contact" href="tel:{{ support.support_phone }}">
+                    <div class="emoji">📞</div>
+                    <strong>Call Support</strong>
+                    <span>{{ support.support_phone }}</span>
+                </a>
+                {% endif %}
+
+                {% if support.whatsapp_number %}
+                <a class="contact"
+                   href="https://wa.me/{{ support.whatsapp_number|cut:'+'|cut:' '|cut:'-' }}"
+                   target="_blank"
+                   rel="noopener">
+                    <div class="emoji">💬</div>
+                    <strong>WhatsApp</strong>
+                    <span>{{ support.whatsapp_number }}</span>
+                </a>
+                {% endif %}
+
+                {% if support.support_email %}
+                <a class="contact" href="mailto:{{ support.support_email }}">
+                    <div class="emoji">✉️</div>
+                    <strong>Email</strong>
+                    <span>{{ support.support_email }}</span>
+                </a>
+                {% endif %}
+
+            </div>
+
+            {% if support.support_hours %}
+            <div class="hours">
+                <strong>Support hours:</strong> {{ support.support_hours }}
+            </div>
+            {% endif %}
+        </section>
+
+    {% else %}
+        <div class="empty">
+            <strong>Help & Support is being updated.</strong><br>
+            Please check again shortly.
+        </div>
+    {% endif %}
+
+</div>
+</body>
+</html>
