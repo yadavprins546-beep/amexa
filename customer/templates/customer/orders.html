@@ -1134,15 +1134,17 @@
 
                     <div class="order-actions">
 
+                        {% if order.order_number %}
                         <a
-
                             class="order-btn order-btn-primary"
-
                             href="{% url 'order_detail' order.order_number %}">
-
                             📍 Track / View Order
-
                         </a>
+                        {% else %}
+                        <span class="order-btn order-btn-muted">
+                            ⚠ Order details unavailable
+                        </span>
+                        {% endif %}
 
 
 
