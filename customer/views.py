@@ -4313,7 +4313,6 @@ def delivery_assignment_action_view(request, assignment_id):
         order = (
             Order.objects
             .select_for_update()
-            .select_related("master_order")
             .get(pk=assignment.order_id)
         )
 
