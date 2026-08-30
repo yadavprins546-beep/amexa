@@ -4211,21 +4211,23 @@ def _delivery_access_allowed(user):
 
 
 def _delivery_assignment_for_user(request, assignment_id, lock=False):
-    queryset = DeliveryAssignment.objects.select_related(
-        "order",
-        "order__shop",
-        "order__address",
-        "order__master_order",
-        "delivery_partner",
-    )
+    # PostgreSQL-safe locking: lock only the DeliveryAssignment row.
+    # Do not combine SELECT FOR UPDATE with nullable select_related joins
+    # such as order__master_order / order__shop.
+    queryset = DeliveryAssignment.objects.all()
 
     if lock:
         queryset = queryset.select_for_update()
 
     if not request.user.is_staff:
-        queryset = queryset.filter(delivery_partner=request.user)
+        queryset = queryset.filter(
+            delivery_partner=request.user
+        )
 
-    return get_object_or_404(queryset, pk=assignment_id)
+    return get_object_or_404(
+        queryset,
+        pk=assignment_id,
+    )
 
 
 @login_required
