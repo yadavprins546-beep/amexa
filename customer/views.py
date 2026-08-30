@@ -4276,6 +4276,31 @@ def delivery_dashboard_view(request):
         status="Completed"
     )[:20]
 
+    # Give the template the real start time for the current delivery stage.
+    # JavaScript reads this value, so refresh/re-login does not reset the timer.
+    active_assignments = list(active_assignments)
+    for assignment in active_assignments:
+        if assignment.status == "Assigned":
+            timer_started_at = assignment.assigned_at
+        elif assignment.status == "Accepted":
+            timer_started_at = assignment.accepted_at or assignment.assigned_at
+        elif (
+            assignment.status == "Picked"
+            and assignment.order.status != "Out for Delivery"
+        ):
+            timer_started_at = assignment.picked_at or assignment.accepted_at or assignment.assigned_at
+        elif (
+            assignment.status == "Picked"
+            and assignment.order.status == "Out for Delivery"
+        ):
+            timer_started_at = assignment.out_for_delivery_at or assignment.picked_at or assignment.assigned_at
+        else:
+            timer_started_at = assignment.assigned_at
+
+        assignment.timer_started_at_ms = int(
+            timer_started_at.timestamp() * 1000
+        )
+
     context = {
         "active_assignments": active_assignments,
         "completed_assignments": completed_assignments,
@@ -4334,7 +4359,8 @@ def delivery_assignment_action_view(request, assignment_id):
                 return redirect("delivery_dashboard")
 
             assignment.status = "Accepted"
-            assignment.save(update_fields=["status"])
+            assignment.accepted_at = timezone.now()
+            assignment.save(update_fields=["status", "accepted_at"])
 
             if order.status == "Pending":
                 order.status = "Confirmed"
@@ -4371,7 +4397,8 @@ def delivery_assignment_action_view(request, assignment_id):
                 return redirect("delivery_dashboard")
 
             assignment.status = "Picked"
-            assignment.save(update_fields=["status"])
+            assignment.picked_at = timezone.now()
+            assignment.save(update_fields=["status", "picked_at"])
 
             if order.status in {"Pending", "Confirmed"}:
                 order.status = "Preparing"
@@ -4409,6 +4436,10 @@ def delivery_assignment_action_view(request, assignment_id):
 
             if not order.delivery_otp:
                 order.delivery_otp = f"{random.randint(0, 999999):06d}"
+
+            if assignment.out_for_delivery_at is None:
+                assignment.out_for_delivery_at = timezone.now()
+                assignment.save(update_fields=["out_for_delivery_at"])
 
             order.status = "Out for Delivery"
             order.save(

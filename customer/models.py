@@ -360,6 +360,12 @@ class DeliveryAssignment(models.Model):
     delivery_partner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='deliveries')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Assigned')
     assigned_at = models.DateTimeField(auto_now_add=True)
+
+    # Persistent delivery-stage timestamps.
+    # These keep dashboard timers correct even after refresh/re-login.
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    picked_at = models.DateTimeField(null=True, blank=True)
+    out_for_delivery_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     # =====================================================
