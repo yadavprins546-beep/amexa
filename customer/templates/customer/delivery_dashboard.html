@@ -2,162 +2,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMEXA Delivery Partner</title>
-    <style>
-        *{box-sizing:border-box}
-        body{margin:0;font-family:Arial,sans-serif;background:#f6f7fb;color:#151515}
-        .wrap{max-width:900px;margin:auto;padding:18px}
-        .top{background:#111827;color:#fff;border-radius:22px;padding:22px;margin-bottom:18px}
-        .top h1{margin:0 0 8px;font-size:25px}
-        .top p{margin:0;color:#cbd5e1}
-        .online-form{margin-top:16px;display:flex;gap:10px;align-items:center}
-        .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
-        .btn-green{background:#16a34a;color:#fff}
-        .btn-red{background:#dc2626;color:#fff}
-        .btn-blue{background:#2563eb;color:#fff}
-        .btn-dark{background:#111827;color:#fff}
-        .btn-orange{background:#ea580c;color:#fff}
-        .btn-gray{background:#e5e7eb;color:#111827}
-        .section-title{font-size:20px;margin:22px 0 12px}
-        .card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 6px 25px rgba(0,0,0,.06)}
-        .row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
-        .order-no{font-size:18px;font-weight:800}
-        .badge{padding:7px 11px;border-radius:999px;background:#eef2ff;font-size:12px;font-weight:800}
-        .muted{color:#6b7280;font-size:14px}
-        .details{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}
-        .box{background:#f8fafc;border-radius:12px;padding:11px}
-        .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-        .otp{display:flex;gap:8px;flex-wrap:wrap}
-        .otp input{width:170px;border:1px solid #d1d5db;border-radius:12px;padding:12px;font-size:16px}
-        .empty{background:#fff;border-radius:18px;padding:30px;text-align:center;color:#6b7280}
-        .msg{padding:12px 15px;border-radius:12px;background:#fff7ed;margin-bottom:10px}
-        @media(max-width:600px){.details{grid-template-columns:1fr}.wrap{padding:12px}.btn{width:100%;text-align:center}.otp input{width:100%}}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMEXA Delivery Partner</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#070b16;--panel:#10182c;--line:rgba(255,255,255,.08);--text:#f8fafc;--muted:#94a0b8;--green:#19d98b;--blue:#2da8ff;--violet:#7a4dff;--orange:#ffb020;--red:#ff416c}
+body{margin:0;background:radial-gradient(circle at 10% 0%,rgba(45,168,255,.13),transparent 28%),radial-gradient(circle at 100% 0%,rgba(122,77,255,.14),transparent 26%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{width:min(980px,100%);margin:auto;padding:16px 12px 90px}
+.hero,.card,.empty{border:1px solid var(--line);background:linear-gradient(145deg,rgba(18,26,48,.98),rgba(8,13,27,.98));box-shadow:0 20px 55px rgba(0,0,0,.24)}
+.hero{padding:20px;border-radius:25px}
+.hero-row,.row,.section-head,.alert-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.kicker{font-size:9px;font-weight:950;letter-spacing:1.7px;color:#78ddff;text-transform:uppercase}
+h1{margin:5px 0;font-size:27px}.hero p{margin:0;color:var(--muted);font-size:11px}
+.status{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;font-size:9px;font-weight:950;background:rgba(255,255,255,.04)}
+.dot{width:8px;height:8px;border-radius:50%;background:#697386}.dot.on{background:var(--green);box-shadow:0 0 0 5px rgba(25,217,139,.09)}
+.hero-actions,.actions,.action-row{display:flex;gap:8px;flex-wrap:wrap}.hero-actions{margin-top:15px}.actions{margin-top:12px;flex-direction:column}
+.btn{border:0;border-radius:12px;padding:11px 13px;font-size:10px;font-weight:950;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn-green{background:linear-gradient(135deg,#14c982,#29e19a);color:#06150f}.btn-red{background:rgba(255,65,108,.12);color:#ff91a9;border:1px solid rgba(255,65,108,.2)}.btn-blue{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff}.btn-gray{background:rgba(255,255,255,.055);color:#dce4f1;border:1px solid var(--line)}
+.msg{margin-top:11px;padding:10px 12px;border-radius:11px;background:rgba(45,168,255,.07);border:1px solid rgba(45,168,255,.14);font-size:10px}
+.alert-center{display:none;margin-top:13px;padding:12px;border-radius:16px;background:linear-gradient(145deg,rgba(255,176,32,.09),rgba(255,65,108,.06));border:1px solid rgba(255,176,32,.18)}.alert-center.show{display:block}.alert-title{font-size:11px;font-weight:950}.alert-text{margin-top:4px;color:#d3dae8;font-size:9px}
+.section-head{align-items:end;margin:20px 2px 10px}.section-head h2{margin:0;font-size:18px}.section-head small{color:var(--muted);font-size:9px}.count{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:9px;font-weight:900}
+.card{padding:15px;border-radius:21px;margin-bottom:12px}.card.priority{border-color:rgba(255,176,32,.32)}.card.overdue{border-color:rgba(255,65,108,.42)}
+.order-no{font-size:16px;font-weight:950}.shop{margin-top:3px;color:#b3bed2;font-size:10px;font-weight:800}.badge{padding:7px 9px;border-radius:999px;background:rgba(45,168,255,.08);border:1px solid rgba(45,168,255,.15);color:#8fdcff;font-size:9px;font-weight:950}
+.timer{margin-top:11px;padding:10px 11px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.055);display:flex;justify-content:space-between;gap:10px}.timer small{display:block;color:#7f8aa0;font-size:8px;font-weight:900}.timer strong{font-size:11px}.warn{color:#ffd16f}.danger{color:#ff829d}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.box{padding:10px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05)}.box span{display:block;color:#7f8aa0;font-size:8px;font-weight:900;text-transform:uppercase;margin-bottom:5px}.box b{font-size:10px;line-height:1.45}.muted{color:#8f99ad;font-size:8px}
+.otp{display:grid;grid-template-columns:1fr auto;gap:8px}.otp input{min-width:0;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);color:#fff;border-radius:12px;padding:11px;outline:none}
+.swipe{position:relative;height:54px;border-radius:17px;overflow:hidden;border:1px solid rgba(255,255,255,.09);background:linear-gradient(135deg,rgba(45,168,255,.18),rgba(122,77,255,.18));touch-action:none;user-select:none}
+.swipe.green{background:linear-gradient(135deg,rgba(25,217,139,.18),rgba(45,168,255,.15))}.swipe.orange{background:linear-gradient(135deg,rgba(255,176,32,.18),rgba(255,100,0,.13))}
+.swipe-label{position:absolute;inset:0;display:grid;place-items:center;padding-left:46px;font-size:10px;font-weight:950;pointer-events:none}.thumb{position:absolute;left:5px;top:5px;width:44px;height:44px;border-radius:13px;background:#fff;color:#111827;display:grid;place-items:center;font-size:22px;font-weight:950;box-shadow:0 7px 18px rgba(0,0,0,.3);cursor:grab}
+.note{margin-top:10px;padding:9px 10px;border:1px solid rgba(255,255,255,.05);border-radius:10px;color:#7f8ba0;font-size:8px;background:rgba(255,255,255,.02)}
+.empty{padding:27px 16px;text-align:center;border-radius:18px;color:#8f99ad;font-size:10px}
+@media(max-width:620px){.wrap{padding:10px 9px 80px}.hero{padding:16px}.hero h1{font-size:22px}.details{grid-template-columns:1fr}.otp{grid-template-columns:1fr}.otp .btn{width:100%}.hero-actions .btn{flex:1}}
+</style>
 </head>
 <body>
 <div class="wrap">
-    <div class="top">
-        <h1>🚴 AMEXA Delivery Partner</h1>
-        <p>{{ request.user.name }} · Assigned delivery dashboard</p>
+<section class="hero">
+  <div class="hero-row">
+    <div><div class="kicker">AMEXA Fleet</div><h1>Delivery Partner</h1><p>{{ request.user.name }} · Assigned delivery dashboard</p></div>
+    {% if request.user.is_active_delivery %}<div class="status"><span class="dot on"></span>Online</div>{% else %}<div class="status"><span class="dot"></span>Offline</div>{% endif %}
+  </div>
 
-        {% if is_delivery_partner %}
-        <form method="post" class="online-form">
-            {% csrf_token %}
-            {% if request.user.is_active_delivery %}
-                <input type="hidden" name="is_active_delivery" value="0">
-                <button class="btn btn-red" type="submit">Go Offline</button>
-                <strong>🟢 Online</strong>
-            {% else %}
-                <input type="hidden" name="is_active_delivery" value="1">
-                <button class="btn btn-green" type="submit">Go Online</button>
-                <strong>⚫ Offline</strong>
-            {% endif %}
-        </form>
-        {% endif %}
+  {% if is_delivery_partner %}
+  <form method="post" class="hero-actions">
+    {% csrf_token %}
+    {% if request.user.is_active_delivery %}
+      <input type="hidden" name="is_active_delivery" value="0"><button class="btn btn-red" type="submit">⏻ Go Offline</button>
+    {% else %}
+      <input type="hidden" name="is_active_delivery" value="1"><button class="btn btn-green" type="submit">⚡ Go Online</button>
+    {% endif %}
+    <button class="btn btn-gray" id="enableAlerts" type="button">🔔 Enable Alerts</button>
+  </form>
+  {% endif %}
+
+  <div class="alert-center" id="alertCenter">
+    <div class="alert-row">
+      <div><div class="alert-title" id="alertTitle">Action required</div><div class="alert-text" id="alertText"></div></div>
+      <button class="btn btn-gray" id="ackAlert" type="button">Acknowledge</button>
     </div>
+  </div>
+</section>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="msg">{{ message }}</div>
-        {% endfor %}
+{% if messages %}{% for message in messages %}<div class="msg">{{ message }}</div>{% endfor %}{% endif %}
+
+<div class="section-head"><div><h2>Active Deliveries</h2><small>Swipe to safely update each delivery stage.</small></div><span class="count">{{ active_assignments|length }} active</span></div>
+
+{% for assignment in active_assignments %}
+<article class="card delivery-card" data-status="{{ assignment.status }}" data-order-status="{{ assignment.order.status }}" data-order="{{ assignment.order.order_number }}">
+  <div class="row"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">{{ assignment.status }}</span></div>
+
+  <div class="timer"><div><small>ACTION TIMER</small><div class="muted action-copy">Keep status updated</div></div><strong class="js-timer">00:00</strong></div>
+
+  <div class="details">
+    <div class="box"><span>Customer</span><b>{{ assignment.order.address.full_name }}</b><div class="muted">Contact protected by AMEXA</div></div>
+    <div class="box"><span>Delivery Address</span><b>{{ assignment.order.address.address_line }}, {{ assignment.order.address.city }} - {{ assignment.order.address.pincode }}</b></div>
+    <div class="box"><span>Order Status</span><b>{{ assignment.order.status }}</b></div>
+    <div class="box"><span>Amount</span><b>₹{{ assignment.order.total_amount }} · {{ assignment.order.payment_method }}</b></div>
+  </div>
+
+  <div class="actions">
+    {% if assignment.status == "Assigned" %}
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form">{% csrf_token %}<input type="hidden" name="action" value="accept"><div class="swipe green js-swipe"><div class="swipe-label">Swipe to Accept Order →</div><div class="thumb">›</div></div></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" onsubmit="return confirm('Reject this delivery assignment?');">{% csrf_token %}<input type="hidden" name="action" value="reject"><button class="btn btn-red" type="submit" style="width:100%">✕ Reject Assignment</button></form>
     {% endif %}
 
-    <h2 class="section-title">Active Deliveries</h2>
+    {% if assignment.status == "Accepted" %}
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form">{% csrf_token %}<input type="hidden" name="action" value="picked"><div class="swipe orange js-swipe"><div class="swipe-label">Swipe after collecting order →</div><div class="thumb">›</div></div></form>
+    {% endif %}
 
-    {% for assignment in active_assignments %}
-    <div class="card">
-        <div class="row">
-            <div>
-                <div class="order-no">#{{ assignment.order.order_number }}</div>
-                <div class="muted">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div>
-            </div>
-            <span class="badge">{{ assignment.status }}</span>
-        </div>
+    {% if assignment.status == "Picked" and assignment.order.status != "Out for Delivery" %}
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form">{% csrf_token %}<input type="hidden" name="action" value="out_for_delivery"><div class="swipe js-swipe"><div class="swipe-label">Swipe to Start Delivery →</div><div class="thumb">›</div></div></form>
+    {% endif %}
 
-        <div class="details">
-            <div class="box">
-                <strong>Customer</strong><br>
-                {{ assignment.order.address.full_name }}<br>
-                <span class="muted">Customer contact protected by AMEXA</span>
-            </div>
-            <div class="box">
-                <strong>Delivery Address</strong><br>
-                {{ assignment.order.address.address_line }},
-                {{ assignment.order.address.city }} - {{ assignment.order.address.pincode }}
-            </div>
-            <div class="box">
-                <strong>Order Status</strong><br>
-                {{ assignment.order.status }}
-            </div>
-            <div class="box">
-                <strong>Amount</strong><br>
-                ₹{{ assignment.order.total_amount }} · {{ assignment.order.payment_method }}
-            </div>
-        </div>
+    {% if assignment.status == "Picked" and assignment.order.status == "Out for Delivery" %}
+    <a class="btn btn-blue" href="{% url 'delivery_live_tracking' assignment.order.order_number %}">📍 Live GPS</a>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="otp">{% csrf_token %}<input type="hidden" name="action" value="complete"><input name="delivery_otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="Customer 6-digit OTP" required><button class="btn btn-green" type="submit">✓ Verify & Deliver</button></form>
+    {% endif %}
+  </div>
+  <div class="note">🔒 Final delivery requires the customer OTP. Never ask for UPI PIN, card PIN or banking password.</div>
+</article>
+{% empty %}<div class="empty">No active delivery assigned right now.</div>{% endfor %}
 
-        <div class="actions">
-            {% if assignment.status == "Assigned" %}
-            <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="accept">
-                <button class="btn btn-green" type="submit">✓ Accept Order</button>
-            </form>
-            <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="reject">
-                <button class="btn btn-red" type="submit">Reject</button>
-            </form>
-            {% endif %}
-
-            {% if assignment.status == "Accepted" %}
-            <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="picked">
-                <button class="btn btn-orange" type="submit">📦 Picked Up</button>
-            </form>
-            {% endif %}
-
-            {% if assignment.status == "Picked" and assignment.order.status != "Out for Delivery" %}
-            <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="out_for_delivery">
-                <button class="btn btn-blue" type="submit">🚚 Out for Delivery</button>
-            </form>
-            {% endif %}
-
-            {% if assignment.status == "Picked" and assignment.order.status == "Out for Delivery" %}
-            <a class="btn btn-blue" href="{% url 'delivery_live_tracking' assignment.order.order_number %}">
-                📍 Start Live GPS
-            </a>
-            <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="otp">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="complete">
-                <input name="delivery_otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="Customer 6-digit OTP" required>
-                <button class="btn btn-green" type="submit">✓ Verify & Deliver</button>
-            </form>
-            {% endif %}
-        </div>
-    </div>
-    {% empty %}
-        <div class="empty">No active delivery assigned right now.</div>
-    {% endfor %}
-
-    <h2 class="section-title">Recent Completed</h2>
-    {% for assignment in completed_assignments %}
-        <div class="card">
-            <div class="row">
-                <div>
-                    <div class="order-no">#{{ assignment.order.order_number }}</div>
-                    <div class="muted">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div>
-                </div>
-                <span class="badge">Delivered ✓</span>
-            </div>
-        </div>
-    {% empty %}
-        <div class="empty">No completed deliveries yet.</div>
-    {% endfor %}
+<div class="section-head"><div><h2>Recent Completed</h2><small>Latest successfully completed deliveries.</small></div><span class="count">{{ completed_assignments|length }} done</span></div>
+{% for assignment in completed_assignments %}
+<div class="card"><div class="row"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">Delivered ✓</span></div></div>
+{% empty %}<div class="empty">No completed deliveries yet.</div>{% endfor %}
 </div>
+
+<script>
+(function(){
+ const center=document.getElementById("alertCenter"),title=document.getElementById("alertTitle"),text=document.getElementById("alertText"),enable=document.getElementById("enableAlerts"),ack=document.getElementById("ackAlert");
+ let ctx=null,enabled=localStorage.getItem("amexaAlerts")==="1",last=0,ackUntil=0;
+ function audio(){try{if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(C)ctx=new C()}if(ctx&&ctx.state==="suspended")ctx.resume()}catch(e){}}
+ function beep(danger){if(!enabled)return;audio();if(!ctx||Date.now()-last<12000)return;last=Date.now();try{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=danger?920:720;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.45);o.start();o.stop(ctx.currentTime+.48)}catch(e){}}
+ function alertBox(t,m,d){if(Date.now()<ackUntil)return;title.textContent=t;text.textContent=m;center.classList.add("show");beep(d)}
+ if(enable){enable.textContent=enabled?"🔔 Alerts Enabled":"🔔 Enable Alerts";enable.onclick=function(){enabled=true;localStorage.setItem("amexaAlerts","1");audio();enable.textContent="🔔 Alerts Enabled";alertBox("Alerts enabled","AMEXA will warn you when a delivery action is overdue.",false)}}
+ if(ack)ack.onclick=function(){center.classList.remove("show");ackUntil=Date.now()+60000};
+
+ const rules={Assigned:{warn:60,late:120,label:"Accept this order"},Accepted:{warn:600,late:900,label:"Collect order from shop"},Picked:{warn:180,late:300,label:"Update delivery status"}};
+ document.querySelectorAll(".delivery-card").forEach(card=>{
+   const s=card.dataset.status,os=card.dataset.orderStatus,no=card.dataset.order,rule=rules[s],timer=card.querySelector(".js-timer"),copy=card.querySelector(".action-copy");
+   if(!rule||(s==="Picked"&&os==="Out for Delivery")){timer.textContent="On route";copy.textContent="Deliver safely and verify customer OTP.";return}
+   copy.textContent=rule.label;const started=Date.now();
+   setInterval(()=>{const e=Math.floor((Date.now()-started)/1000),m=String(Math.floor(e/60)).padStart(2,"0"),sec=String(e%60).padStart(2,"0");timer.textContent=m+":"+sec;
+     if(e>=rule.late){card.classList.add("overdue");timer.classList.add("danger");alertBox("🚨 Delivery action overdue","#"+no+" · "+rule.label+". Please update now.",true)}
+     else if(e>=rule.warn){card.classList.add("priority");timer.classList.add("warn");alertBox("⚠ Action due soon","#"+no+" · "+rule.label+".",false)}
+   },1000)
+ });
+
+ document.querySelectorAll(".js-swipe").forEach(shell=>{
+   const thumb=shell.querySelector(".thumb"),form=shell.closest("form");let drag=false,startX=0,startL=5;
+   const max=()=>Math.max(5,shell.clientWidth-thumb.offsetWidth-5);
+   const move=x=>{const v=Math.max(5,Math.min(max(),x));thumb.style.left=v+"px";return v};
+   const reset=()=>{thumb.style.transition="left .2s";move(5);setTimeout(()=>thumb.style.transition="",220)};
+   thumb.onpointerdown=e=>{drag=true;startX=e.clientX;startL=parseFloat(getComputedStyle(thumb).left)||5;thumb.setPointerCapture(e.pointerId)};
+   thumb.onpointermove=e=>{if(drag)move(startL+e.clientX-startX)};
+   thumb.onpointerup=()=>{if(!drag)return;drag=false;const cur=parseFloat(getComputedStyle(thumb).left)||5,ratio=(cur-5)/Math.max(1,max()-5);if(ratio>=.82){move(max());setTimeout(()=>form.submit(),160)}else reset()};
+   thumb.onpointercancel=()=>{drag=false;reset()}
+ });
+})();
+</script>
 </body>
 </html>
