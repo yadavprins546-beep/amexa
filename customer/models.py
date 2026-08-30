@@ -397,6 +397,62 @@ class DeliveryAssignment(models.Model):
         return f"Order {self.order.order_number} -> {self.delivery_partner.name} ({self.status})"
 
 
+class DeliverySupportRequest(models.Model):
+    REQUEST_TYPES = [
+        ("HELP", "Help Request"),
+        ("CLAIM", "Claim / Issue"),
+    ]
+
+    STATUS_CHOICES = [
+        ("Open", "Open"),
+        ("In Review", "In Review"),
+        ("Resolved", "Resolved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    delivery_partner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="delivery_support_requests",
+    )
+    request_type = models.CharField(
+        max_length=10,
+        choices=REQUEST_TYPES,
+        default="HELP",
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="delivery_support_requests",
+    )
+    subject = models.CharField(max_length=160)
+    description = models.TextField()
+    amount_claimed = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Open",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.get_request_type_display()} - "
+            f"{self.delivery_partner} - {self.status}"
+        )
+
+
 class OrderStatusHistory(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='status_history')
     status = models.CharField(max_length=25)

@@ -30,6 +30,7 @@ from .models import (
     Coupon,
     CouponUsage,
     DeliveryAssignment,
+    DeliverySupportRequest,
     MasterOrder,
     MonthlyPack,
     MonthlyPackItem,
@@ -4236,19 +4237,110 @@ def delivery_dashboard_view(request):
         messages.error(request, "Delivery partner access required.")
         return redirect("home")
 
-    if request.method == "POST" and not request.user.is_staff:
-        request.user.is_active_delivery = (
-            request.POST.get("is_active_delivery") == "1"
-        )
-        request.user.save(update_fields=["is_active_delivery"])
+    # ---------------------------------------------------------
+    # Dashboard POST actions:
+    # - online/offline availability
+    # - 24/7 help request
+    # - claim/issue submission
+    # ---------------------------------------------------------
+    if request.method == "POST":
+        form_type = (request.POST.get("form_type") or "availability").strip()
 
-        messages.success(
-            request,
-            "You are online for deliveries."
-            if request.user.is_active_delivery
-            else "You are offline for deliveries.",
-        )
-        return redirect("delivery_dashboard")
+        if form_type == "availability":
+            if request.user.is_staff:
+                messages.info(
+                    request,
+                    "Staff preview cannot change delivery availability.",
+                )
+            else:
+                request.user.is_active_delivery = (
+                    request.POST.get("is_active_delivery") == "1"
+                )
+                request.user.save(update_fields=["is_active_delivery"])
+
+                messages.success(
+                    request,
+                    "You are online for deliveries."
+                    if request.user.is_active_delivery
+                    else "You are offline for deliveries.",
+                )
+
+            return redirect("delivery_dashboard")
+
+        if form_type in {"help_request", "claim"}:
+            if getattr(request.user, "role", "") != "DELIVERY":
+                messages.error(
+                    request,
+                    "Only delivery partners can submit support requests.",
+                )
+                return redirect("delivery_dashboard")
+
+            subject = (request.POST.get("subject") or "").strip()
+            description = (request.POST.get("description") or "").strip()
+            order_number = (
+                request.POST.get("order_number") or ""
+            ).strip()
+            amount_raw = (
+                request.POST.get("amount_claimed") or ""
+            ).strip()
+
+            if not subject or not description:
+                messages.error(
+                    request,
+                    "Subject and description are required.",
+                )
+                return redirect("delivery_dashboard")
+
+            related_order = None
+            if order_number:
+                related_order = (
+                    Order.objects
+                    .filter(
+                        order_number=order_number,
+                        delivery_assignments__delivery_partner=request.user,
+                    )
+                    .distinct()
+                    .first()
+                )
+                if related_order is None:
+                    messages.error(
+                        request,
+                        "Order number was not found in your deliveries.",
+                    )
+                    return redirect("delivery_dashboard")
+
+            amount_claimed = None
+            if form_type == "claim" and amount_raw:
+                try:
+                    amount_claimed = Decimal(amount_raw)
+                    if amount_claimed < 0:
+                        raise ValueError
+                except Exception:
+                    messages.error(
+                        request,
+                        "Enter a valid claim amount.",
+                    )
+                    return redirect("delivery_dashboard")
+
+            DeliverySupportRequest.objects.create(
+                delivery_partner=request.user,
+                request_type=(
+                    "CLAIM" if form_type == "claim" else "HELP"
+                ),
+                order=related_order,
+                subject=subject,
+                description=description,
+                amount_claimed=amount_claimed,
+                status="Open",
+            )
+
+            messages.success(
+                request,
+                "Claim submitted successfully."
+                if form_type == "claim"
+                else "Help request submitted. AMEXA Support will review it.",
+            )
+            return redirect("delivery_dashboard")
 
     assignments = (
         DeliveryAssignment.objects
@@ -4272,33 +4364,85 @@ def delivery_dashboard_view(request):
         status__in=["Completed", "Rejected"]
     )
 
-    completed_assignments = assignments.filter(
+    completed_assignments_qs = assignments.filter(
         status="Completed"
-    )[:20]
+    )
 
-    # Give the template the real start time for the current delivery stage.
-    # JavaScript reads this value, so refresh/re-login does not reset the timer.
+    completed_assignments = completed_assignments_qs[:20]
+
+    # Persistent delivery timers.
     active_assignments = list(active_assignments)
     for assignment in active_assignments:
         if assignment.status == "Assigned":
             timer_started_at = assignment.assigned_at
         elif assignment.status == "Accepted":
-            timer_started_at = assignment.accepted_at or assignment.assigned_at
+            timer_started_at = (
+                assignment.accepted_at
+                or assignment.assigned_at
+            )
         elif (
             assignment.status == "Picked"
             and assignment.order.status != "Out for Delivery"
         ):
-            timer_started_at = assignment.picked_at or assignment.accepted_at or assignment.assigned_at
+            timer_started_at = (
+                assignment.picked_at
+                or assignment.accepted_at
+                or assignment.assigned_at
+            )
         elif (
             assignment.status == "Picked"
             and assignment.order.status == "Out for Delivery"
         ):
-            timer_started_at = assignment.out_for_delivery_at or assignment.picked_at or assignment.assigned_at
+            timer_started_at = (
+                assignment.out_for_delivery_at
+                or assignment.picked_at
+                or assignment.assigned_at
+            )
         else:
             timer_started_at = assignment.assigned_at
 
         assignment.timer_started_at_ms = int(
             timer_started_at.timestamp() * 1000
+        )
+
+    # ---------------------------------------------------------
+    # Earnings overview.
+    # Existing AMEXA rule: ₹15 delivery payout per completed shop order.
+    # ---------------------------------------------------------
+    now = timezone.now()
+    today_start = now.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    week_start = today_start - timedelta(days=today_start.weekday())
+    month_start = today_start.replace(day=1)
+
+    payout_per_delivery = DELIVERY_PARTNER_PAYOUT_PER_SHOP
+
+    today_deliveries = completed_assignments_qs.filter(
+        completed_at__gte=today_start
+    ).count()
+    week_deliveries = completed_assignments_qs.filter(
+        completed_at__gte=week_start
+    ).count()
+    month_deliveries = completed_assignments_qs.filter(
+        completed_at__gte=month_start
+    ).count()
+    all_deliveries = completed_assignments_qs.count()
+
+    today_earnings = payout_per_delivery * today_deliveries
+    week_earnings = payout_per_delivery * week_deliveries
+    month_earnings = payout_per_delivery * month_deliveries
+    total_earnings = payout_per_delivery * all_deliveries
+
+    support_requests = DeliverySupportRequest.objects.none()
+    if getattr(request.user, "role", "") == "DELIVERY":
+        support_requests = (
+            DeliverySupportRequest.objects
+            .filter(delivery_partner=request.user)
+            .select_related("order")[:10]
         )
 
     context = {
@@ -4307,6 +4451,16 @@ def delivery_dashboard_view(request):
         "is_delivery_partner": (
             getattr(request.user, "role", "") == "DELIVERY"
         ),
+        "payout_per_delivery": payout_per_delivery,
+        "today_deliveries": today_deliveries,
+        "week_deliveries": week_deliveries,
+        "month_deliveries": month_deliveries,
+        "all_deliveries": all_deliveries,
+        "today_earnings": today_earnings,
+        "week_earnings": week_earnings,
+        "month_earnings": month_earnings,
+        "total_earnings": total_earnings,
+        "support_requests": support_requests,
     }
 
     return render(
