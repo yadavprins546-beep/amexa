@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 from django.utils.text import slugify
 import math
 
@@ -450,6 +451,435 @@ class DeliverySupportRequest(models.Model):
         return (
             f"{self.get_request_type_display()} - "
             f"{self.delivery_partner} - {self.status}"
+        )
+
+
+# =========================================================
+# DELIVERY PARTNER ONBOARDING / KYC / BANK VERIFICATION
+# =========================================================
+
+class DeliveryPartnerProfile(models.Model):
+    VERIFICATION_STATUS_CHOICES = [
+        ("DRAFT", "Draft"),
+        ("PENDING", "Verification Pending"),
+        ("UNDER_REVIEW", "Under Review"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+        ("BLOCKED", "Blocked"),
+    ]
+
+    VEHICLE_TYPE_CHOICES = [
+        ("BICYCLE", "Bicycle"),
+        ("BIKE", "Bike"),
+        ("SCOOTER", "Scooter"),
+        ("EV", "Electric Vehicle"),
+        ("OTHER", "Other"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="delivery_profile",
+    )
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_photo = models.ImageField(
+        upload_to="private/delivery/profile/",
+        null=True,
+        blank=True,
+    )
+    full_address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    pincode = models.CharField(max_length=10, blank=True)
+    emergency_contact_name = models.CharField(max_length=150, blank=True)
+    emergency_contact_phone = models.CharField(max_length=15, blank=True)
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=VEHICLE_TYPE_CHOICES,
+        blank=True,
+    )
+    vehicle_number = models.CharField(max_length=20, blank=True)
+
+    onboarding_step = models.PositiveSmallIntegerField(default=1)
+    terms_accepted = models.BooleanField(default=False)
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default="DRAFT",
+        db_index=True,
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_delivery_profiles",
+    )
+    rejection_reason = models.TextField(blank=True)
+    admin_note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["verification_status", "created_at"]),
+        ]
+
+    @property
+    def is_approved(self):
+        return self.verification_status == "APPROVED"
+
+    @property
+    def can_access_dashboard(self):
+        return (
+            self.is_approved
+            and self.user.is_active
+            and getattr(self.user, "role", "") == "DELIVERY"
+        )
+
+    def submit_for_verification(self):
+        self.verification_status = "PENDING"
+        self.submitted_at = timezone.now()
+        self.reviewed_at = None
+        self.reviewed_by = None
+        self.rejection_reason = ""
+        self.save(
+            update_fields=[
+                "verification_status",
+                "submitted_at",
+                "reviewed_at",
+                "reviewed_by",
+                "rejection_reason",
+                "updated_at",
+            ]
+        )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if (
+            self.verification_status != "APPROVED"
+            and self.user.is_active_delivery
+        ):
+            type(self.user).objects.filter(pk=self.user_id).update(
+                is_active_delivery=False
+            )
+            self.user.is_active_delivery = False
+
+    def __str__(self):
+        return f"{self.user} - {self.get_verification_status_display()}"
+
+
+class DeliveryPartnerDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ("AADHAAR_FRONT", "Aadhaar Front"),
+        ("AADHAAR_BACK", "Aadhaar Back"),
+        ("PAN", "PAN Card"),
+        ("DRIVING_LICENCE", "Driving Licence"),
+        ("VEHICLE_RC", "Vehicle RC"),
+        ("SELFIE", "Verification Selfie"),
+    ]
+
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("VERIFIED", "Verified"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    profile = models.ForeignKey(
+        DeliveryPartnerProfile,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+    document_type = models.CharField(
+        max_length=30,
+        choices=DOCUMENT_TYPE_CHOICES,
+    )
+    document_file = models.FileField(
+        upload_to="private/delivery/documents/",
+    )
+    document_number_hash = models.CharField(
+        max_length=64,
+        blank=True,
+        editable=False,
+    )
+    document_number_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        editable=False,
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+    )
+    rejection_reason = models.TextField(blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_delivery_documents",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["document_type"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile", "document_type"],
+                name="unique_delivery_profile_document_type",
+            ),
+        ]
+
+    def set_document_number(self, number):
+        normalized = "".join(
+            character
+            for character in str(number or "").upper()
+            if character.isalnum()
+        )
+        self.document_number_last4 = normalized[-4:]
+        self.document_number_hash = (
+            salted_hmac(
+                "amexa.delivery.document",
+                normalized,
+            ).hexdigest()
+            if normalized
+            else ""
+        )
+
+    @property
+    def masked_document_number(self):
+        if not self.document_number_last4:
+            return "Not provided"
+        return f"XXXX-XXXX-{self.document_number_last4}"
+
+    def __str__(self):
+        return f"{self.profile.user} - {self.get_document_type_display()}"
+
+
+class DeliveryPartnerBankAccount(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("VERIFIED", "Verified"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    profile = models.OneToOneField(
+        DeliveryPartnerProfile,
+        on_delete=models.CASCADE,
+        related_name="bank_account",
+    )
+    account_holder_name = models.CharField(max_length=150)
+    bank_name = models.CharField(max_length=150, blank=True)
+    account_number_hash = models.CharField(
+        max_length=64,
+        editable=False,
+    )
+    account_number_last4 = models.CharField(
+        max_length=4,
+        editable=False,
+    )
+    ifsc_code = models.CharField(max_length=11)
+    cancelled_cheque = models.FileField(
+        upload_to="private/delivery/bank/",
+        null=True,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+    )
+    rejection_reason = models.TextField(blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_delivery_bank_accounts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Delivery Partner Bank Account"
+        verbose_name_plural = "Delivery Partner Bank Accounts"
+
+    def set_account_number(self, account_number):
+        normalized = "".join(
+            character
+            for character in str(account_number or "")
+            if character.isdigit()
+        )
+        self.account_number_last4 = normalized[-4:]
+        self.account_number_hash = (
+            salted_hmac(
+                "amexa.delivery.bank",
+                normalized,
+            ).hexdigest()
+            if normalized
+            else ""
+        )
+
+    @property
+    def masked_account_number(self):
+        return f"XXXXXX{self.account_number_last4}"
+
+    def save(self, *args, **kwargs):
+        self.ifsc_code = (self.ifsc_code or "").strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.profile.user} - {self.masked_account_number}"
+
+
+# =========================================================
+# DELIVERY INCENTIVES / TARGET PROGRESS
+# =========================================================
+
+class DeliveryIncentive(models.Model):
+    INCENTIVE_TYPE_CHOICES = [
+        ("DAILY", "Daily Target"),
+        ("WEEKLY", "Weekly Target"),
+        ("PEAK_HOURS", "Peak Hours"),
+        ("STREAK", "Target Streak"),
+        ("FESTIVAL", "Festival Bonus"),
+    ]
+
+    title = models.CharField(max_length=150)
+    description = models.CharField(max_length=255, blank=True)
+    incentive_type = models.CharField(
+        max_length=20,
+        choices=INCENTIVE_TYPE_CHOICES,
+        default="DAILY",
+    )
+    required_deliveries = models.PositiveIntegerField(default=10)
+    bonus_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=100,
+    )
+    start_at = models.DateTimeField(default=timezone.now)
+    end_at = models.DateTimeField(null=True, blank=True)
+    peak_start_time = models.TimeField(null=True, blank=True)
+    peak_end_time = models.TimeField(null=True, blank=True)
+    terms = models.TextField(
+        blank=True,
+        default="Only successfully delivered orders count towards this target.",
+    )
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_delivery_incentives",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-start_at"]
+        indexes = [
+            models.Index(fields=["is_active", "start_at", "end_at"]),
+        ]
+
+    @property
+    def is_currently_active(self):
+        now = timezone.now()
+        return (
+            self.is_active
+            and self.start_at <= now
+            and (self.end_at is None or now <= self.end_at)
+        )
+
+    def __str__(self):
+        return f"{self.title} - ₹{self.bonus_amount}"
+
+
+class DeliveryIncentiveProgress(models.Model):
+    STATUS_CHOICES = [
+        ("IN_PROGRESS", "In Progress"),
+        ("COMPLETED", "Completed"),
+        ("CREDITED", "Bonus Credited"),
+        ("EXPIRED", "Expired"),
+    ]
+
+    incentive = models.ForeignKey(
+        DeliveryIncentive,
+        on_delete=models.CASCADE,
+        related_name="progress_records",
+    )
+    delivery_partner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="delivery_incentive_progress",
+    )
+    period_start = models.DateTimeField()
+    period_end = models.DateTimeField()
+    completed_deliveries = models.PositiveIntegerField(default=0)
+    bonus_earned = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="IN_PROGRESS",
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    credited_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-period_start"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "incentive",
+                    "delivery_partner",
+                    "period_start",
+                ],
+                name="unique_delivery_incentive_period",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["delivery_partner", "status"]),
+            models.Index(fields=["period_start", "period_end"]),
+        ]
+
+    @property
+    def progress_percentage(self):
+        target = self.incentive.required_deliveries
+        if target <= 0:
+            return 100
+        return min(
+            100,
+            int(self.completed_deliveries * 100 / target),
+        )
+
+    @property
+    def remaining_deliveries(self):
+        return max(
+            0,
+            self.incentive.required_deliveries
+            - self.completed_deliveries,
+        )
+
+    def __str__(self):
+        return (
+            f"{self.delivery_partner} - {self.incentive.title} "
+            f"({self.completed_deliveries}/"
+            f"{self.incentive.required_deliveries})"
         )
 
 
@@ -1353,4 +1783,3 @@ class Referral(models.Model):
 
     def __str__(self):
         return f"{self.referrer} -> {self.referred_user}"
-
