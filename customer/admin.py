@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.utils import timezone
 
 from .models import (
     AboutPage,
@@ -21,6 +22,11 @@ from .models import (
     Category,
     CustomerUser,
     DeliveryAssignment,
+    DeliveryIncentive,
+    DeliveryIncentiveProgress,
+    DeliveryPartnerBankAccount,
+    DeliveryPartnerDocument,
+    DeliveryPartnerProfile,
     DeliverySupportRequest,
     OTPVerification,
     Order,
@@ -1235,4 +1241,361 @@ class CouponUsageAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         "used_at",
+    )
+
+
+# =========================================================
+# DELIVERY PARTNER VERIFICATION ADMIN
+# =========================================================
+
+@admin.register(DeliveryPartnerProfile)
+class DeliveryPartnerProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "verification_status",
+        "onboarding_step",
+        "vehicle_type",
+        "city",
+        "submitted_at",
+        "reviewed_at",
+    )
+    search_fields = (
+        "user__name",
+        "user__email",
+        "user__phone",
+        "vehicle_number",
+        "city",
+        "pincode",
+    )
+    list_filter = (
+        "verification_status",
+        "vehicle_type",
+        "terms_accepted",
+        "submitted_at",
+    )
+    list_select_related = (
+        "user",
+        "reviewed_by",
+    )
+    readonly_fields = (
+        "submitted_at",
+        "reviewed_at",
+        "reviewed_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = (
+        "mark_under_review",
+        "approve_partners",
+        "block_partners",
+    )
+
+    fieldsets = (
+        (
+            "Delivery Partner",
+            {
+                "fields": (
+                    "user",
+                    "profile_photo",
+                    "date_of_birth",
+                    "full_address",
+                    "city",
+                    "state",
+                    "pincode",
+                    "emergency_contact_name",
+                    "emergency_contact_phone",
+                )
+            },
+        ),
+        (
+            "Vehicle",
+            {
+                "fields": (
+                    "vehicle_type",
+                    "vehicle_number",
+                )
+            },
+        ),
+        (
+            "Onboarding & Verification",
+            {
+                "fields": (
+                    "onboarding_step",
+                    "terms_accepted",
+                    "verification_status",
+                    "rejection_reason",
+                    "admin_note",
+                    "submitted_at",
+                    "reviewed_at",
+                    "reviewed_by",
+                )
+            },
+        ),
+        (
+            "Record",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                )
+            },
+        ),
+    )
+
+    def save_model(self, request, obj, form, change):
+        if "verification_status" in form.changed_data:
+            obj.reviewed_by = request.user
+            obj.reviewed_at = timezone.now()
+
+            if obj.verification_status != "REJECTED":
+                obj.rejection_reason = ""
+
+        super().save_model(request, obj, form, change)
+
+        if obj.verification_status == "APPROVED":
+            type(obj.user).objects.filter(pk=obj.user_id).update(
+                role="DELIVERY",
+                is_active=True,
+            )
+        elif obj.verification_status == "BLOCKED":
+            type(obj.user).objects.filter(pk=obj.user_id).update(
+                is_active_delivery=False,
+            )
+
+    @admin.action(description="Move selected partners to Under Review")
+    def mark_under_review(self, request, queryset):
+        changed = queryset.update(
+            verification_status="UNDER_REVIEW",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} partner(s) moved to review.")
+
+    @admin.action(description="Approve selected delivery partners")
+    def approve_partners(self, request, queryset):
+        partner_ids = list(queryset.values_list("user_id", flat=True))
+        changed = queryset.update(
+            verification_status="APPROVED",
+            rejection_reason="",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        CustomerUser.objects.filter(pk__in=partner_ids).update(
+            role="DELIVERY",
+            is_active=True,
+        )
+        self.message_user(request, f"{changed} partner(s) approved.")
+
+    @admin.action(description="Block selected delivery partners")
+    def block_partners(self, request, queryset):
+        partner_ids = list(queryset.values_list("user_id", flat=True))
+        changed = queryset.update(
+            verification_status="BLOCKED",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        CustomerUser.objects.filter(pk__in=partner_ids).update(
+            is_active_delivery=False,
+        )
+        self.message_user(request, f"{changed} partner(s) blocked.")
+
+
+@admin.register(DeliveryPartnerDocument)
+class DeliveryPartnerDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "profile",
+        "document_type",
+        "masked_document_number",
+        "status",
+        "verified_at",
+    )
+    search_fields = (
+        "profile__user__name",
+        "profile__user__email",
+        "profile__user__phone",
+        "document_number_last4",
+    )
+    list_filter = (
+        "document_type",
+        "status",
+        "created_at",
+    )
+    list_select_related = (
+        "profile",
+        "profile__user",
+        "verified_by",
+    )
+    readonly_fields = (
+        "document_number_hash",
+        "document_number_last4",
+        "masked_document_number",
+        "verified_at",
+        "verified_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = (
+        "verify_documents",
+        "reject_documents",
+    )
+
+    @admin.action(description="Verify selected documents")
+    def verify_documents(self, request, queryset):
+        changed = queryset.update(
+            status="VERIFIED",
+            rejection_reason="",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} document(s) verified.")
+
+    @admin.action(description="Reject selected documents")
+    def reject_documents(self, request, queryset):
+        changed = queryset.update(
+            status="REJECTED",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(
+            request,
+            f"{changed} document(s) rejected. Add a reason from each record.",
+        )
+
+
+@admin.register(DeliveryPartnerBankAccount)
+class DeliveryPartnerBankAccountAdmin(admin.ModelAdmin):
+    list_display = (
+        "profile",
+        "account_holder_name",
+        "bank_name",
+        "masked_account_number",
+        "ifsc_code",
+        "status",
+        "verified_at",
+    )
+    search_fields = (
+        "profile__user__name",
+        "profile__user__email",
+        "profile__user__phone",
+        "account_holder_name",
+        "account_number_last4",
+        "ifsc_code",
+    )
+    list_filter = (
+        "status",
+        "bank_name",
+        "created_at",
+    )
+    list_select_related = (
+        "profile",
+        "profile__user",
+        "verified_by",
+    )
+    readonly_fields = (
+        "account_number_hash",
+        "account_number_last4",
+        "masked_account_number",
+        "verified_at",
+        "verified_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = (
+        "verify_bank_accounts",
+        "reject_bank_accounts",
+    )
+
+    @admin.action(description="Verify selected bank accounts")
+    def verify_bank_accounts(self, request, queryset):
+        changed = queryset.update(
+            status="VERIFIED",
+            rejection_reason="",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} bank account(s) verified.")
+
+    @admin.action(description="Reject selected bank accounts")
+    def reject_bank_accounts(self, request, queryset):
+        changed = queryset.update(
+            status="REJECTED",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(
+            request,
+            f"{changed} bank account(s) rejected. Add a reason from each record.",
+        )
+
+
+# =========================================================
+# DELIVERY INCENTIVE ADMIN
+# =========================================================
+
+@admin.register(DeliveryIncentive)
+class DeliveryIncentiveAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "incentive_type",
+        "required_deliveries",
+        "bonus_amount",
+        "start_at",
+        "end_at",
+        "is_active",
+    )
+    search_fields = (
+        "title",
+        "description",
+    )
+    list_filter = (
+        "incentive_type",
+        "is_active",
+        "start_at",
+    )
+    readonly_fields = (
+        "created_by",
+        "created_at",
+        "updated_at",
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by_id is None:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DeliveryIncentiveProgress)
+class DeliveryIncentiveProgressAdmin(admin.ModelAdmin):
+    list_display = (
+        "delivery_partner",
+        "incentive",
+        "completed_deliveries",
+        "progress_percentage",
+        "bonus_earned",
+        "status",
+        "period_start",
+        "period_end",
+    )
+    search_fields = (
+        "delivery_partner__name",
+        "delivery_partner__email",
+        "delivery_partner__phone",
+        "incentive__title",
+    )
+    list_filter = (
+        "status",
+        "incentive__incentive_type",
+        "period_start",
+    )
+    list_select_related = (
+        "delivery_partner",
+        "incentive",
+    )
+    readonly_fields = (
+        "progress_percentage",
+        "remaining_deliveries",
+        "completed_at",
+        "credited_at",
+        "created_at",
+        "updated_at",
     )
