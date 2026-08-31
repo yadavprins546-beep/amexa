@@ -78,6 +78,8 @@ from customer.views import (
     order_tracking_data_view,
     delivery_location_update_view,
     delivery_live_tracking_view,
+    delivery_onboarding_view,
+    delivery_verification_status_view,
     delivery_dashboard_view,
     delivery_assignment_action_view,
     cancel_order_view,
@@ -419,6 +421,24 @@ urlpatterns = [
     # =====================================================
     # DELIVERY PARTNER DASHBOARD
     # =====================================================
+
+    path(
+        "delivery/onboarding/",
+        delivery_onboarding_view,
+        name="delivery_onboarding_start",
+    ),
+
+    path(
+        "delivery/onboarding/<int:step>/",
+        delivery_onboarding_view,
+        name="delivery_onboarding",
+    ),
+
+    path(
+        "delivery/verification-status/",
+        delivery_verification_status_view,
+        name="delivery_verification_status",
+    ),
 
     path(
         "delivery/",

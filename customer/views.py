@@ -1,5 +1,5 @@
 import random
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
@@ -11,7 +11,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.utils import timezone
 
-from .forms import AddressForm, LoginForm
+from .forms import (
+    AddressForm,
+    DeliveryBankDetailsForm,
+    DeliveryDocumentsForm,
+    DeliveryFinalVerificationForm,
+    DeliveryPersonalDetailsForm,
+    LoginForm,
+)
 
 from .wallet_services import (
     expire_wallet_coins,
@@ -30,6 +37,11 @@ from .models import (
     Coupon,
     CouponUsage,
     DeliveryAssignment,
+    DeliveryIncentive,
+    DeliveryIncentiveProgress,
+    DeliveryPartnerBankAccount,
+    DeliveryPartnerDocument,
+    DeliveryPartnerProfile,
     DeliverySupportRequest,
     MasterOrder,
     MonthlyPack,
@@ -4204,6 +4216,423 @@ def about_view(request):
 # DELIVERY PARTNER DASHBOARD + CONTROLLED ORDER WORKFLOW
 # =========================================================
 
+def _delivery_profile_for_user(user):
+    profile, created = DeliveryPartnerProfile.objects.get_or_create(
+        user=user
+    )
+    return profile
+
+
+def _save_delivery_document(
+    profile,
+    document_type,
+    uploaded_file,
+    document_number="",
+):
+    document = (
+        DeliveryPartnerDocument.objects
+        .filter(
+            profile=profile,
+            document_type=document_type,
+        )
+        .first()
+    )
+
+    if document is None:
+        document = DeliveryPartnerDocument(
+            profile=profile,
+            document_type=document_type,
+        )
+
+    document.document_file = uploaded_file
+    document.set_document_number(document_number)
+    document.status = "PENDING"
+    document.rejection_reason = ""
+    document.verified_at = None
+    document.verified_by = None
+    document.save()
+
+    return document
+
+
+def _required_delivery_document_types(profile):
+    required_types = {
+        "AADHAAR_FRONT",
+        "AADHAAR_BACK",
+        "PAN",
+        "SELFIE",
+    }
+
+    if profile.vehicle_type in {"BIKE", "SCOOTER", "EV", "OTHER"}:
+        required_types.update(
+            {"DRIVING_LICENCE", "VEHICLE_RC"}
+        )
+
+    return required_types
+
+
+@login_required
+def delivery_onboarding_view(request, step=1):
+    if request.user.is_staff:
+        return redirect("delivery_dashboard")
+
+    profile = _delivery_profile_for_user(request.user)
+
+    if profile.verification_status == "APPROVED":
+        return redirect("delivery_dashboard")
+
+    if profile.verification_status in {
+        "PENDING",
+        "UNDER_REVIEW",
+        "BLOCKED",
+    }:
+        return redirect("delivery_verification_status")
+
+    step = max(1, min(int(step), 4))
+
+    if step > profile.onboarding_step:
+        return redirect(
+            "delivery_onboarding",
+            step=profile.onboarding_step,
+        )
+
+    form = None
+
+    if step == 1:
+        form = DeliveryPersonalDetailsForm(
+            request.POST or None,
+            request.FILES or None,
+            instance=profile,
+            user=request.user,
+        )
+
+        if request.method == "POST" and form.is_valid():
+            profile = form.save()
+            profile.onboarding_step = max(profile.onboarding_step, 2)
+            profile.verification_status = "DRAFT"
+            profile.save(
+                update_fields=[
+                    "onboarding_step",
+                    "verification_status",
+                    "updated_at",
+                ]
+            )
+            return redirect("delivery_onboarding", step=2)
+
+    elif step == 2:
+        form = DeliveryDocumentsForm(
+            request.POST or None,
+            request.FILES or None,
+            profile=profile,
+        )
+
+        if request.method == "POST" and form.is_valid():
+            with transaction.atomic():
+                _save_delivery_document(
+                    profile,
+                    "AADHAAR_FRONT",
+                    form.cleaned_data["aadhaar_front"],
+                    form.cleaned_data["aadhaar_number"],
+                )
+                _save_delivery_document(
+                    profile,
+                    "AADHAAR_BACK",
+                    form.cleaned_data["aadhaar_back"],
+                    form.cleaned_data["aadhaar_number"],
+                )
+                _save_delivery_document(
+                    profile,
+                    "PAN",
+                    form.cleaned_data["pan_card"],
+                    form.cleaned_data["pan_number"],
+                )
+                _save_delivery_document(
+                    profile,
+                    "SELFIE",
+                    form.cleaned_data["selfie"],
+                )
+
+                if form.cleaned_data.get("driving_licence"):
+                    _save_delivery_document(
+                        profile,
+                        "DRIVING_LICENCE",
+                        form.cleaned_data["driving_licence"],
+                        form.cleaned_data.get(
+                            "driving_licence_number",
+                            "",
+                        ),
+                    )
+
+                if form.cleaned_data.get("vehicle_rc"):
+                    _save_delivery_document(
+                        profile,
+                        "VEHICLE_RC",
+                        form.cleaned_data["vehicle_rc"],
+                        profile.vehicle_number,
+                    )
+
+                profile.onboarding_step = max(
+                    profile.onboarding_step,
+                    3,
+                )
+                profile.save(
+                    update_fields=["onboarding_step", "updated_at"]
+                )
+
+            return redirect("delivery_onboarding", step=3)
+
+    elif step == 3:
+        bank_account = (
+            DeliveryPartnerBankAccount.objects
+            .filter(profile=profile)
+            .first()
+        )
+
+        initial = {}
+        if bank_account:
+            initial = {
+                "account_holder_name": bank_account.account_holder_name,
+                "bank_name": bank_account.bank_name,
+                "ifsc_code": bank_account.ifsc_code,
+            }
+
+        form = DeliveryBankDetailsForm(
+            request.POST or None,
+            request.FILES or None,
+            initial=initial,
+        )
+
+        if request.method == "POST" and form.is_valid():
+            if bank_account is None:
+                bank_account = DeliveryPartnerBankAccount(
+                    profile=profile
+                )
+
+            bank_account.account_holder_name = (
+                form.cleaned_data["account_holder_name"]
+            )
+            bank_account.bank_name = form.cleaned_data["bank_name"]
+            bank_account.ifsc_code = form.cleaned_data["ifsc_code"]
+            bank_account.set_account_number(
+                form.cleaned_data["account_number"]
+            )
+
+            if form.cleaned_data.get("cancelled_cheque"):
+                bank_account.cancelled_cheque = (
+                    form.cleaned_data["cancelled_cheque"]
+                )
+
+            bank_account.status = "PENDING"
+            bank_account.rejection_reason = ""
+            bank_account.verified_at = None
+            bank_account.verified_by = None
+            bank_account.save()
+
+            profile.onboarding_step = max(profile.onboarding_step, 4)
+            profile.save(
+                update_fields=["onboarding_step", "updated_at"]
+            )
+            return redirect("delivery_onboarding", step=4)
+
+    else:
+        form = DeliveryFinalVerificationForm(request.POST or None)
+
+        existing_document_types = set(
+            profile.documents.values_list(
+                "document_type",
+                flat=True,
+            )
+        )
+        missing_document_types = (
+            _required_delivery_document_types(profile)
+            - existing_document_types
+        )
+        bank_account = (
+            DeliveryPartnerBankAccount.objects
+            .filter(profile=profile)
+            .first()
+        )
+
+        if request.method == "POST" and form.is_valid():
+            if missing_document_types:
+                messages.error(
+                    request,
+                    "Please upload all required documents.",
+                )
+                return redirect("delivery_onboarding", step=2)
+
+            if bank_account is None:
+                messages.error(
+                    request,
+                    "Please add your bank details.",
+                )
+                return redirect("delivery_onboarding", step=3)
+
+            profile.terms_accepted = True
+            profile.onboarding_step = 4
+            profile.save(
+                update_fields=[
+                    "terms_accepted",
+                    "onboarding_step",
+                    "updated_at",
+                ]
+            )
+            profile.submit_for_verification()
+
+            request.user.is_active_delivery = False
+            request.user.save(update_fields=["is_active_delivery"])
+
+            messages.success(
+                request,
+                "Your profile was submitted for AMEXA verification.",
+            )
+            return redirect("delivery_verification_status")
+
+    return render(
+        request,
+        "customer/delivery_onboarding.html",
+        {
+            "form": form,
+            "profile": profile,
+            "step": step,
+            "step_range": range(1, 5),
+        },
+    )
+
+
+@login_required
+def delivery_verification_status_view(request):
+    if request.user.is_staff:
+        return redirect("delivery_dashboard")
+
+    profile = _delivery_profile_for_user(request.user)
+
+    if profile.verification_status == "APPROVED":
+        return redirect("delivery_dashboard")
+
+    if profile.verification_status == "DRAFT":
+        return redirect(
+            "delivery_onboarding",
+            step=profile.onboarding_step,
+        )
+
+    return render(
+        request,
+        "customer/delivery_verification_status.html",
+        {
+            "profile": profile,
+            "documents": profile.documents.all(),
+            "bank_account": (
+                DeliveryPartnerBankAccount.objects
+                .filter(profile=profile)
+                .first()
+            ),
+        },
+    )
+
+
+def _delivery_incentive_period(incentive, now):
+    local_now = timezone.localtime(now)
+    current_timezone = timezone.get_current_timezone()
+
+    if incentive.incentive_type == "DAILY":
+        period_start = timezone.make_aware(
+            datetime.combine(local_now.date(), time.min),
+            current_timezone,
+        )
+        period_end = period_start + timedelta(days=1)
+    elif incentive.incentive_type == "WEEKLY":
+        week_date = local_now.date() - timedelta(
+            days=local_now.weekday()
+        )
+        period_start = timezone.make_aware(
+            datetime.combine(week_date, time.min),
+            current_timezone,
+        )
+        period_end = period_start + timedelta(days=7)
+    else:
+        period_start = incentive.start_at
+        period_end = incentive.end_at or (
+            incentive.start_at + timedelta(days=1)
+        )
+
+    return period_start, period_end
+
+
+def _delivery_incentive_cards(delivery_partner):
+    now = timezone.now()
+    incentives = (
+        DeliveryIncentive.objects
+        .filter(is_active=True, start_at__lte=now)
+        .filter(Q(end_at__isnull=True) | Q(end_at__gte=now))
+        .order_by("-start_at")[:6]
+    )
+    cards = []
+
+    for incentive in incentives:
+        period_start, period_end = _delivery_incentive_period(
+            incentive,
+            now,
+        )
+        completed_query = DeliveryAssignment.objects.filter(
+            delivery_partner=delivery_partner,
+            status="Completed",
+            completed_at__gte=period_start,
+            completed_at__lt=period_end,
+        )
+
+        if (
+            incentive.incentive_type == "PEAK_HOURS"
+            and incentive.peak_start_time
+            and incentive.peak_end_time
+        ):
+            completed_query = completed_query.filter(
+                completed_at__time__gte=incentive.peak_start_time,
+                completed_at__time__lte=incentive.peak_end_time,
+            )
+
+        completed_deliveries = completed_query.count()
+        progress, created = (
+            DeliveryIncentiveProgress.objects.get_or_create(
+                incentive=incentive,
+                delivery_partner=delivery_partner,
+                period_start=period_start,
+                defaults={
+                    "period_end": period_end,
+                    "completed_deliveries": completed_deliveries,
+                },
+            )
+        )
+
+        update_fields = []
+
+        if progress.period_end != period_end:
+            progress.period_end = period_end
+            update_fields.append("period_end")
+
+        if progress.completed_deliveries != completed_deliveries:
+            progress.completed_deliveries = completed_deliveries
+            update_fields.append("completed_deliveries")
+
+        if (
+            completed_deliveries >= incentive.required_deliveries
+            and progress.status == "IN_PROGRESS"
+        ):
+            progress.status = "COMPLETED"
+            progress.bonus_earned = incentive.bonus_amount
+            progress.completed_at = now
+            update_fields.extend(
+                ["status", "bonus_earned", "completed_at"]
+            )
+
+        if update_fields:
+            update_fields.append("updated_at")
+            progress.save(update_fields=list(dict.fromkeys(update_fields)))
+
+        cards.append(progress)
+
+    return cards
+
 def _delivery_access_allowed(user):
     return (
         getattr(user, "role", "") == "DELIVERY"
@@ -4236,6 +4665,18 @@ def delivery_dashboard_view(request):
     if not _delivery_access_allowed(request.user):
         messages.error(request, "Delivery partner access required.")
         return redirect("home")
+
+    if not request.user.is_staff:
+        profile = _delivery_profile_for_user(request.user)
+
+        if not profile.can_access_dashboard:
+            if profile.verification_status == "DRAFT":
+                return redirect(
+                    "delivery_onboarding",
+                    step=profile.onboarding_step,
+                )
+
+            return redirect("delivery_verification_status")
 
     # ---------------------------------------------------------
     # Dashboard POST actions:
@@ -4438,12 +4879,14 @@ def delivery_dashboard_view(request):
     total_earnings = payout_per_delivery * all_deliveries
 
     support_requests = DeliverySupportRequest.objects.none()
+    incentive_cards = []
     if getattr(request.user, "role", "") == "DELIVERY":
         support_requests = (
             DeliverySupportRequest.objects
             .filter(delivery_partner=request.user)
             .select_related("order")[:10]
         )
+        incentive_cards = _delivery_incentive_cards(request.user)
 
     context = {
         "active_assignments": active_assignments,
@@ -4460,6 +4903,7 @@ def delivery_dashboard_view(request):
         "week_earnings": week_earnings,
         "month_earnings": month_earnings,
         "total_earnings": total_earnings,
+        "incentive_cards": incentive_cards,
         "support_requests": support_requests,
     }
 

@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Status | AMEXA</title>
+    <style>
+        *{box-sizing:border-box}:root{--bg:#040914;--panel:#0c1729;--line:rgba(91,238,255,.16);--text:#f4fbff;--muted:#8fa3ba;--cyan:#5beeff;--green:#32efa2;--yellow:#ffd76c;--red:#ff6685}
+        body{margin:0;min-height:100vh;display:grid;place-items:center;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 80% 0,rgba(37,113,255,.2),transparent 28%),radial-gradient(circle at 10% 70%,rgba(50,239,162,.08),transparent 24%),var(--bg)}
+        body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.2;background-image:linear-gradient(rgba(91,238,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(91,238,255,.07) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(#000,transparent 92%)}
+        a{text-decoration:none;color:inherit}.page{position:relative;width:min(820px,100%);padding:24px 14px 60px}.brand{text-align:center;margin-bottom:20px;font-size:28px;font-weight:1000;letter-spacing:.8px}.brand small{display:block;margin-top:5px;color:var(--cyan);font-size:9px;letter-spacing:1.7px}.card{overflow:hidden;border:1px solid var(--line);border-radius:27px;background:linear-gradient(145deg,rgba(13,28,50,.96),rgba(5,12,25,.98));box-shadow:0 32px 90px rgba(0,0,0,.45)}
+        .hero{padding:34px 28px;text-align:center;border-bottom:1px solid var(--line);background:radial-gradient(circle at 50% 20%,rgba(91,238,255,.11),transparent 35%)}.status-icon{width:86px;height:86px;margin:0 auto 20px;display:grid;place-items:center;border-radius:50%;font-size:34px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}.pending .status-icon,.review .status-icon{color:var(--yellow);border-color:rgba(255,215,108,.25);box-shadow:0 0 0 12px rgba(255,215,108,.03),0 0 30px rgba(255,215,108,.11)}.rejected .status-icon,.blocked .status-icon{color:var(--red);border-color:rgba(255,102,133,.25);box-shadow:0 0 0 12px rgba(255,102,133,.03),0 0 30px rgba(255,102,133,.11)}.approved .status-icon{color:var(--green);border-color:rgba(50,239,162,.25);box-shadow:0 0 0 12px rgba(50,239,162,.03),0 0 30px rgba(50,239,162,.11)}.hero h1{margin:0;font-size:27px;letter-spacing:-.5px}.hero p{max-width:570px;margin:10px auto 0;color:var(--muted);font-size:12px;line-height:1.65}.status-chip{display:inline-flex;margin-top:17px;padding:7px 11px;border:1px solid rgba(255,255,255,.11);border-radius:999px;font:900 9px ui-monospace,monospace;letter-spacing:1px}.pending .status-chip,.review .status-chip{color:var(--yellow);background:rgba(255,215,108,.07)}.rejected .status-chip,.blocked .status-chip{color:var(--red);background:rgba(255,102,133,.07)}.approved .status-chip{color:var(--green);background:rgba(50,239,162,.07)}
+        .content{padding:25px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.box{padding:17px;border:1px solid rgba(255,255,255,.075);border-radius:16px;background:rgba(255,255,255,.027)}.box-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.box h2{margin:0;font-size:14px}.count{padding:5px 8px;border-radius:999px;background:rgba(91,238,255,.07);color:var(--cyan);font-size:9px;font-weight:900}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.055);font-size:11px}.row:last-child{border-bottom:0}.row span:first-child{color:#adbed0}.tag{padding:5px 7px;border-radius:999px;font-size:8px;font-weight:900;text-transform:uppercase}.tag-PENDING{color:var(--yellow);background:rgba(255,215,108,.08)}.tag-VERIFIED{color:var(--green);background:rgba(50,239,162,.08)}.tag-REJECTED{color:var(--red);background:rgba(255,102,133,.08)}.reason{margin-top:17px;padding:14px;border:1px solid rgba(255,102,133,.2);border-radius:14px;background:rgba(255,102,133,.07);color:#ff9bb0;font-size:11px;line-height:1.55}.note{margin-top:16px;padding:13px;border:1px solid rgba(91,238,255,.12);border-radius:14px;background:rgba(91,238,255,.04);color:#93a9bf;font-size:10px;line-height:1.55}.actions{display:flex;justify-content:center;gap:11px;margin-top:21px}.btn{min-height:46px;padding:12px 18px;border:1px solid rgba(255,255,255,.1);border-radius:13px;font-size:11px;font-weight:950}.btn-main{border-color:transparent;color:#03120d;background:linear-gradient(135deg,var(--green),var(--cyan))}.btn-dark{color:#c8d4df;background:rgba(255,255,255,.04)}
+        @media(max-width:620px){.page{padding:12px 9px 40px}.card{border-radius:21px}.hero{padding:27px 17px}.hero h1{font-size:23px}.status-icon{width:74px;height:74px}.content{padding:17px 13px}.grid{grid-template-columns:1fr}.actions{flex-direction:column}.btn{text-align:center}}
+    </style>
+</head>
+<body>
+<main class="page">
+    <div class="brand">AMEXA<small>DELIVERY PARTNER</small></div>
+
+    <section class="card {% if profile.verification_status == 'PENDING' %}pending{% elif profile.verification_status == 'UNDER_REVIEW' %}review{% elif profile.verification_status == 'REJECTED' %}rejected{% elif profile.verification_status == 'BLOCKED' %}blocked{% else %}approved{% endif %}">
+        <div class="hero">
+            <div class="status-icon">
+                {% if profile.verification_status == 'PENDING' %}⌛{% elif profile.verification_status == 'UNDER_REVIEW' %}⌕{% elif profile.verification_status == 'REJECTED' %}✕{% elif profile.verification_status == 'BLOCKED' %}⊘{% else %}✓{% endif %}
+            </div>
+
+            {% if profile.verification_status == 'PENDING' %}
+                <h1>Verification pending</h1>
+                <p>Your application reached AMEXA. The delivery dashboard will unlock after admin approval.</p>
+            {% elif profile.verification_status == 'UNDER_REVIEW' %}
+                <h1>Application under review</h1>
+                <p>AMEXA is checking your personal details, documents and bank information.</p>
+            {% elif profile.verification_status == 'REJECTED' %}
+                <h1>Changes required</h1>
+                <p>Please correct the details mentioned below and submit your application again.</p>
+            {% elif profile.verification_status == 'BLOCKED' %}
+                <h1>Partner account blocked</h1>
+                <p>You cannot access the delivery dashboard. Contact AMEXA Support for assistance.</p>
+            {% else %}
+                <h1>Verification approved</h1>
+                <p>Your AMEXA Delivery Partner dashboard is ready.</p>
+            {% endif %}
+
+            <span class="status-chip">{{ profile.get_verification_status_display|upper }}</span>
+        </div>
+
+        <div class="content">
+            <div class="grid">
+                <div class="box">
+                    <div class="box-title"><h2>Document status</h2><span class="count">{{ documents|length }} FILES</span></div>
+                    {% for document in documents %}
+                    <div class="row">
+                        <span>{{ document.get_document_type_display }}</span>
+                        <span class="tag tag-{{ document.status }}">{{ document.get_status_display }}</span>
+                    </div>
+                    {% empty %}<div class="row"><span>No documents uploaded</span></div>{% endfor %}
+                </div>
+
+                <div class="box">
+                    <div class="box-title"><h2>Bank verification</h2></div>
+                    {% if bank_account %}
+                    <div class="row"><span>Account</span><strong>{{ bank_account.masked_account_number }}</strong></div>
+                    <div class="row"><span>IFSC</span><strong>{{ bank_account.ifsc_code }}</strong></div>
+                    <div class="row"><span>Status</span><span class="tag tag-{{ bank_account.status }}">{{ bank_account.get_status_display }}</span></div>
+                    {% else %}<div class="row"><span>Bank details not added</span></div>{% endif %}
+                </div>
+            </div>
+
+            {% if profile.rejection_reason %}<div class="reason"><strong>Admin note:</strong><br>{{ profile.rejection_reason }}</div>{% endif %}
+            <div class="note">🔒 Your delivery dashboard and Online switch remain locked until the profile status becomes Approved.</div>
+
+            <div class="actions">
+                {% if profile.verification_status == 'REJECTED' %}<a class="btn btn-main" href="{% url 'delivery_onboarding' 1 %}">Correct & Resubmit</a>{% endif %}
+                {% if profile.verification_status == 'BLOCKED' %}<a class="btn btn-main" href="{% url 'help_support' %}">Contact Support</a>{% endif %}
+                {% if profile.verification_status == 'APPROVED' %}<a class="btn btn-main" href="{% url 'delivery_dashboard' %}">Open Dashboard</a>{% endif %}
+                <a class="btn btn-dark" href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
