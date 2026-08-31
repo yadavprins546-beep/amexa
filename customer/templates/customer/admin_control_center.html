@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050a14">
+    <title>AMEXA Admin Control Center</title>
+    <style>
+        *{box-sizing:border-box}
+        :root{--bg:#050914;--panel:#0b1423;--panel2:#101d30;--line:rgba(118,225,255,.13);--text:#f5fbff;--muted:#8297ad;--cyan:#6ae6ff;--green:#35e9a2;--yellow:#ffd36b;--red:#ff6685;--blue:#7196ff;--purple:#b58cff}
+        html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 85% -10%,rgba(77,115,255,.2),transparent 30%),radial-gradient(circle at 5% 70%,rgba(53,233,162,.08),transparent 28%),var(--bg)}
+        body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(106,230,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(106,230,255,.055) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(#000,transparent 94%)}
+        a{text-decoration:none;color:inherit}.layout{position:relative;display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;padding:24px 17px;border-right:1px solid var(--line);background:rgba(5,10,20,.88);backdrop-filter:blur(18px);z-index:10}.brand{padding:5px 10px 25px;font-size:27px;font-weight:1000;letter-spacing:1px}.brand small{display:block;margin-top:5px;color:var(--cyan);font:800 8px ui-monospace,monospace;letter-spacing:1.8px}.live{display:flex;align-items:center;gap:8px;margin:0 7px 24px;padding:10px 11px;border:1px solid rgba(53,233,162,.16);border-radius:12px;color:var(--green);background:rgba(53,233,162,.055);font-size:9px;font-weight:900}.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.nav-label{margin:19px 10px 8px;color:#50667e;font-size:8px;font-weight:900;letter-spacing:1.4px}.nav{display:grid;gap:5px}.nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid transparent;border-radius:12px;color:#91a5ba;font-size:11px;font-weight:800;transition:.2s}.nav a:hover,.nav a.active{color:#fff;border-color:rgba(106,230,255,.16);background:rgba(106,230,255,.065);transform:translateX(2px)}.nav .icon{width:22px;text-align:center;font-size:14px}.sidebar-foot{position:absolute;left:17px;right:17px;bottom:18px;padding:13px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:rgba(255,255,255,.025)}.sidebar-foot b{display:block;overflow:hidden;text-overflow:ellipsis;font-size:10px}.sidebar-foot small{display:block;margin-top:3px;color:var(--muted);font-size:8px}
+        .main{min-width:0;padding:24px 26px 55px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px}.welcome h1{margin:0;font-size:25px;letter-spacing:-.6px}.welcome p{margin:6px 0 0;color:var(--muted);font-size:10px}.top-actions{display:flex;align-items:center;gap:9px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 14px;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:#c7d4e1;background:rgba(255,255,255,.035);font-size:10px;font-weight:900;transition:.2s}.btn:hover{transform:translateY(-1px);border-color:rgba(106,230,255,.22)}.btn-primary{border-color:transparent;color:#03130e;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 12px 30px rgba(53,233,162,.14)}
+        .alert-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:16px}.alert{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:rgba(255,255,255,.025)}.alert span{color:var(--muted);font-size:9px;font-weight:800}.alert b{font:1000 15px ui-monospace,monospace}.alert.warn b{color:var(--yellow)}.alert.danger b{color:var(--red)}.alert.info b{color:var(--cyan)}
+        .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:16px}.metric{position:relative;overflow:hidden;min-height:137px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(16,29,48,.92),rgba(7,15,28,.96));box-shadow:0 15px 45px rgba(0,0,0,.18)}.metric:after{content:"";position:absolute;width:110px;height:110px;right:-35px;top:-40px;border-radius:50%;background:var(--glow);filter:blur(2px);opacity:.12}.metric-top{display:flex;align-items:center;justify-content:space-between;gap:9px}.metric-label{color:#91a6bb;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.7px}.metric-icon{width:35px;height:35px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(255,255,255,.035);font-size:15px}.metric strong{display:block;margin-top:15px;font:1000 25px ui-monospace,monospace;letter-spacing:-1px}.metric small{display:block;margin-top:5px;color:var(--muted);font-size:8px}.cyan{--glow:var(--cyan)}.green{--glow:var(--green)}.yellow{--glow:var(--yellow)}.purple{--glow:var(--purple)}
+        .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(310px,.7fr);gap:16px}.stack{display:grid;align-content:start;gap:16px}.panel{min-width:0;padding:18px;border:1px solid var(--line);border-radius:19px;background:linear-gradient(145deg,rgba(13,25,43,.94),rgba(6,14,27,.97));box-shadow:0 18px 55px rgba(0,0,0,.18)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}.panel-head h2{margin:0;font-size:14px}.panel-head p{margin:4px 0 0;color:var(--muted);font-size:8px}.link{color:var(--cyan);font-size:9px;font-weight:900}.link:hover{text-decoration:underline}
+        .chart{height:205px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;padding:15px 5px 0;border-top:1px solid rgba(255,255,255,.055)}.bar-wrap{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}.bar-value{color:#a8bbcd;font:850 8px ui-monospace,monospace}.bar{width:min(35px,75%);min-height:8px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--cyan),rgba(53,233,162,.55));box-shadow:0 0 18px rgba(106,230,255,.1);transition:.25s}.bar:hover{filter:brightness(1.2)}.bar-label{color:#71869b;font-size:8px;font-weight:800}.bar-date{color:#435970;font-size:7px}
+        .status-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.status-card{padding:11px;border:1px solid rgba(255,255,255,.065);border-radius:12px;background:rgba(255,255,255,.025)}.status-card span{display:block;color:var(--muted);font-size:8px}.status-card b{display:block;margin-top:5px;font:900 16px ui-monospace,monospace}.status-card.pending b,.status-card.preparing b{color:var(--yellow)}.status-card.delivered b{color:var(--green)}.status-card.cancelled b{color:var(--red)}.status-card.out-for-delivery b{color:var(--cyan)}
+        .table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;white-space:nowrap}.table th{padding:0 10px 10px;text-align:left;color:#60768d;font-size:7px;text-transform:uppercase;letter-spacing:.7px}.table td{padding:11px 10px;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.table td strong{font-size:9px}.table td small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.badge{display:inline-flex;padding:5px 7px;border-radius:999px;font-size:7px;font-weight:950;text-transform:uppercase}.status-pending,.status-confirmed,.status-preparing{color:var(--yellow);background:rgba(255,211,107,.08)}.status-out-for-delivery{color:var(--cyan);background:rgba(106,230,255,.08)}.status-delivered,.status-approved{color:var(--green);background:rgba(53,233,162,.08)}.status-cancelled,.status-rejected,.status-blocked{color:var(--red);background:rgba(255,102,133,.08)}
+        .queue{display:grid;gap:8px}.queue-item{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.022)}.avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;color:#03130e;background:linear-gradient(135deg,var(--green),var(--cyan));font-size:12px;font-weight:1000}.queue-item b{display:block;font-size:9px}.queue-item small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.queue-empty{padding:18px;text-align:center;color:var(--muted);font-size:9px}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick{min-height:74px;padding:12px;border:1px solid rgba(255,255,255,.065);border-radius:13px;background:rgba(255,255,255,.025);transition:.2s}.quick:hover{transform:translateY(-2px);border-color:rgba(106,230,255,.18)}.quick i{display:block;font-style:normal;font-size:16px}.quick b{display:block;margin-top:8px;font-size:9px}.quick small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.support-item{padding:10px 0;border-top:1px solid rgba(255,255,255,.055)}.support-item:first-of-type{border-top:0}.support-item b{font-size:9px}.support-item p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.4}.support-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:#596f85;font-size:7px}
+        @media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}.alert-grid{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}.stack{grid-template-columns:1fr 1fr}.stack .panel:last-child{grid-column:1/-1}}
+        @media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:14px;border-right:0;border-bottom:1px solid var(--line)}.brand{display:inline-block;padding:3px 7px 13px}.live{position:absolute;right:14px;top:14px;margin:0}.nav-label,.sidebar-foot{display:none}.nav{display:flex;overflow-x:auto;padding-bottom:3px}.nav a{flex:0 0 auto;padding:9px 10px}.main{padding:18px 12px 45px}.topbar{align-items:flex-start}.welcome h1{font-size:20px}.top-actions .btn:not(.btn-primary){display:none}.metrics{gap:9px}.metric{min-height:120px;padding:14px}.metric strong{font-size:21px}.stack{grid-template-columns:1fr}.stack .panel:last-child{grid-column:auto}.status-list{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:480px){.alert-grid{grid-template-columns:1fr 1fr}.alert{padding:10px}.metrics{grid-template-columns:1fr 1fr}.metric{min-height:112px;padding:12px;border-radius:15px}.metric-icon{width:30px;height:30px}.metric strong{margin-top:11px;font-size:18px}.metric-label{font-size:7px}.dashboard-grid{gap:11px}.panel{padding:14px;border-radius:16px}.chart{gap:5px;height:180px}.bar{width:60%}.quick-grid{grid-template-columns:1fr 1fr}.queue-item{grid-template-columns:34px 1fr}.queue-item .badge{display:none}.avatar{width:34px;height:34px}}
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">AMEXA<small>ADMIN CONTROL CENTER</small></div>
+        <div class="live"><i></i> SYSTEM OPERATIONAL</div>
+        <div class="nav-label">OVERVIEW</div>
+        <nav class="nav">
+            <a class="active" href="{% url 'admin_control_center' %}"><span class="icon">⌂</span>Dashboard</a>
+            <a href="{% url 'admin:customer_order_changelist' %}"><span class="icon">▣</span>Orders</a>
+            <a href="{% url 'admin:customer_deliverypartnerprofile_changelist' %}"><span class="icon">⌖</span>Delivery</a>
+            <a href="{% url 'admin:customer_shop_changelist' %}"><span class="icon">▤</span>Shops</a>
+        </nav>
+        <div class="nav-label">MANAGEMENT</div>
+        <nav class="nav">
+            <a href="{% url 'admin:customer_product_changelist' %}"><span class="icon">◇</span>Products</a>
+            <a href="{% url 'admin:customer_payment_changelist' %}"><span class="icon">₹</span>Payments</a>
+            <a href="{% url 'admin:customer_settlement_changelist' %}"><span class="icon">↗</span>Settlements</a>
+            <a href="{% url 'admin:customer_customeruser_changelist' %}"><span class="icon">◎</span>Users</a>
+        </nav>
+        <div class="sidebar-foot"><b>{{ request.user.name|default:request.user.email }}</b><small>AMEXA Administrator</small></div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="welcome"><h1>Good to see you, {{ request.user.name|default:"Admin" }}.</h1><p>Live operational overview • Updated {{ generated_at|date:"d M Y, h:i A" }}</p></div>
+            <div class="top-actions">
+                <a class="btn" href="{% url 'home' %}" target="_blank">View Store ↗</a>
+                <a class="btn btn-primary" href="{% url 'admin:index' %}">Open Django Admin</a>
+            </div>
+        </header>
+
+        <section class="alert-grid">
+            <a class="alert warn" href="{% url 'admin:customer_deliverypartnerprofile_changelist' %}?verification_status__exact=PENDING"><span>Pending KYC</span><b>{{ pending_verifications }}</b></a>
+            <a class="alert info" href="{% url 'admin:customer_product_changelist' %}?stock_quantity__lte=5"><span>Low stock</span><b>{{ low_stock_products }}</b></a>
+            <a class="alert danger" href="{% url 'admin:customer_payment_changelist' %}?payment_status__exact=Failed"><span>Failed payments</span><b>{{ failed_payments }}</b></a>
+            <a class="alert warn" href="{% url 'admin:customer_settlement_changelist' %}"><span>Open settlements</span><b>{{ pending_settlements }}</b></a>
+        </section>
+
+        <section class="metrics">
+            <article class="metric cyan"><div class="metric-top"><span class="metric-label">Total Revenue</span><span class="metric-icon">₹</span></div><strong>₹{{ total_revenue|floatformat:0 }}</strong><small>₹{{ today_revenue|floatformat:0 }} completed today</small></article>
+            <article class="metric green"><div class="metric-top"><span class="metric-label">Total Orders</span><span class="metric-icon">▣</span></div><strong>{{ total_orders }}</strong><small>{{ today_orders }} new today • {{ pending_orders }} active</small></article>
+            <article class="metric yellow"><div class="metric-top"><span class="metric-label">Active Shops</span><span class="metric-icon">▤</span></div><strong>{{ active_shops }}</strong><small>{{ inactive_shops }} inactive shop{{ inactive_shops|pluralize }}</small></article>
+            <article class="metric purple"><div class="metric-top"><span class="metric-label">Customers</span><span class="metric-icon">◎</span></div><strong>{{ total_customers }}</strong><small>{{ online_riders }} rider{{ online_riders|pluralize }} online • {{ approved_riders }} approved</small></article>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="stack">
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Order Pulse</h2><p>Last seven days order volume</p></div><a class="link" href="{% url 'admin:customer_masterorder_changelist' %}">All orders →</a></div>
+                    <div class="chart">
+                        {% for point in order_chart %}
+                        <div class="bar-wrap" title="{{ point.date }}: {{ point.count }} orders"><span class="bar-value">{{ point.count }}</span><div class="bar" style="height:{{ point.height }}%"></div><span class="bar-label">{{ point.label }}</span><span class="bar-date">{{ point.date }}</span></div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Order Pipeline</h2><p>Current shop-order status</p></div></div>
+                    <div class="status-list">
+                        {% for item in order_statuses %}<div class="status-card {{ item.status|slugify }}"><span>{{ item.label }}</span><b>{{ item.count }}</b></div>{% endfor %}
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Recent Orders</h2><p>Newest customer activity</p></div><a class="link" href="{% url 'admin:customer_order_changelist' %}">Manage →</a></div>
+                    <div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Shop</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+                        {% for order in recent_orders %}<tr><td><a href="{% url 'admin:customer_order_change' order.pk %}"><strong>#{{ order.order_number }}</strong><small>{{ order.created_at|date:"d M, h:i A" }}</small></a></td><td>{{ order.user.name|default:order.user.email|truncatechars:20 }}</td><td>{{ order.shop.name|default:"—"|truncatechars:18 }}</td><td><strong>₹{{ order.total_amount|floatformat:0 }}</strong><small>{{ order.payment_method }}</small></td><td><span class="badge status-{{ order.status|slugify }}">{{ order.status }}</span></td></tr>
+                        {% empty %}<tr><td colspan="5">No orders yet.</td></tr>{% endfor %}
+                    </tbody></table></div>
+                </article>
+            </div>
+
+            <div class="stack">
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Verification Queue</h2><p>{{ pending_verifications }} delivery application{{ pending_verifications|pluralize }}</p></div><a class="link" href="{% url 'admin:customer_deliverypartnerprofile_changelist' %}">Review →</a></div>
+                    <div class="queue">
+                        {% for profile in pending_profiles %}<a class="queue-item" href="{% url 'admin:customer_deliverypartnerprofile_change' profile.pk %}"><span class="avatar">{{ profile.user.name|default:"D"|slice:":1"|upper }}</span><span><b>{{ profile.user.name|default:profile.user.email|truncatechars:22 }}</b><small>{{ profile.city|default:"Location not added" }} • {{ profile.submitted_at|timesince }} ago</small></span><span class="badge status-{{ profile.verification_status|slugify }}">{{ profile.get_verification_status_display }}</span></a>
+                        {% empty %}<div class="queue-empty">✓ No delivery verification pending</div>{% endfor %}
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Quick Actions</h2><p>Frequently used controls</p></div></div>
+                    <div class="quick-grid">
+                        <a class="quick" href="{% url 'admin:customer_product_add' %}"><i>＋</i><b>Add Product</b><small>Create inventory item</small></a>
+                        <a class="quick" href="{% url 'admin:customer_shop_add' %}"><i>▤</i><b>Add Shop</b><small>Register local seller</small></a>
+                        <a class="quick" href="{% url 'admin:customer_deliveryassignment_add' %}"><i>⌖</i><b>Assign Rider</b><small>Dispatch an order</small></a>
+                        <a class="quick" href="{% url 'admin:customer_category_add' %}"><i>◇</i><b>Add Category</b><small>Organize products</small></a>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head"><div><h2>Delivery Support</h2><p>{{ open_support_count }} request{{ open_support_count|pluralize }} need attention</p></div><a class="link" href="{% url 'admin:customer_deliverysupportrequest_changelist' %}">Open →</a></div>
+                    {% for ticket in recent_support %}<div class="support-item"><b>{{ ticket.subject|truncatechars:35 }}</b><p>{{ ticket.description|truncatechars:75 }}</p><div class="support-meta"><span>{{ ticket.delivery_partner.name|default:ticket.delivery_partner.email }}</span><span>{{ ticket.status }}</span></div></div>
+                    {% empty %}<div class="queue-empty">✓ No open support requests</div>{% endfor %}
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

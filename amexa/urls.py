@@ -15,6 +15,9 @@ from customer.support_views import (
 
 from customer.views import (
 
+    # ADMIN CONTROL CENTER
+    admin_control_center_view,
+
     # HOME
     home,
     search_results_view,
@@ -494,6 +497,17 @@ urlpatterns = [
         "orders/<str:order_number>/",
         order_detail_view,
         name="order_detail",
+    ),
+
+
+    # =====================================================
+    # AMEXA ADMIN CONTROL CENTER
+    # =====================================================
+
+    path(
+        "admin/control-center/",
+        admin_control_center_view,
+        name="admin_control_center",
     ),
 
 

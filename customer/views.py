@@ -3,10 +3,11 @@ from datetime import datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.utils import timezone
@@ -70,6 +71,136 @@ PLATFORM_FEE_PER_SHOP = Decimal("5.00")
 DELIVERY_PARTNER_PAYOUT_PER_SHOP = Decimal("15.00")
 SHOP_COMMISSION_RATE = Decimal("0.05")
 TAX_RATE = Decimal("0.00")
+
+
+# =========================================================
+# AMEXA ADMIN CONTROL CENTER
+# Read-only operational dashboard; all changes still use
+# Django Admin's protected model pages.
+# =========================================================
+
+@staff_member_required(login_url="admin:login")
+def admin_control_center_view(request):
+    user_model = get_user_model()
+    now = timezone.now()
+    today = timezone.localdate()
+
+    today_start = timezone.make_aware(
+        datetime.combine(today, time.min),
+        timezone.get_current_timezone(),
+    )
+    tomorrow_start = today_start + timedelta(days=1)
+
+    completed_orders = MasterOrder.objects.filter(status="Completed")
+    today_orders = MasterOrder.objects.filter(
+        created_at__gte=today_start,
+        created_at__lt=tomorrow_start,
+    )
+
+    total_revenue = completed_orders.aggregate(
+        value=Sum("total_amount")
+    )["value"] or Decimal("0.00")
+    today_revenue = completed_orders.filter(
+        updated_at__gte=today_start,
+        updated_at__lt=tomorrow_start,
+    ).aggregate(value=Sum("total_amount"))["value"] or Decimal("0.00")
+
+    order_statuses = []
+    for status, label in Order.STATUS_CHOICES:
+        order_statuses.append(
+            {
+                "status": status,
+                "label": label,
+                "count": Order.objects.filter(status=status).count(),
+            }
+        )
+
+    order_chart = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        day_start = timezone.make_aware(
+            datetime.combine(day, time.min),
+            timezone.get_current_timezone(),
+        )
+        day_end = day_start + timedelta(days=1)
+        order_chart.append(
+            {
+                "label": day.strftime("%a"),
+                "date": day.strftime("%d %b"),
+                "count": MasterOrder.objects.filter(
+                    created_at__gte=day_start,
+                    created_at__lt=day_end,
+                ).count(),
+            }
+        )
+
+    chart_max = max(
+        (point["count"] for point in order_chart),
+        default=1,
+    ) or 1
+    for point in order_chart:
+        point["height"] = max(8, round(point["count"] * 100 / chart_max))
+
+    pending_profiles_query = DeliveryPartnerProfile.objects.filter(
+        verification_status__in=["PENDING", "UNDER_REVIEW"]
+    ).select_related("user")
+
+    open_support_query = DeliverySupportRequest.objects.filter(
+        status__in=["Open", "In Review"]
+    )
+
+    context = {
+        "generated_at": now,
+        "total_revenue": total_revenue,
+        "today_revenue": today_revenue,
+        "total_orders": MasterOrder.objects.count(),
+        "today_orders": today_orders.count(),
+        "pending_orders": Order.objects.filter(
+            status__in=["Pending", "Confirmed", "Preparing"]
+        ).count(),
+        "active_shops": Shop.objects.filter(is_active=True).count(),
+        "inactive_shops": Shop.objects.filter(is_active=False).count(),
+        "total_customers": user_model.objects.filter(
+            role="CUSTOMER"
+        ).count(),
+        "online_riders": user_model.objects.filter(
+            role="DELIVERY",
+            is_active_delivery=True,
+            is_active=True,
+        ).count(),
+        "approved_riders": DeliveryPartnerProfile.objects.filter(
+            verification_status="APPROVED"
+        ).count(),
+        "pending_verifications": pending_profiles_query.count(),
+        "low_stock_products": Product.objects.filter(
+            is_active=True,
+            stock_quantity__lte=5,
+        ).count(),
+        "open_support_count": open_support_query.count(),
+        "pending_settlements": Settlement.objects.filter(
+            status__in=["Pending", "Processing", "On Hold"]
+        ).count(),
+        "failed_payments": Payment.objects.filter(
+            payment_status="Failed"
+        ).count(),
+        "order_statuses": order_statuses,
+        "order_chart": order_chart,
+        "recent_orders": Order.objects.select_related(
+            "user",
+            "shop",
+        ).order_by("-created_at")[:8],
+        "pending_profiles": pending_profiles_query[:6],
+        "recent_support": open_support_query.select_related(
+            "delivery_partner",
+            "order",
+        )[:5],
+    }
+
+    return render(
+        request,
+        "customer/admin_control_center.html",
+        context,
+    )
 
 
 # =========================================================
