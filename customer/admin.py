@@ -1248,6 +1248,55 @@ class CouponUsageAdmin(admin.ModelAdmin):
 # DELIVERY PARTNER VERIFICATION ADMIN
 # =========================================================
 
+DELIVERY_REQUIRED_DOCUMENT_TYPES = {
+    "AADHAAR_FRONT",
+    "AADHAAR_BACK",
+    "PAN",
+    "SELFIE",
+}
+
+
+def _auto_approve_verified_delivery_profiles(profile_ids, reviewer):
+    """Approve a profile when all mandatory KYC and bank checks pass."""
+    approved_count = 0
+
+    profiles = DeliveryPartnerProfile.objects.filter(
+        pk__in=set(profile_ids),
+        terms_accepted=True,
+    ).select_related("user")
+
+    for profile in profiles:
+        verified_types = set(
+            DeliveryPartnerDocument.objects.filter(
+                profile=profile,
+                status="VERIFIED",
+                document_type__in=DELIVERY_REQUIRED_DOCUMENT_TYPES,
+            ).values_list("document_type", flat=True)
+        )
+        bank_verified = DeliveryPartnerBankAccount.objects.filter(
+            profile=profile,
+            status="VERIFIED",
+        ).exists()
+
+        if (
+            DELIVERY_REQUIRED_DOCUMENT_TYPES.issubset(verified_types)
+            and bank_verified
+        ):
+            DeliveryPartnerProfile.objects.filter(pk=profile.pk).update(
+                verification_status="APPROVED",
+                rejection_reason="",
+                reviewed_by=reviewer,
+                reviewed_at=timezone.now(),
+            )
+            CustomerUser.objects.filter(pk=profile.user_id).update(
+                role="DELIVERY",
+                is_active=True,
+                is_active_delivery=False,
+            )
+            approved_count += 1
+
+    return approved_count
+
 @admin.register(DeliveryPartnerProfile)
 class DeliveryPartnerProfileAdmin(admin.ModelAdmin):
     list_display = (
@@ -1439,15 +1488,41 @@ class DeliveryPartnerDocumentAdmin(admin.ModelAdmin):
         "reject_documents",
     )
 
+    def save_model(self, request, obj, form, change):
+        if "status" in form.changed_data:
+            obj.verified_by = request.user
+            obj.verified_at = timezone.now()
+            if obj.status == "VERIFIED":
+                obj.rejection_reason = ""
+
+        super().save_model(request, obj, form, change)
+
+        if obj.status == "VERIFIED":
+            _auto_approve_verified_delivery_profiles(
+                [obj.profile_id],
+                request.user,
+            )
+
     @admin.action(description="Verify selected documents")
     def verify_documents(self, request, queryset):
+        profile_ids = list(
+            queryset.values_list("profile_id", flat=True).distinct()
+        )
         changed = queryset.update(
             status="VERIFIED",
             rejection_reason="",
             verified_by=request.user,
             verified_at=timezone.now(),
         )
-        self.message_user(request, f"{changed} document(s) verified.")
+        approved = _auto_approve_verified_delivery_profiles(
+            profile_ids,
+            request.user,
+        )
+        self.message_user(
+            request,
+            f"{changed} document(s) verified; "
+            f"{approved} partner profile(s) automatically approved.",
+        )
 
     @admin.action(description="Reject selected documents")
     def reject_documents(self, request, queryset):
@@ -1505,15 +1580,41 @@ class DeliveryPartnerBankAccountAdmin(admin.ModelAdmin):
         "reject_bank_accounts",
     )
 
+    def save_model(self, request, obj, form, change):
+        if "status" in form.changed_data:
+            obj.verified_by = request.user
+            obj.verified_at = timezone.now()
+            if obj.status == "VERIFIED":
+                obj.rejection_reason = ""
+
+        super().save_model(request, obj, form, change)
+
+        if obj.status == "VERIFIED":
+            _auto_approve_verified_delivery_profiles(
+                [obj.profile_id],
+                request.user,
+            )
+
     @admin.action(description="Verify selected bank accounts")
     def verify_bank_accounts(self, request, queryset):
+        profile_ids = list(
+            queryset.values_list("profile_id", flat=True).distinct()
+        )
         changed = queryset.update(
             status="VERIFIED",
             rejection_reason="",
             verified_by=request.user,
             verified_at=timezone.now(),
         )
-        self.message_user(request, f"{changed} bank account(s) verified.")
+        approved = _auto_approve_verified_delivery_profiles(
+            profile_ids,
+            request.user,
+        )
+        self.message_user(
+            request,
+            f"{changed} bank account(s) verified; "
+            f"{approved} partner profile(s) automatically approved.",
+        )
 
     @admin.action(description="Reject selected bank accounts")
     def reject_bank_accounts(self, request, queryset):
