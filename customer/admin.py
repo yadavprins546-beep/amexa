@@ -21,6 +21,7 @@ from .models import (
     Category,
     CustomerUser,
     DeliveryAssignment,
+    DeliverySupportRequest,
     OTPVerification,
     Order,
     OrderItem,
@@ -690,6 +691,10 @@ class DeliveryAssignmentAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         "assigned_at",
+        "accepted_at",
+        "picked_at",
+        "out_for_delivery_at",
+        "completed_at",
         "location_updated_at",
     )
 
@@ -722,10 +727,75 @@ class DeliveryAssignmentAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "assigned_at",
+                    "accepted_at",
+                    "picked_at",
+                    "out_for_delivery_at",
                     "completed_at",
                 )
             },
         ),
+    )
+
+
+# =========================================================
+# DELIVERY SUPPORT REQUEST ADMIN
+# =========================================================
+
+@admin.register(DeliverySupportRequest)
+class DeliverySupportRequestAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "delivery_partner",
+        "request_type",
+        "order",
+        "subject",
+        "amount_claimed",
+        "status",
+        "created_at",
+    )
+
+    search_fields = (
+        "delivery_partner__email",
+        "delivery_partner__name",
+        "delivery_partner__phone",
+        "order__order_number",
+        "subject",
+        "description",
+    )
+
+    list_filter = (
+        "request_type",
+        "status",
+        "created_at",
+    )
+
+    list_select_related = (
+        "delivery_partner",
+        "order",
+    )
+
+    readonly_fields = (
+        "delivery_partner",
+        "request_type",
+        "order",
+        "subject",
+        "description",
+        "amount_claimed",
+        "created_at",
+        "updated_at",
+    )
+
+    fields = (
+        "delivery_partner",
+        "request_type",
+        "order",
+        "subject",
+        "description",
+        "amount_claimed",
+        "status",
+        "created_at",
+        "updated_at",
     )
 
 
