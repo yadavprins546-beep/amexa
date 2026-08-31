@@ -505,9 +505,16 @@ urlpatterns = [
     # =====================================================
 
     path(
-        "admin/control-center/",
+        "admin/",
         admin_control_center_view,
         name="admin_control_center",
+    ),
+
+    # Old shared link also keeps working.
+    path(
+        "admin/control-center/",
+        admin_control_center_view,
+        name="admin_control_center_legacy",
     ),
 
 
@@ -516,7 +523,7 @@ urlpatterns = [
     # =====================================================
 
     path(
-        "admin/",
+        "admin/system/",
         admin.site.urls,
     ),
 ]
