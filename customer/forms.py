@@ -245,8 +245,11 @@ class DeliveryPersonalDetailsForm(forms.ModelForm):
             "vehicle_number",
         ]
         widgets = {
-            "profile_photo": forms.ClearableFileInput(
-                attrs={"accept": "image/jpeg,image/png"}
+            "profile_photo": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png",
+                    "capture": "user",
+                }
             ),
             "date_of_birth": forms.DateInput(
                 attrs={"type": "date"}
@@ -366,7 +369,7 @@ class DeliveryDocumentsForm(forms.Form):
     aadhaar_front = forms.FileField(
         label="Aadhaar front",
         validators=[validate_onboarding_file],
-        widget=forms.ClearableFileInput(
+        widget=forms.FileInput(
             attrs={"accept": ".jpg,.jpeg,.png,.pdf"}
         ),
     )
@@ -414,8 +417,11 @@ class DeliveryDocumentsForm(forms.Form):
     selfie = forms.FileField(
         label="Verification selfie",
         validators=[validate_onboarding_image],
-        widget=forms.ClearableFileInput(
-            attrs={"accept": "image/jpeg,image/png"}
+        widget=forms.FileInput(
+            attrs={
+                "accept": "image/jpeg,image/png",
+                "capture": "user",
+            }
         ),
     )
 
@@ -423,21 +429,11 @@ class DeliveryDocumentsForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.profile = profile
 
-        requires_vehicle_documents = (
-            profile
-            and profile.vehicle_type
-            in {"BIKE", "SCOOTER", "EV", "OTHER"}
-        )
-
-        self.fields["driving_licence_number"].required = bool(
-            requires_vehicle_documents
-        )
-        self.fields["driving_licence"].required = bool(
-            requires_vehicle_documents
-        )
-        self.fields["vehicle_rc"].required = bool(
-            requires_vehicle_documents
-        )
+        # Licence and RC are optional during initial onboarding.
+        # Admin can request them later when required.
+        self.fields["driving_licence_number"].required = False
+        self.fields["driving_licence"].required = False
+        self.fields["vehicle_rc"].required = False
 
     def clean_aadhaar_number(self):
         number = re.sub(r"\D", "", self.cleaned_data["aadhaar_number"])

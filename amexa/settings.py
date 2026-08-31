@@ -24,30 +24,17 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 
 # =========================================================
-# ALLOWED HOSTS
+# ALLOWED HOSTS / CSRF
 # =========================================================
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-
-    # Cloudflare testing
     ".trycloudflare.com",
-
-    # Railway
     ".up.railway.app",
-
-    # Render
     ".onrender.com",
-
-    # Current AMEXA Render domain
     "amexa.onrender.com",
 ]
-
-
-# =========================================================
-# CSRF TRUSTED ORIGINS
-# =========================================================
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.trycloudflare.com",
@@ -68,9 +55,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
-
+    "cloudinary",
+    "cloudinary_storage",
     "customer",
 ]
 
@@ -81,10 +68,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-
-    # WhiteNoise
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -95,26 +79,16 @@ MIDDLEWARE = [
 
 
 # =========================================================
-# URL CONFIG
+# DJANGO CORE
 # =========================================================
 
 ROOT_URLCONF = "amexa.urls"
 
-
-# =========================================================
-# TEMPLATES
-# =========================================================
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-
-        "DIRS": [
-            BASE_DIR / "templates",
-        ],
-
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
-
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
@@ -124,11 +98,6 @@ TEMPLATES = [
         },
     },
 ]
-
-
-# =========================================================
-# WSGI
-# =========================================================
 
 WSGI_APPLICATION = "amexa.wsgi.application"
 
@@ -146,22 +115,11 @@ DATABASES = {
 
 
 # =========================================================
-# CUSTOM USER MODEL
+# AUTHENTICATION
 # =========================================================
 
 AUTH_USER_MODEL = "customer.CustomerUser"
-
-
-# =========================================================
-# LOGIN
-# =========================================================
-
 LOGIN_URL = "login"
-
-
-# =========================================================
-# PASSWORD VALIDATION
-# =========================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -196,11 +154,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # =========================================================
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Kolkata"
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -209,23 +164,40 @@ USE_TZ = True
 # =========================================================
 
 STATIC_URL = "/static/"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # =========================================================
-# STORAGE
+# CLOUDINARY MEDIA
+# Render environment variables:
+# CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY,
+# CLOUDINARY_API_SECRET
 # =========================================================
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
+    "SECURE": True,
+}
+
+CLOUDINARY_CONFIGURED = all(
+    CLOUDINARY_STORAGE.get(key)
+    for key in ("CLOUD_NAME", "API_KEY", "API_SECRET")
+)
+
+if CLOUDINARY_CONFIGURED:
+    DEFAULT_MEDIA_STORAGE = (
+        "cloudinary_storage.storage.MediaCloudinaryStorage"
+    )
+else:
+    DEFAULT_MEDIA_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": DEFAULT_MEDIA_STORAGE,
     },
-
     "staticfiles": {
         "BACKEND": (
             "whitenoise.storage."
@@ -234,13 +206,7 @@ STORAGES = {
     },
 }
 
-
-# =========================================================
-# MEDIA FILES
-# =========================================================
-
 MEDIA_URL = "/media/"
-
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -252,8 +218,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # =========================================================
-# PROXY / HTTPS SETTINGS
-# Render / Railway HTTPS
+# RENDER / RAILWAY HTTPS
 # =========================================================
 
 SECURE_PROXY_SSL_HEADER = (
@@ -261,11 +226,5 @@ SECURE_PROXY_SSL_HEADER = (
     "https",
 )
 
-
-# =========================================================
-# COOKIES
-# =========================================================
-
 SESSION_COOKIE_SECURE = not DEBUG
-
 CSRF_COOKIE_SECURE = not DEBUG

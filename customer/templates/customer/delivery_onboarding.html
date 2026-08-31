@@ -15,6 +15,7 @@
         .intro{padding:32px 27px;border-right:1px solid var(--line);background:radial-gradient(circle at 30% 20%,rgba(90,238,255,.11),transparent 34%),rgba(4,12,25,.55)}.intro-chip{display:inline-block;padding:6px 9px;border:1px solid rgba(90,238,255,.2);border-radius:999px;color:var(--cyan);font:800 9px ui-monospace,monospace;letter-spacing:1px}.intro h1{margin:20px 0 9px;font-size:30px;line-height:1.08;letter-spacing:-.8px}.intro p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}.steps{display:grid;gap:8px;margin-top:30px}.step{display:grid;grid-template-columns:38px 1fr;gap:11px;align-items:center;padding:11px;border:1px solid transparent;border-radius:14px;color:#7990a8}.step-no{width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.035);font:900 12px ui-monospace,monospace}.step b{display:block;font-size:12px;color:#9cafc1}.step small{display:block;margin-top:2px;font-size:9px}.step.done{color:var(--green)}.step.done .step-no{border-color:rgba(50,239,162,.22);background:rgba(50,239,162,.08)}.step.active{border-color:rgba(90,238,255,.2);background:rgba(90,238,255,.07);color:var(--cyan)}.step.active b{color:#fff}.step.active .step-no{border-color:rgba(90,238,255,.28);box-shadow:0 0 20px rgba(90,238,255,.1)}
         .form-area{padding:34px}.form-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:24px}.form-head h2{margin:0;font-size:25px;letter-spacing:-.4px}.form-head p{margin:6px 0 0;color:var(--muted);font-size:11px}.progress-value{color:var(--cyan);font:900 12px ui-monospace,monospace}.progress{height:5px;margin:0 0 25px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.06)}.progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--green));box-shadow:0 0 16px rgba(90,238,255,.3)}
         .messages{display:grid;gap:8px;margin-bottom:18px}.message,.non-field{padding:11px 13px;border:1px solid rgba(255,102,132,.2);border-radius:12px;background:rgba(255,102,132,.08);color:#ff9aae;font-size:11px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:grid;gap:7px}.field:has(textarea),.field:has(input[type=file]),.field:has(input[type=checkbox]){grid-column:1/-1}.field label{color:#b9c8d8;font-size:11px;font-weight:850}.field .required{color:var(--red)}input,select,textarea{width:100%;min-height:48px;padding:12px 13px;border:1px solid rgba(255,255,255,.1);border-radius:13px;outline:none;color:#fff;background:rgba(255,255,255,.045);font-family:inherit;font-size:12px;font-weight:600;transition:border-color .2s,box-shadow .2s}textarea{min-height:105px;resize:vertical}select option{color:#111}input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(90,238,255,.08)}input[type=file]{padding:10px}input[type=checkbox]{width:18px;min-height:18px;accent-color:var(--green)}.field:has(input[type=checkbox]){display:flex;grid-template-columns:22px 1fr;align-items:center}.field:has(input[type=checkbox]) label{grid-column:2}.field:has(input[type=checkbox]) input{grid-column:1;grid-row:1}.help{color:#6f859c;font-size:9px;line-height:1.45}.error{color:#ff8da4;font-size:10px}.privacy{grid-column:1/-1;display:flex;gap:10px;padding:12px 13px;border:1px solid rgba(255,213,104,.15);border-radius:13px;background:rgba(255,213,104,.055);color:#cdbd8d;font-size:10px;line-height:1.5}.actions{display:flex;justify-content:space-between;gap:12px;margin-top:27px;padding-top:20px;border-top:1px solid rgba(255,255,255,.07)}.btn{min-height:48px;padding:12px 19px;border:1px solid transparent;border-radius:13px;cursor:pointer;font-size:12px;font-weight:950}.btn-back{color:#c5d2df;background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.09)}.btn-next{margin-left:auto;color:#03120d;background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 12px 28px rgba(50,239,162,.16)}.btn:hover{transform:translateY(-1px)}
+        .camera-note,.optional-note{padding:9px 11px;border-radius:10px;font-size:10px;line-height:1.45}.camera-note{color:var(--cyan);border:1px solid rgba(90,238,255,.16);background:rgba(90,238,255,.055)}.optional-note{color:#b8c7d7;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035)}.photo-preview{display:none;width:92px;height:92px;object-fit:cover;border:2px solid var(--green);border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,.3)}
         @media(max-width:800px){.page{padding:15px 10px 55px}.shell{grid-template-columns:1fr;border-radius:22px}.intro{padding:22px 18px;border-right:0;border-bottom:1px solid var(--line)}.intro h1{font-size:23px;margin-top:14px}.intro p{font-size:11px}.steps{grid-template-columns:repeat(4,1fr);gap:7px;margin-top:20px}.step{display:block;padding:8px;text-align:center}.step-no{margin:auto}.step b{margin-top:6px;font-size:9px}.step small{display:none}.form-area{padding:23px 18px}}
         @media(max-width:520px){.topbar{margin-bottom:14px}.brand{font-size:24px}.secure{font-size:8px;padding:7px 9px}.form-head h2{font-size:21px}.fields{grid-template-columns:1fr}.field{grid-column:1!important}.actions{position:sticky;bottom:8px;padding:11px;border:1px solid rgba(90,238,255,.12);border-radius:15px;background:rgba(5,12,25,.94);backdrop-filter:blur(14px)}.btn{flex:1;padding:11px 10px}.steps{gap:4px}.step{padding:6px 3px}.step-no{width:32px;height:32px}.step b{font-size:8px}}
     </style>
@@ -73,6 +74,13 @@
                     <div class="field">
                         <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}</label>
                         {{ field }}
+                        {% if field.name == "profile_photo" or field.name == "selfie" %}
+                        <div class="camera-note">📸 Live, clear front-camera photo लें। चेहरा पूरा और रोशनी अच्छी हो।</div>
+                        <img class="photo-preview" data-preview-for="{{ field.id_for_label }}" alt="Photo preview">
+                        {% endif %}
+                        {% if field.name == "driving_licence_number" or field.name == "driving_licence" or field.name == "vehicle_rc" %}
+                        <div class="optional-note">Optional — अभी नहीं है तो इसे छोड़ सकते हैं।</div>
+                        {% endif %}
                         {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
                         {% for error in field.errors %}<div class="error">{{ error }}</div>{% endfor %}
                     </div>
@@ -90,5 +98,16 @@
         </div>
     </section>
 </main>
+<script>
+    document.querySelectorAll('input[type="file"][capture]').forEach(function (input) {
+        input.addEventListener('change', function () {
+            const preview = document.querySelector('[data-preview-for="' + input.id + '"]');
+            const file = input.files && input.files[0];
+            if (!preview || !file || !file.type.startsWith('image/')) return;
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+        });
+    });
+</script>
 </body>
 </html>

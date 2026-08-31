@@ -4256,19 +4256,12 @@ def _save_delivery_document(
 
 
 def _required_delivery_document_types(profile):
-    required_types = {
+    return {
         "AADHAAR_FRONT",
         "AADHAAR_BACK",
         "PAN",
         "SELFIE",
     }
-
-    if profile.vehicle_type in {"BIKE", "SCOOTER", "EV", "OTHER"}:
-        required_types.update(
-            {"DRIVING_LICENCE", "VEHICLE_RC"}
-        )
-
-    return required_types
 
 
 @login_required

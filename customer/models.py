@@ -6,6 +6,8 @@ from django.utils.crypto import salted_hmac
 from django.utils.text import slugify
 import math
 
+from .storage_backends import private_delivery_document_storage
+
 
 class CustomerUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -600,6 +602,7 @@ class DeliveryPartnerDocument(models.Model):
     )
     document_file = models.FileField(
         upload_to="private/delivery/documents/",
+        storage=private_delivery_document_storage,
     )
     document_number_hash = models.CharField(
         max_length=64,
@@ -688,6 +691,7 @@ class DeliveryPartnerBankAccount(models.Model):
     ifsc_code = models.CharField(max_length=11)
     cancelled_cheque = models.FileField(
         upload_to="private/delivery/bank/",
+        storage=private_delivery_document_storage,
         null=True,
         blank=True,
     )
@@ -1783,3 +1787,4 @@ class Referral(models.Model):
 
     def __str__(self):
         return f"{self.referrer} -> {self.referred_user}"
+
