@@ -1,0 +1,21 @@
+{% extends "customer/picker_base.html" %}
+{% block title %}Picker Orders | AMEXA{% endblock %}
+{% block extra_head %}
+<style>
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}.stat{padding:14px}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{display:block;margin-top:5px;font:1000 26px ui-monospace}.tasks{display:grid;gap:12px}.task{padding:15px}.task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.task h2{margin:0;font-size:16px}.task small{display:block;margin-top:4px;color:var(--muted);font-size:11px}.progress{height:7px;overflow:hidden;margin:13px 0 8px;border-radius:99px;background:rgba(255,255,255,.06)}.progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--green))}.meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px}.task-actions{display:flex;gap:8px;margin-top:13px}.task-actions .btn{flex:1}.waiting{border-color:rgba(255,212,91,.16)}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Picking Queue</h1><p>Accept one order, verify every UPC and pack the exact quantity.</p></section>
+<section class="stats"><article class="panel stat"><span>Waiting Orders</span><b>{{ waiting_count }}</b></article><article class="panel stat"><span>My Active Picks</span><b>{{ active_count }}</b></article></section>
+<section class="tasks">
+{% for task in tasks %}
+    <article class="panel task {% if task.status == 'WAITING' %}waiting{% endif %}">
+        <div class="task-top"><div><h2>#{{ task.order.order_number }}</h2><small>{{ task.order.created_at|date:"d M, h:i A" }} • {{ task.order.user.name }}</small></div><span class="badge {% if task.status == 'PACKED' %}green{% elif task.status == 'WAITING' %}yellow{% endif %}">{{ task.get_status_display }}</span></div>
+        <div class="progress"><i style="width:{{ task.progress_percentage }}%"></i></div>
+        <div class="meta"><span>{{ task.picked_units }}/{{ task.required_units }} units picked</span><b>{{ task.progress_percentage }}%</b></div>
+        <div class="task-actions">{% if task.status == 'WAITING' %}<form method="post" action="{% url 'picker_accept_task' task.order.order_number %}" style="display:flex;flex:1">{% csrf_token %}<button class="btn primary" style="width:100%" type="submit">Accept & Start Picking</button></form>{% else %}<a class="btn primary" href="{% url 'picker_order_detail' task.order.order_number %}">{% if task.status == 'PACKED' %}Open Rider Details{% else %}Continue Picking{% endif %}</a>{% endif %}</div>
+    </article>
+{% empty %}<div class="panel empty">No picking task right now. Newly accepted shop orders will appear here.</div>{% endfor %}
+</section>
+{% endblock %}

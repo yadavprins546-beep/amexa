@@ -38,6 +38,7 @@ class CustomerUser(AbstractUser):
     ROLE_CHOICES = [
         ('CUSTOMER', 'Customer'),
         ('SHOPKEEPER', 'Shopkeeper'),
+        ('PICKER', 'Order Picker'),
         ('DELIVERY', 'Delivery Partner'),
         ('ADMIN', 'Admin'),
     ]
@@ -235,6 +236,11 @@ class Product(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=170, unique=True, blank=True)
     description = models.TextField(blank=True)
+    pack_size = models.CharField(
+        max_length=40,
+        default="1 unit",
+        help_text="Examples: 500 g, 1 litre, Pack of 6",
+    )
     cost_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -1179,6 +1185,39 @@ class ShopkeeperBankAccount(models.Model):
         return f"{self.profile.user} - {self.masked_account_number}"
 
 
+class PickerProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="picker_profile",
+    )
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name="pickers",
+    )
+    employee_code = models.CharField(max_length=30, unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["shop", "user__name"]
+
+    def save(self, *args, **kwargs):
+        if not self.employee_code:
+            self.employee_code = f"AMXP-{self.user_id or 'NEW'}-{timezone.now():%H%M%S}"
+        super().save(*args, **kwargs)
+        type(self.user).objects.filter(pk=self.user_id).update(
+            role="PICKER",
+            is_staff=False,
+            is_superuser=False,
+        )
+
+    def __str__(self):
+        return f"{self.user.name} - {self.shop.name}"
+
+
 # =========================================================
 # DELIVERY INCENTIVES / TARGET PROGRESS
 # =========================================================
@@ -1352,6 +1391,106 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.product_name or self.product.name} x {self.quantity}'
+
+
+class OrderPickingTask(models.Model):
+    STATUS_CHOICES = [
+        ("WAITING", "Waiting for Picker"),
+        ("ACCEPTED", "Accepted by Picker"),
+        ("PICKING", "Picking Items"),
+        ("PACKED", "Packed / Rider Assigned"),
+        ("HANDED_OVER", "Handed to Rider"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="picking_task",
+    )
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name="picking_tasks",
+    )
+    picker = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="picking_tasks",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="WAITING",
+        db_index=True,
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    packed_at = models.DateTimeField(null=True, blank=True)
+    handed_over_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["shop", "status", "created_at"]),
+        ]
+
+    @property
+    def required_units(self):
+        return sum(item.required_quantity for item in self.picking_items.all())
+
+    @property
+    def picked_units(self):
+        return sum(item.picked_quantity for item in self.picking_items.all())
+
+    @property
+    def progress_percentage(self):
+        required = self.required_units
+        if required <= 0:
+            return 0
+        return min(100, int((self.picked_units / required) * 100))
+
+    @property
+    def is_complete(self):
+        items = list(self.picking_items.all())
+        return bool(items) and all(item.is_complete for item in items)
+
+    def __str__(self):
+        return f"{self.order.order_number} - {self.get_status_display()}"
+
+
+class OrderPickingItem(models.Model):
+    task = models.ForeignKey(
+        OrderPickingTask,
+        on_delete=models.CASCADE,
+        related_name="picking_items",
+    )
+    order_item = models.OneToOneField(
+        OrderItem,
+        on_delete=models.CASCADE,
+        related_name="picking_item",
+    )
+    required_quantity = models.PositiveIntegerField(default=1)
+    picked_quantity = models.PositiveIntegerField(default=0)
+    last_scanned_barcode = models.CharField(max_length=50, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["order_item__created_at"]
+
+    @property
+    def remaining_quantity(self):
+        return max(0, self.required_quantity - self.picked_quantity)
+
+    @property
+    def is_complete(self):
+        return self.picked_quantity >= self.required_quantity
+
+    def __str__(self):
+        return f"{self.order_item} ({self.picked_quantity}/{self.required_quantity})"
 
 
 class Cart(models.Model):

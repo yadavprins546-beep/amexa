@@ -22,7 +22,7 @@
     <article class="product">
         <div class="product-top">
             {% if product.image %}<img class="photo" src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<div class="photo empty">▦</div>{% endif %}
-            <div><h3>{{ product.name }}</h3><small>{{ product.category.name }}{% if product.brand %} • {{ product.brand.name }}{% endif %}</small>{% with barcode=product.barcodes.first %}<small>UPC: {{ barcode.barcode|default:"Not added" }}</small>{% endwith %}<small>₹{{ product.price }} / MRP ₹{{ product.mrp }}</small></div>
+            <div><h3>{{ product.name }}</h3><small>{{ product.category.name }}{% if product.brand %} • {{ product.brand.name }}{% endif %}</small>{% with barcode=product.barcodes.first %}<small>UPC: {{ barcode.barcode|default:"Not added" }}</small>{% endwith %}<small>Pack: {{ product.pack_size|default:"1 unit" }} • ₹{{ product.price }} / MRP ₹{{ product.mrp }}</small></div>
             <div class="stock"><b>{{ product.stock_quantity }}</b><span>IN STOCK</span></div>
         </div>
         <details>

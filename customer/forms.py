@@ -929,6 +929,7 @@ class ShopkeeperProductForm(forms.ModelForm):
             "name",
             "category",
             "description",
+            "pack_size",
             "cost_price",
             "price",
             "mrp",

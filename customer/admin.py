@@ -33,7 +33,10 @@ from .models import (
     OTPVerification,
     Order,
     OrderItem,
+    OrderPickingItem,
+    OrderPickingTask,
     OrderStatusHistory,
+    PickerProfile,
     Product,
     ProductBarcode,
     SearchAlias,
@@ -294,8 +297,8 @@ class CustomerUserAdmin(admin.ModelAdmin):
         )
 
     def save_model(self, request, obj, form, change):
-        # Shopkeepers use their own app and never receive Django Admin access.
-        if obj.role == "SHOPKEEPER":
+        # Shopkeepers and pickers use separate apps, never Django Admin.
+        if obj.role in {"SHOPKEEPER", "PICKER"}:
             obj.is_staff = False
             obj.is_superuser = False
         super().save_model(request, obj, form, change)
@@ -406,6 +409,7 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "shop",
         "category",
+        "pack_size",
         "cost_price",
         "price",
         "mrp",
@@ -518,6 +522,86 @@ class BadInventoryRecordAdmin(admin.ModelAdmin):
     list_filter = ("reason", "shop", "created_at")
     list_select_related = ("product", "shop", "batch", "created_by")
     readonly_fields = ("created_at",)
+
+
+@admin.register(PickerProfile)
+class PickerProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "shop",
+        "employee_code",
+        "is_active",
+        "created_at",
+    )
+    search_fields = (
+        "user__name",
+        "user__phone",
+        "shop__name",
+        "employee_code",
+    )
+    list_filter = ("is_active", "shop")
+    list_select_related = ("user", "shop")
+    readonly_fields = ("created_at", "updated_at")
+
+
+class OrderPickingItemInline(admin.TabularInline):
+    model = OrderPickingItem
+    extra = 0
+    readonly_fields = (
+        "order_item",
+        "required_quantity",
+        "picked_quantity",
+        "last_scanned_barcode",
+        "updated_at",
+    )
+    can_delete = False
+
+
+@admin.register(OrderPickingTask)
+class OrderPickingTaskAdmin(admin.ModelAdmin):
+    list_display = (
+        "order",
+        "shop",
+        "picker",
+        "status",
+        "progress_percentage",
+        "accepted_at",
+        "packed_at",
+    )
+    search_fields = (
+        "order__order_number",
+        "shop__name",
+        "picker__name",
+        "picker__phone",
+    )
+    list_filter = ("status", "shop", "created_at")
+    list_select_related = ("order", "shop", "picker")
+    readonly_fields = (
+        "accepted_at",
+        "packed_at",
+        "handed_over_at",
+        "created_at",
+        "updated_at",
+    )
+    inlines = (OrderPickingItemInline,)
+
+
+@admin.register(OrderPickingItem)
+class OrderPickingItemAdmin(admin.ModelAdmin):
+    list_display = (
+        "task",
+        "order_item",
+        "picked_quantity",
+        "required_quantity",
+        "last_scanned_barcode",
+        "updated_at",
+    )
+    search_fields = (
+        "task__order__order_number",
+        "order_item__product_name",
+        "last_scanned_barcode",
+    )
+    list_select_related = ("task", "order_item")
 
 
 # =========================================================

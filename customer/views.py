@@ -7,7 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.utils import timezone
@@ -60,8 +60,11 @@ from .models import (
     MonthlyPackItem,
     Order,
     OrderItem,
+    OrderPickingItem,
+    OrderPickingTask,
     OTPVerification,
     Payment,
+    PickerProfile,
     Product,
     ProductBarcode,
     Referral,
@@ -1479,6 +1482,8 @@ def _login_destination(user):
         return "admin_control_center"
     if role == "SHOPKEEPER":
         return "shopkeeper_dashboard"
+    if role == "PICKER":
+        return "picker_dashboard"
     if role == "DELIVERY":
         return "delivery_dashboard"
     return "home"
@@ -5071,6 +5076,75 @@ def _sync_shop_product_listing(product):
     )
 
 
+def _ensure_order_picking_task(order):
+    task, _ = OrderPickingTask.objects.get_or_create(
+        order=order,
+        defaults={"shop": order.shop},
+    )
+    if task.shop_id != order.shop_id:
+        task.shop = order.shop
+        task.save(update_fields=["shop", "updated_at"])
+
+    for order_item in order.items.all():
+        picking_item, created = OrderPickingItem.objects.get_or_create(
+            task=task,
+            order_item=order_item,
+            defaults={"required_quantity": order_item.quantity},
+        )
+        if not created and picking_item.required_quantity != order_item.quantity:
+            picking_item.required_quantity = order_item.quantity
+            picking_item.picked_quantity = min(
+                picking_item.picked_quantity,
+                order_item.quantity,
+            )
+            picking_item.save(
+                update_fields=[
+                    "required_quantity",
+                    "picked_quantity",
+                    "updated_at",
+                ]
+            )
+    return task
+
+
+def _assign_available_rider(order):
+    current_assignment = (
+        order.delivery_assignments
+        .exclude(status="Rejected")
+        .select_related("delivery_partner", "delivery_partner__delivery_profile")
+        .first()
+    )
+    if current_assignment:
+        return current_assignment
+
+    rider = (
+        get_user_model().objects
+        .filter(
+            role="DELIVERY",
+            is_active=True,
+            is_active_delivery=True,
+            delivery_profile__verification_status="APPROVED",
+        )
+        .annotate(
+            active_jobs=Count(
+                "deliveries",
+                filter=Q(
+                    deliveries__status__in=["Assigned", "Accepted", "Picked"]
+                ),
+            )
+        )
+        .order_by("active_jobs", "pk")
+        .first()
+    )
+    if rider is None:
+        return None
+    return DeliveryAssignment.objects.create(
+        order=order,
+        delivery_partner=rider,
+        status="Assigned",
+    )
+
+
 def _move_expired_batches_to_bad_inventory(shop, user=None):
     today = timezone.localdate()
     expired_ids = list(
@@ -5144,6 +5218,7 @@ def shopkeeper_orders_view(request):
         for order in pending_orders:
             order.status = "Confirmed"
             order.save(update_fields=["status", "updated_at"])
+            _ensure_order_picking_task(order)
             order.create_status_history(
                 "Confirmed",
                 "Automatically accepted by shop settings.",
@@ -5151,12 +5226,25 @@ def shopkeeper_orders_view(request):
             if order.master_order_id:
                 _update_master_order_status(order.master_order)
 
+    for accepted_order in Order.objects.filter(
+        shop=shop,
+        status__in=["Confirmed", "Preparing"],
+        picking_task__isnull=True,
+    ).prefetch_related("items"):
+        _ensure_order_picking_task(accepted_order)
+
     status_filter = (request.GET.get("status") or "ALL").strip()
     allowed_statuses = {choice[0] for choice in Order.STATUS_CHOICES}
     orders = (
         Order.objects
         .filter(shop=shop)
-        .select_related("user", "address", "master_order")
+        .select_related(
+            "user",
+            "address",
+            "master_order",
+            "picking_task",
+            "picking_task__picker",
+        )
         .prefetch_related("items", "items__product")
     )
     if status_filter in allowed_statuses:
@@ -5204,8 +5292,12 @@ def shopkeeper_order_action_view(request, order_number):
         if action == "accept" and order.status == "Pending":
             order.status = "Confirmed"
             order.save(update_fields=["status", "updated_at"])
+            _ensure_order_picking_task(order)
             order.create_status_history("Confirmed", "Accepted by shop.")
-            messages.success(request, f"Order #{order.order_number} accepted.")
+            messages.success(
+                request,
+                f"Order #{order.order_number} accepted and sent to picker queue.",
+            )
 
         elif action == "prepare" and order.status == "Confirmed":
             order.status = "Preparing"
@@ -5214,6 +5306,13 @@ def shopkeeper_order_action_view(request, order_number):
             messages.success(request, "Order is being prepared for pickup.")
 
         elif action == "reject" and order.status in {"Pending", "Confirmed"}:
+            existing_task = OrderPickingTask.objects.filter(order=order).first()
+            if existing_task and existing_task.status not in {"WAITING", "CANCELLED"}:
+                messages.error(
+                    request,
+                    "Picker has already started this order, so it cannot be rejected.",
+                )
+                return redirect("shopkeeper_orders")
             reason = (
                 request.POST.get("reason") or "Rejected by shop"
             ).strip()[:100]
@@ -5221,7 +5320,6 @@ def shopkeeper_order_action_view(request, order_number):
                 if item.product_id:
                     product = Product.objects.select_for_update().get(
                         pk=item.product_id,
-                        shop=profile.shop,
                     )
                     product.stock_quantity += item.quantity
                     product.save(update_fields=["stock_quantity"])
@@ -5243,6 +5341,9 @@ def shopkeeper_order_action_view(request, order_number):
                 ]
             )
             order.create_status_history("Cancelled", reason)
+            OrderPickingTask.objects.filter(order=order).update(
+                status="CANCELLED"
+            )
             Settlement.objects.filter(order=order).update(status="On Hold")
             messages.info(request, "Order rejected and stock restored.")
 
@@ -5632,6 +5733,251 @@ def shopkeeper_profile_view(request):
             "active_tab": "profile",
         },
     )
+
+
+# =========================================================
+# PICKER APP / UPC ORDER PICKING
+# =========================================================
+
+def _picker_app_profile(request):
+    if request.user.is_staff or getattr(request.user, "role", "") != "PICKER":
+        return None
+    return (
+        PickerProfile.objects
+        .filter(user=request.user, is_active=True, shop__is_active=True)
+        .select_related("shop", "user")
+        .first()
+    )
+
+
+@login_required
+def picker_dashboard_view(request):
+    profile = _picker_app_profile(request)
+    if profile is None:
+        messages.error(request, "Active picker profile and shop assignment required.")
+        return redirect("home")
+
+    tasks = (
+        OrderPickingTask.objects
+        .filter(shop=profile.shop)
+        .filter(
+            Q(status="WAITING")
+            | Q(
+                picker=request.user,
+                status__in=["ACCEPTED", "PICKING", "PACKED"],
+            )
+        )
+        .select_related("order", "order__user", "picker")
+        .prefetch_related("picking_items")
+        .order_by("created_at")
+    )
+    return render(
+        request,
+        "customer/picker_dashboard.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "tasks": tasks,
+            "active_tab": "tasks",
+            "waiting_count": tasks.filter(status="WAITING").count(),
+            "active_count": tasks.filter(
+                picker=request.user,
+                status__in=["ACCEPTED", "PICKING"],
+            ).count(),
+        },
+    )
+
+
+@login_required
+def picker_accept_task_view(request, order_number):
+    profile = _picker_app_profile(request)
+    if profile is None:
+        return redirect("home")
+    if request.method != "POST":
+        return redirect("picker_dashboard")
+
+    with transaction.atomic():
+        task = get_object_or_404(
+            OrderPickingTask.objects.select_for_update().select_related("order"),
+            order__order_number=order_number,
+            shop=profile.shop,
+        )
+        if task.status != "WAITING":
+            if task.picker_id == request.user.id:
+                return redirect(
+                    "picker_order_detail",
+                    order_number=order_number,
+                )
+            messages.error(request, "Another picker already accepted this order.")
+            return redirect("picker_dashboard")
+
+        task.picker = request.user
+        task.status = "ACCEPTED"
+        task.accepted_at = timezone.now()
+        task.save(
+            update_fields=[
+                "picker",
+                "status",
+                "accepted_at",
+                "updated_at",
+            ]
+        )
+        if task.order.status == "Confirmed":
+            task.order.status = "Preparing"
+            task.order.save(update_fields=["status", "updated_at"])
+            task.order.create_status_history(
+                "Preparing",
+                f"Picker {request.user.name} accepted the picking task.",
+            )
+
+    messages.success(request, "Picking task accepted. Scan every ordered item.")
+    return redirect("picker_order_detail", order_number=order_number)
+
+
+@login_required
+def picker_order_detail_view(request, order_number):
+    profile = _picker_app_profile(request)
+    if profile is None:
+        return redirect("home")
+
+    task = get_object_or_404(
+        OrderPickingTask.objects
+        .filter(shop=profile.shop, order__order_number=order_number)
+        .select_related("order", "order__user", "order__address", "picker")
+        .prefetch_related(
+            "picking_items",
+            "picking_items__order_item",
+            "picking_items__order_item__product",
+            "picking_items__order_item__product__barcodes",
+        ),
+    )
+    if task.picker_id not in {None, request.user.id}:
+        messages.error(request, "This order belongs to another picker.")
+        return redirect("picker_dashboard")
+
+    assignment = (
+        task.order.delivery_assignments
+        .exclude(status="Rejected")
+        .select_related("delivery_partner", "delivery_partner__delivery_profile")
+        .first()
+    )
+    if task.status == "PACKED" and assignment is None:
+        assignment = _assign_available_rider(task.order)
+    return render(
+        request,
+        "customer/picker_order_detail.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "task": task,
+            "picking_items": task.picking_items.all(),
+            "assignment": assignment,
+            "active_tab": "tasks",
+        },
+    )
+
+
+@login_required
+def picker_scan_item_view(request, order_number):
+    profile = _picker_app_profile(request)
+    if profile is None:
+        return redirect("home")
+    if request.method != "POST":
+        return redirect("picker_order_detail", order_number=order_number)
+
+    with transaction.atomic():
+        task = get_object_or_404(
+            OrderPickingTask.objects.select_for_update().select_related("order"),
+            order__order_number=order_number,
+            shop=profile.shop,
+            picker=request.user,
+            status__in=["ACCEPTED", "PICKING"],
+        )
+        barcode = (request.POST.get("barcode") or "").strip().upper()
+        manual_item_id = request.POST.get("picking_item_id")
+        try:
+            quantity = max(1, int(request.POST.get("quantity") or 1))
+        except (TypeError, ValueError):
+            quantity = 1
+
+        candidates = list(
+            task.picking_items
+            .select_for_update()
+            .select_related("order_item", "order_item__product")
+            .prefetch_related("order_item__product__barcodes")
+        )
+        picking_item = None
+        if manual_item_id:
+            picking_item = next(
+                (
+                    item
+                    for item in candidates
+                    if str(item.pk) == str(manual_item_id)
+                ),
+                None,
+            )
+        elif barcode:
+            for item in candidates:
+                product = item.order_item.product
+                product_barcodes = {
+                    row.barcode.upper()
+                    for row in product.barcodes.all()
+                } if product else set()
+                if barcode in product_barcodes and not item.is_complete:
+                    picking_item = item
+                    break
+
+        if picking_item is None:
+            messages.error(request, "Barcode does not match this order.")
+            return redirect("picker_order_detail", order_number=order_number)
+        if picking_item.is_complete:
+            messages.info(request, "This item is already fully picked.")
+            return redirect("picker_order_detail", order_number=order_number)
+
+        quantity = min(quantity, picking_item.remaining_quantity)
+        picking_item.picked_quantity += quantity
+        if barcode:
+            picking_item.last_scanned_barcode = barcode
+        picking_item.save(
+            update_fields=[
+                "picked_quantity",
+                "last_scanned_barcode",
+                "updated_at",
+            ]
+        )
+        task.status = "PICKING"
+        task.save(update_fields=["status", "updated_at"])
+
+        all_complete = all(
+            item.pk == picking_item.pk and picking_item.is_complete
+            or item.pk != picking_item.pk and item.is_complete
+            for item in candidates
+        )
+        if all_complete:
+            task.status = "PACKED"
+            task.packed_at = timezone.now()
+            task.save(
+                update_fields=["status", "packed_at", "updated_at"]
+            )
+            assignment = _assign_available_rider(task.order)
+            if assignment:
+                messages.success(
+                    request,
+                    "Order packed. Rider details are now available below.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "Order packed. Waiting for an online verified rider.",
+                )
+        else:
+            product_name = (
+                picking_item.order_item.product_name
+                or picking_item.order_item.product.name
+            )
+            messages.success(request, f"Picked {quantity} × {product_name}.")
+
+    return redirect("picker_order_detail", order_number=order_number)
 
 
 def _delivery_incentive_period(incentive, now):

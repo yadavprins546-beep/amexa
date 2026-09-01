@@ -79,6 +79,10 @@ from customer.views import (
     orders_view,
     order_detail_view,
     order_tracking_data_view,
+    picker_accept_task_view,
+    picker_dashboard_view,
+    picker_order_detail_view,
+    picker_scan_item_view,
     delivery_location_update_view,
     delivery_live_tracking_view,
     delivery_onboarding_view,
@@ -610,6 +614,35 @@ urlpatterns = [
         "shopkeeper/profile/",
         shopkeeper_profile_view,
         name="shopkeeper_profile",
+    ),
+
+
+    # =====================================================
+    # PICKER APP / UPC ORDER PICKING
+    # =====================================================
+
+    path(
+        "picker/",
+        picker_dashboard_view,
+        name="picker_dashboard",
+    ),
+
+    path(
+        "picker/orders/<str:order_number>/",
+        picker_order_detail_view,
+        name="picker_order_detail",
+    ),
+
+    path(
+        "picker/orders/<str:order_number>/accept/",
+        picker_accept_task_view,
+        name="picker_accept_task",
+    ),
+
+    path(
+        "picker/orders/<str:order_number>/scan/",
+        picker_scan_item_view,
+        name="picker_scan_item",
     ),
 
 
