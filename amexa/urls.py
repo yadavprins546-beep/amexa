@@ -86,7 +86,16 @@ from customer.views import (
     delivery_dashboard_view,
     delivery_assignment_action_view,
     shopkeeper_dashboard_view,
+    shopkeeper_bad_stock_view,
+    shopkeeper_inventory_update_view,
+    shopkeeper_inventory_view,
     shopkeeper_onboarding_view,
+    shopkeeper_order_action_view,
+    shopkeeper_orders_view,
+    shopkeeper_payments_view,
+    shopkeeper_product_add_view,
+    shopkeeper_profile_view,
+    shopkeeper_upc_lookup_view,
     shopkeeper_verification_status_view,
     cancel_order_view,
     order_success_view,
@@ -547,6 +556,60 @@ urlpatterns = [
         "shopkeeper/verification-status/",
         shopkeeper_verification_status_view,
         name="shopkeeper_verification_status",
+    ),
+
+    path(
+        "shopkeeper/orders/",
+        shopkeeper_orders_view,
+        name="shopkeeper_orders",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/action/",
+        shopkeeper_order_action_view,
+        name="shopkeeper_order_action",
+    ),
+
+    path(
+        "shopkeeper/inventory/",
+        shopkeeper_inventory_view,
+        name="shopkeeper_inventory",
+    ),
+
+    path(
+        "shopkeeper/inventory/add/",
+        shopkeeper_product_add_view,
+        name="shopkeeper_product_add",
+    ),
+
+    path(
+        "shopkeeper/inventory/upc-lookup/",
+        shopkeeper_upc_lookup_view,
+        name="shopkeeper_upc_lookup",
+    ),
+
+    path(
+        "shopkeeper/inventory/<int:product_id>/update/",
+        shopkeeper_inventory_update_view,
+        name="shopkeeper_inventory_update",
+    ),
+
+    path(
+        "shopkeeper/inventory/<int:product_id>/bad-stock/",
+        shopkeeper_bad_stock_view,
+        name="shopkeeper_bad_stock",
+    ),
+
+    path(
+        "shopkeeper/payments/",
+        shopkeeper_payments_view,
+        name="shopkeeper_payments",
+    ),
+
+    path(
+        "shopkeeper/profile/",
+        shopkeeper_profile_view,
+        name="shopkeeper_profile",
     ),
 
 
