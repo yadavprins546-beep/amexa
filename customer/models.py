@@ -114,15 +114,45 @@ class OTPVerification(models.Model):
 
 
 class Shop(models.Model):
+    SHOP_TYPE_CHOICES = [
+        ("GROCERY", "Grocery / Kirana"),
+        ("FRUITS_VEGETABLES", "Fruits & Vegetables"),
+        ("DAIRY", "Dairy"),
+        ("BAKERY", "Bakery"),
+        ("RESTAURANT", "Restaurant / Cloud Kitchen"),
+        ("PHARMACY", "Pharmacy"),
+        ("ELECTRONICS", "Electronics"),
+        ("FASHION", "Fashion"),
+        ("GENERAL", "General Store"),
+        ("OTHER", "Other"),
+    ]
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_shops')
     name = models.CharField(max_length=150)
+    legal_name = models.CharField(max_length=180, blank=True)
+    shop_type = models.CharField(
+        max_length=30,
+        choices=SHOP_TYPE_CHOICES,
+        default="GROCERY",
+    )
     slug = models.SlugField(max_length=170, unique=True, blank=True)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=15)
+    gstin = models.CharField(max_length=15, blank=True)
+    fssai_number = models.CharField(max_length=14, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0)
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=4.5)
     is_active = models.BooleanField(default=True)
+    is_online = models.BooleanField(default=True)
+    auto_accept_orders = models.BooleanField(default=False)
+    minimum_order_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+    opening_time = models.TimeField(null=True, blank=True)
+    closing_time = models.TimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -130,7 +160,15 @@ class Shop(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or "shop"
+            candidate = base_slug
+            number = 2
+            while Shop.objects.exclude(pk=self.pk).filter(
+                slug=candidate
+            ).exists():
+                candidate = f"{base_slug}-{number}"
+                number += 1
+            self.slug = candidate
         super().save(*args, **kwargs)
 
     def distance_to(self, user_lat, user_lon):
@@ -146,7 +184,7 @@ class Shop(models.Model):
 
     @property
     def is_open(self):
-        return self.is_active
+        return self.is_active and self.is_online
 
     def __str__(self):
         return self.name
@@ -726,6 +764,275 @@ class DeliveryPartnerBankAccount(models.Model):
         self.account_number_hash = (
             salted_hmac(
                 "amexa.delivery.bank",
+                normalized,
+            ).hexdigest()
+            if normalized
+            else ""
+        )
+
+    @property
+    def masked_account_number(self):
+        return f"XXXXXX{self.account_number_last4}"
+
+    def save(self, *args, **kwargs):
+        self.ifsc_code = (self.ifsc_code or "").strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.profile.user} - {self.masked_account_number}"
+
+
+# =========================================================
+# SHOPKEEPER ONBOARDING / KYC / BANK VERIFICATION
+# =========================================================
+
+class ShopkeeperProfile(models.Model):
+    VERIFICATION_STATUS_CHOICES = [
+        ("DRAFT", "Draft"),
+        ("PENDING", "Verification Pending"),
+        ("UNDER_REVIEW", "Under Review"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+        ("BLOCKED", "Blocked"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shopkeeper_profile",
+    )
+    shop = models.OneToOneField(
+        Shop,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shopkeeper_profile",
+    )
+    owner_photo = models.ImageField(
+        upload_to="shopkeeper/profile/",
+        null=True,
+        blank=True,
+    )
+    date_of_birth = models.DateField(null=True, blank=True)
+    residential_address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    pincode = models.CharField(max_length=6, blank=True)
+    emergency_contact_name = models.CharField(max_length=150, blank=True)
+    emergency_contact_phone = models.CharField(max_length=15, blank=True)
+    onboarding_step = models.PositiveSmallIntegerField(default=1)
+    terms_accepted = models.BooleanField(default=False)
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default="DRAFT",
+        db_index=True,
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_shopkeeper_profiles",
+    )
+    rejection_reason = models.TextField(blank=True)
+    admin_note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["verification_status", "created_at"]),
+        ]
+
+    @property
+    def is_approved(self):
+        return self.verification_status == "APPROVED"
+
+    @property
+    def can_access_dashboard(self):
+        return (
+            self.is_approved
+            and self.user.is_active
+            and self.user.role == "SHOPKEEPER"
+            and self.shop_id is not None
+            and self.shop.is_active
+        )
+
+    def submit_for_verification(self):
+        self.verification_status = "PENDING"
+        self.submitted_at = timezone.now()
+        self.reviewed_at = None
+        self.reviewed_by = None
+        self.rejection_reason = ""
+        self.save(
+            update_fields=[
+                "verification_status",
+                "submitted_at",
+                "reviewed_at",
+                "reviewed_by",
+                "rejection_reason",
+                "updated_at",
+            ]
+        )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.verification_status != "APPROVED" and self.shop_id:
+            Shop.objects.filter(pk=self.shop_id).update(
+                is_active=False,
+                is_online=False,
+            )
+
+    def __str__(self):
+        return f"{self.user} - {self.get_verification_status_display()}"
+
+
+class ShopkeeperDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ("AADHAAR_FRONT", "Aadhaar Front"),
+        ("AADHAAR_BACK", "Aadhaar Back"),
+        ("PAN", "PAN Card"),
+        ("GST_CERTIFICATE", "GST Certificate"),
+        ("FSSAI_CERTIFICATE", "FSSAI / Food Licence"),
+        ("OWNER_SELFIE", "Owner Live Selfie"),
+        ("SHOP_FRONT", "Shop Front Photo"),
+    ]
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("VERIFIED", "Verified"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    profile = models.ForeignKey(
+        ShopkeeperProfile,
+        on_delete=models.CASCADE,
+        related_name="documents",
+    )
+    document_type = models.CharField(
+        max_length=30,
+        choices=DOCUMENT_TYPE_CHOICES,
+    )
+    document_file = models.FileField(
+        upload_to="private/shopkeeper/documents/",
+        storage=private_delivery_document_storage,
+    )
+    document_number_hash = models.CharField(
+        max_length=64,
+        blank=True,
+        editable=False,
+    )
+    document_number_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        editable=False,
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+    )
+    rejection_reason = models.TextField(blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_shopkeeper_documents",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["document_type"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile", "document_type"],
+                name="unique_shopkeeper_profile_document_type",
+            ),
+        ]
+
+    def set_document_number(self, number):
+        normalized = "".join(
+            character
+            for character in str(number or "").upper()
+            if character.isalnum()
+        )
+        self.document_number_last4 = normalized[-4:]
+        self.document_number_hash = (
+            salted_hmac(
+                "amexa.shopkeeper.document",
+                normalized,
+            ).hexdigest()
+            if normalized
+            else ""
+        )
+
+    @property
+    def masked_document_number(self):
+        if not self.document_number_last4:
+            return "Not provided"
+        return f"XXXX-XXXX-{self.document_number_last4}"
+
+    def __str__(self):
+        return f"{self.profile.user} - {self.get_document_type_display()}"
+
+
+class ShopkeeperBankAccount(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("VERIFIED", "Verified"),
+        ("REJECTED", "Rejected"),
+    ]
+
+    profile = models.OneToOneField(
+        ShopkeeperProfile,
+        on_delete=models.CASCADE,
+        related_name="bank_account",
+    )
+    account_holder_name = models.CharField(max_length=150)
+    bank_name = models.CharField(max_length=150, blank=True)
+    account_number_hash = models.CharField(max_length=64, editable=False)
+    account_number_last4 = models.CharField(max_length=4, editable=False)
+    ifsc_code = models.CharField(max_length=11)
+    cancelled_cheque = models.FileField(
+        upload_to="private/shopkeeper/bank/",
+        storage=private_delivery_document_storage,
+        null=True,
+        blank=True,
+    )
+    upi_id = models.CharField(max_length=100, blank=True)
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+    )
+    rejection_reason = models.TextField(blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_shopkeeper_bank_accounts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def set_account_number(self, account_number):
+        normalized = "".join(
+            character
+            for character in str(account_number or "")
+            if character.isdigit()
+        )
+        self.account_number_last4 = normalized[-4:]
+        self.account_number_hash = (
+            salted_hmac(
+                "amexa.shopkeeper.bank",
                 normalized,
             ).hexdigest()
             if normalized

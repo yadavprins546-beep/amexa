@@ -3,7 +3,12 @@ from datetime import date
 
 from django import forms
 
-from .models import Address, DeliveryPartnerProfile
+from .models import (
+    Address,
+    DeliveryPartnerProfile,
+    Shop,
+    ShopkeeperProfile,
+)
 
 
 # =========================================================
@@ -567,4 +572,316 @@ class DeliveryFinalVerificationForm(forms.Form):
         label=(
             "I accept AMEXA delivery partner terms and verification policy."
         )
+    )
+
+
+# =========================================================
+# SHOPKEEPER ONBOARDING
+# =========================================================
+
+FOOD_SHOP_TYPES = {
+    "GROCERY",
+    "FRUITS_VEGETABLES",
+    "DAIRY",
+    "BAKERY",
+    "RESTAURANT",
+}
+
+
+class ShopkeeperPersonalDetailsForm(forms.ModelForm):
+    name = forms.CharField(max_length=150, label="Owner full name")
+    phone = forms.CharField(
+        max_length=15,
+        label="Mobile number",
+        widget=forms.TextInput(
+            attrs={"inputmode": "numeric", "maxlength": "10"}
+        ),
+    )
+
+    class Meta:
+        model = ShopkeeperProfile
+        fields = [
+            "owner_photo",
+            "date_of_birth",
+            "residential_address",
+            "city",
+            "state",
+            "pincode",
+            "emergency_contact_name",
+            "emergency_contact_phone",
+        ]
+        widgets = {
+            "owner_photo": forms.FileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png",
+                    "capture": "user",
+                }
+            ),
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+            "residential_address": forms.Textarea(attrs={"rows": 3}),
+            "pincode": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "6"}
+            ),
+            "emergency_contact_phone": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "10"}
+            ),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        if user and not self.is_bound:
+            self.fields["name"].initial = user.name
+            self.fields["phone"].initial = user.phone
+
+    def clean_name(self):
+        value = self.cleaned_data["name"].strip()
+        if len(value) < 2:
+            raise forms.ValidationError("Please enter the owner's full name.")
+        return value
+
+    def clean_phone(self):
+        return normalize_indian_phone(self.cleaned_data["phone"])
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get("date_of_birth")
+        if not dob:
+            raise forms.ValidationError("Date of birth is required.")
+        today = date.today()
+        age = today.year - dob.year - (
+            (today.month, today.day) < (dob.month, dob.day)
+        )
+        if age < 18:
+            raise forms.ValidationError("Shop owner must be at least 18 years old.")
+        return dob
+
+    def clean_owner_photo(self):
+        photo = self.cleaned_data.get("owner_photo")
+        if not photo and not getattr(self.instance, "owner_photo", None):
+            raise forms.ValidationError("Live owner photo is required.")
+        return validate_onboarding_image(photo)
+
+    def clean_pincode(self):
+        value = str(self.cleaned_data.get("pincode") or "").strip()
+        if not value.isdigit() or len(value) != 6:
+            raise forms.ValidationError("Pincode must be 6 digits.")
+        return value
+
+    def clean_emergency_contact_phone(self):
+        return normalize_indian_phone(
+            self.cleaned_data["emergency_contact_phone"]
+        )
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        if self.user:
+            self.user.name = self.cleaned_data["name"]
+            self.user.phone = self.cleaned_data["phone"]
+            self.user.role = "SHOPKEEPER"
+            self.user.save(update_fields=["name", "phone", "role"])
+        if commit:
+            profile.save()
+        return profile
+
+
+class ShopkeeperBusinessDetailsForm(forms.ModelForm):
+    class Meta:
+        model = Shop
+        fields = [
+            "name",
+            "legal_name",
+            "shop_type",
+            "address",
+            "phone",
+            "gstin",
+            "fssai_number",
+            "latitude",
+            "longitude",
+            "minimum_order_value",
+            "opening_time",
+            "closing_time",
+            "auto_accept_orders",
+        ]
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "phone": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "10"}
+            ),
+            "gstin": forms.TextInput(
+                attrs={"maxlength": "15", "autocomplete": "off"}
+            ),
+            "fssai_number": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "14"}
+            ),
+            "latitude": forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
+            "minimum_order_value": forms.NumberInput(
+                attrs={"min": "0", "step": "1"}
+            ),
+            "opening_time": forms.TimeInput(attrs={"type": "time"}),
+            "closing_time": forms.TimeInput(attrs={"type": "time"}),
+        }
+
+    def clean_phone(self):
+        return normalize_indian_phone(self.cleaned_data["phone"])
+
+    def clean_gstin(self):
+        value = (self.cleaned_data.get("gstin") or "").strip().upper()
+        pattern = r"[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]"
+        if not re.fullmatch(pattern, value):
+            raise forms.ValidationError("Please enter a valid 15 character GSTIN.")
+        return value
+
+    def clean_fssai_number(self):
+        value = re.sub(
+            r"\D",
+            "",
+            self.cleaned_data.get("fssai_number") or "",
+        )
+        shop_type = self.data.get("shop_type") or getattr(
+            self.instance,
+            "shop_type",
+            "",
+        )
+        if shop_type in FOOD_SHOP_TYPES and len(value) != 14:
+            raise forms.ValidationError(
+                "14 digit FSSAI number is required for food shops."
+            )
+        if value and len(value) != 14:
+            raise forms.ValidationError("FSSAI number must be 14 digits.")
+        return value
+
+
+class ShopkeeperDocumentsForm(forms.Form):
+    aadhaar_number = forms.CharField(
+        max_length=12,
+        widget=forms.PasswordInput(
+            render_value=True,
+            attrs={"inputmode": "numeric", "maxlength": "12"},
+        ),
+    )
+    aadhaar_front = forms.FileField(
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+    aadhaar_back = forms.FileField(
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+    pan_number = forms.CharField(max_length=10)
+    pan_card = forms.FileField(
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+    gst_certificate = forms.FileField(
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+    fssai_certificate = forms.FileField(
+        required=False,
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+    owner_selfie = forms.FileField(
+        validators=[validate_onboarding_image],
+        widget=forms.FileInput(
+            attrs={"accept": "image/jpeg,image/png", "capture": "user"}
+        ),
+    )
+    shop_front = forms.FileField(
+        validators=[validate_onboarding_image],
+        widget=forms.FileInput(
+            attrs={"accept": "image/jpeg,image/png", "capture": "environment"}
+        ),
+    )
+
+    def __init__(self, *args, profile=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profile = profile
+        if (
+            profile
+            and profile.shop_id
+            and profile.shop.shop_type in FOOD_SHOP_TYPES
+        ):
+            self.fields["fssai_certificate"].required = True
+
+    def clean_aadhaar_number(self):
+        value = re.sub(r"\D", "", self.cleaned_data["aadhaar_number"])
+        if not re.fullmatch(r"[2-9][0-9]{11}", value):
+            raise forms.ValidationError("Please enter a valid Aadhaar number.")
+        return value
+
+    def clean_pan_number(self):
+        value = self.cleaned_data["pan_number"].strip().upper()
+        if not re.fullmatch(r"[A-Z]{5}[0-9]{4}[A-Z]", value):
+            raise forms.ValidationError("Please enter a valid PAN number.")
+        return value
+
+
+class ShopkeeperBankDetailsForm(forms.Form):
+    account_holder_name = forms.CharField(max_length=150)
+    bank_name = forms.CharField(max_length=150)
+    account_number = forms.CharField(
+        min_length=9,
+        max_length=18,
+        widget=forms.PasswordInput(
+            render_value=True,
+            attrs={"inputmode": "numeric", "autocomplete": "off"},
+        ),
+    )
+    confirm_account_number = forms.CharField(
+        min_length=9,
+        max_length=18,
+        widget=forms.PasswordInput(
+            render_value=True,
+            attrs={"inputmode": "numeric", "autocomplete": "off"},
+        ),
+    )
+    ifsc_code = forms.CharField(min_length=11, max_length=11)
+    upi_id = forms.CharField(max_length=100, required=False)
+    cancelled_cheque = forms.FileField(
+        required=False,
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.pdf"}),
+    )
+
+    def clean_account_number(self):
+        value = re.sub(r"\D", "", self.cleaned_data["account_number"])
+        if not re.fullmatch(r"[0-9]{9,18}", value):
+            raise forms.ValidationError("Account number must be 9 to 18 digits.")
+        return value
+
+    def clean_confirm_account_number(self):
+        return re.sub(
+            r"\D",
+            "",
+            self.cleaned_data["confirm_account_number"],
+        )
+
+    def clean_ifsc_code(self):
+        value = self.cleaned_data["ifsc_code"].strip().upper()
+        if not re.fullmatch(r"[A-Z]{4}0[A-Z0-9]{6}", value):
+            raise forms.ValidationError("Please enter a valid IFSC code.")
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        if (
+            cleaned.get("account_number")
+            and cleaned.get("confirm_account_number")
+            and cleaned["account_number"] != cleaned["confirm_account_number"]
+        ):
+            self.add_error(
+                "confirm_account_number",
+                "Account numbers do not match.",
+            )
+        return cleaned
+
+
+class ShopkeeperFinalVerificationForm(forms.Form):
+    confirm_details = forms.BooleanField(
+        label="I confirm that all business and bank details are correct."
+    )
+    accept_terms = forms.BooleanField(
+        label="I accept AMEXA shopkeeper terms and verification policy."
     )

@@ -19,6 +19,11 @@ from .forms import (
     DeliveryFinalVerificationForm,
     DeliveryPersonalDetailsForm,
     LoginForm,
+    ShopkeeperBankDetailsForm,
+    ShopkeeperBusinessDetailsForm,
+    ShopkeeperDocumentsForm,
+    ShopkeeperFinalVerificationForm,
+    ShopkeeperPersonalDetailsForm,
 )
 
 from .wallet_services import (
@@ -55,6 +60,10 @@ from .models import (
     Referral,
     SearchAlias,
     Settlement,
+    ShopkeeperBankAccount,
+    ShopkeeperDocument,
+    ShopkeeperProfile,
+    ShopProduct,
     Wallet,
     WalletTransaction,
     Shop,
@@ -4651,6 +4660,366 @@ def delivery_verification_status_view(request):
                 .filter(profile=profile)
                 .first()
             ),
+        },
+    )
+
+
+# =========================================================
+# SHOPKEEPER ONBOARDING / VERIFICATION / BASIC DASHBOARD
+# =========================================================
+
+SHOPKEEPER_FOOD_TYPES = {
+    "GROCERY",
+    "FRUITS_VEGETABLES",
+    "DAIRY",
+    "BAKERY",
+    "RESTAURANT",
+}
+
+
+def _shopkeeper_profile_for_user(user):
+    profile, _ = ShopkeeperProfile.objects.get_or_create(user=user)
+    return profile
+
+
+def _save_shopkeeper_document(
+    profile,
+    document_type,
+    uploaded_file,
+    document_number="",
+):
+    document = (
+        ShopkeeperDocument.objects
+        .filter(profile=profile, document_type=document_type)
+        .first()
+    )
+    if document is None:
+        document = ShopkeeperDocument(
+            profile=profile,
+            document_type=document_type,
+        )
+    document.document_file = uploaded_file
+    document.set_document_number(document_number)
+    document.status = "PENDING"
+    document.rejection_reason = ""
+    document.verified_at = None
+    document.verified_by = None
+    document.save()
+    return document
+
+
+def _required_shopkeeper_document_types(profile):
+    required = {
+        "AADHAAR_FRONT",
+        "AADHAAR_BACK",
+        "PAN",
+        "GST_CERTIFICATE",
+        "OWNER_SELFIE",
+        "SHOP_FRONT",
+    }
+    if (
+        profile.shop_id
+        and profile.shop.shop_type in SHOPKEEPER_FOOD_TYPES
+    ):
+        required.add("FSSAI_CERTIFICATE")
+    return required
+
+
+@login_required
+def shopkeeper_onboarding_view(request, step=1):
+    if request.user.is_staff:
+        return redirect("admin_control_center")
+
+    profile = _shopkeeper_profile_for_user(request.user)
+
+    if profile.verification_status == "APPROVED":
+        return redirect("shopkeeper_dashboard")
+
+    if profile.verification_status in {
+        "PENDING",
+        "UNDER_REVIEW",
+        "BLOCKED",
+    }:
+        return redirect("shopkeeper_verification_status")
+
+    step = max(1, min(int(step), 5))
+    if step > profile.onboarding_step:
+        return redirect(
+            "shopkeeper_onboarding",
+            step=profile.onboarding_step,
+        )
+
+    form = None
+
+    if step == 1:
+        form = ShopkeeperPersonalDetailsForm(
+            request.POST or None,
+            request.FILES or None,
+            instance=profile,
+            user=request.user,
+        )
+        if request.method == "POST" and form.is_valid():
+            profile = form.save()
+            profile.onboarding_step = max(profile.onboarding_step, 2)
+            profile.verification_status = "DRAFT"
+            profile.save(
+                update_fields=[
+                    "onboarding_step",
+                    "verification_status",
+                    "updated_at",
+                ]
+            )
+            return redirect("shopkeeper_onboarding", step=2)
+
+    elif step == 2:
+        form = ShopkeeperBusinessDetailsForm(
+            request.POST or None,
+            instance=profile.shop if profile.shop_id else None,
+        )
+        if request.method == "POST" and form.is_valid():
+            shop = form.save(commit=False)
+            shop.owner = request.user
+            shop.is_active = False
+            shop.is_online = False
+            shop.save()
+            profile.shop = shop
+            profile.onboarding_step = max(profile.onboarding_step, 3)
+            profile.save(
+                update_fields=["shop", "onboarding_step", "updated_at"]
+            )
+            return redirect("shopkeeper_onboarding", step=3)
+
+    elif step == 3:
+        form = ShopkeeperDocumentsForm(
+            request.POST or None,
+            request.FILES or None,
+            profile=profile,
+        )
+        if request.method == "POST" and form.is_valid():
+            with transaction.atomic():
+                aadhaar_number = form.cleaned_data["aadhaar_number"]
+                pan_number = form.cleaned_data["pan_number"]
+                _save_shopkeeper_document(
+                    profile,
+                    "AADHAAR_FRONT",
+                    form.cleaned_data["aadhaar_front"],
+                    aadhaar_number,
+                )
+                _save_shopkeeper_document(
+                    profile,
+                    "AADHAAR_BACK",
+                    form.cleaned_data["aadhaar_back"],
+                    aadhaar_number,
+                )
+                _save_shopkeeper_document(
+                    profile,
+                    "PAN",
+                    form.cleaned_data["pan_card"],
+                    pan_number,
+                )
+                _save_shopkeeper_document(
+                    profile,
+                    "GST_CERTIFICATE",
+                    form.cleaned_data["gst_certificate"],
+                    profile.shop.gstin,
+                )
+                _save_shopkeeper_document(
+                    profile,
+                    "OWNER_SELFIE",
+                    form.cleaned_data["owner_selfie"],
+                )
+                _save_shopkeeper_document(
+                    profile,
+                    "SHOP_FRONT",
+                    form.cleaned_data["shop_front"],
+                )
+                if form.cleaned_data.get("fssai_certificate"):
+                    _save_shopkeeper_document(
+                        profile,
+                        "FSSAI_CERTIFICATE",
+                        form.cleaned_data["fssai_certificate"],
+                        profile.shop.fssai_number,
+                    )
+                profile.onboarding_step = max(profile.onboarding_step, 4)
+                profile.save(
+                    update_fields=["onboarding_step", "updated_at"]
+                )
+            return redirect("shopkeeper_onboarding", step=4)
+
+    elif step == 4:
+        bank_account = ShopkeeperBankAccount.objects.filter(
+            profile=profile
+        ).first()
+        initial = {}
+        if bank_account:
+            initial = {
+                "account_holder_name": bank_account.account_holder_name,
+                "bank_name": bank_account.bank_name,
+                "ifsc_code": bank_account.ifsc_code,
+                "upi_id": bank_account.upi_id,
+            }
+        form = ShopkeeperBankDetailsForm(
+            request.POST or None,
+            request.FILES or None,
+            initial=initial,
+        )
+        if request.method == "POST" and form.is_valid():
+            if bank_account is None:
+                bank_account = ShopkeeperBankAccount(profile=profile)
+            bank_account.account_holder_name = form.cleaned_data[
+                "account_holder_name"
+            ]
+            bank_account.bank_name = form.cleaned_data["bank_name"]
+            bank_account.ifsc_code = form.cleaned_data["ifsc_code"]
+            bank_account.upi_id = form.cleaned_data.get("upi_id", "")
+            bank_account.set_account_number(
+                form.cleaned_data["account_number"]
+            )
+            if form.cleaned_data.get("cancelled_cheque"):
+                bank_account.cancelled_cheque = form.cleaned_data[
+                    "cancelled_cheque"
+                ]
+            bank_account.status = "PENDING"
+            bank_account.rejection_reason = ""
+            bank_account.verified_at = None
+            bank_account.verified_by = None
+            bank_account.save()
+            profile.onboarding_step = max(profile.onboarding_step, 5)
+            profile.save(
+                update_fields=["onboarding_step", "updated_at"]
+            )
+            return redirect("shopkeeper_onboarding", step=5)
+
+    else:
+        form = ShopkeeperFinalVerificationForm(request.POST or None)
+        existing_types = set(
+            profile.documents.values_list("document_type", flat=True)
+        )
+        missing_types = (
+            _required_shopkeeper_document_types(profile) - existing_types
+        )
+        bank_account = ShopkeeperBankAccount.objects.filter(
+            profile=profile
+        ).first()
+
+        if request.method == "POST" and form.is_valid():
+            if missing_types:
+                messages.error(
+                    request,
+                    "Please upload all mandatory shop documents.",
+                )
+                return redirect("shopkeeper_onboarding", step=3)
+            if bank_account is None:
+                messages.error(request, "Please add shop payout details.")
+                return redirect("shopkeeper_onboarding", step=4)
+
+            profile.terms_accepted = True
+            profile.onboarding_step = 5
+            profile.save(
+                update_fields=[
+                    "terms_accepted",
+                    "onboarding_step",
+                    "updated_at",
+                ]
+            )
+            profile.submit_for_verification()
+            messages.success(
+                request,
+                "Your shop application was submitted for verification.",
+            )
+            return redirect("shopkeeper_verification_status")
+
+    return render(
+        request,
+        "customer/shopkeeper_onboarding.html",
+        {
+            "form": form,
+            "profile": profile,
+            "step": step,
+            "step_range": range(1, 6),
+        },
+    )
+
+
+@login_required
+def shopkeeper_verification_status_view(request):
+    if request.user.is_staff:
+        return redirect("admin_control_center")
+    profile = _shopkeeper_profile_for_user(request.user)
+    if profile.verification_status == "APPROVED":
+        return redirect("shopkeeper_dashboard")
+    if profile.verification_status == "DRAFT":
+        return redirect(
+            "shopkeeper_onboarding",
+            step=profile.onboarding_step,
+        )
+    return render(
+        request,
+        "customer/shopkeeper_verification_status.html",
+        {
+            "profile": profile,
+            "documents": profile.documents.all(),
+            "bank_account": ShopkeeperBankAccount.objects.filter(
+                profile=profile
+            ).first(),
+        },
+    )
+
+
+@login_required
+def shopkeeper_dashboard_view(request):
+    if request.user.is_staff:
+        return redirect("admin_control_center")
+    profile = _shopkeeper_profile_for_user(request.user)
+    if not profile.can_access_dashboard:
+        if profile.verification_status == "DRAFT":
+            return redirect(
+                "shopkeeper_onboarding",
+                step=profile.onboarding_step,
+            )
+        return redirect("shopkeeper_verification_status")
+
+    shop = profile.shop
+    if request.method == "POST":
+        shop.is_online = request.POST.get("is_online") == "1"
+        shop.save(update_fields=["is_online"])
+        messages.success(
+            request,
+            "Shop is online." if shop.is_online else "Shop is offline.",
+        )
+        return redirect("shopkeeper_dashboard")
+
+    shop_orders = Order.objects.filter(shop=shop)
+    delivered_orders = shop_orders.filter(status="Delivered")
+    total_sales = delivered_orders.aggregate(
+        value=Sum("total_amount")
+    )["value"] or Decimal("0.00")
+    total_profit = Settlement.objects.filter(
+        shop=shop,
+        order__status="Delivered",
+    ).aggregate(value=Sum("shop_payable"))["value"] or Decimal("0.00")
+
+    return render(
+        request,
+        "customer/shopkeeper_dashboard.html",
+        {
+            "profile": profile,
+            "shop": shop,
+            "today_orders": shop_orders.filter(
+                created_at__date=timezone.localdate()
+            ).count(),
+            "pending_orders": shop_orders.filter(
+                status__in=["Pending", "Confirmed", "Preparing"]
+            ).count(),
+            "total_sales": total_sales,
+            "total_profit": total_profit,
+            "inventory_count": ShopProduct.objects.filter(shop=shop).count(),
+            "low_stock_count": ShopProduct.objects.filter(
+                shop=shop,
+                stock_quantity__lte=5,
+                is_active=True,
+            ).count(),
+            "recent_orders": shop_orders.select_related("user")[:6],
         },
     )
 

@@ -36,6 +36,9 @@ from .models import (
     ProductBarcode,
     SearchAlias,
     Shop,
+    ShopkeeperBankAccount,
+    ShopkeeperDocument,
+    ShopkeeperProfile,
     ShopProduct,
 )
 
@@ -354,7 +357,11 @@ class ShopAdmin(admin.ModelAdmin):
 
     list_display = (
         "name",
+        "owner",
+        "shop_type",
         "phone",
+        "gstin",
+        "is_online",
         "rating",
         "is_active",
         "created_at",
@@ -364,6 +371,8 @@ class ShopAdmin(admin.ModelAdmin):
         "name",
         "phone",
         "address",
+        "gstin",
+        "fssai_number",
     )
 
     list_filter = (
@@ -1242,6 +1251,319 @@ class CouponUsageAdmin(admin.ModelAdmin):
     readonly_fields = (
         "used_at",
     )
+
+
+# =========================================================
+# SHOPKEEPER VERIFICATION ADMIN
+# =========================================================
+
+SHOPKEEPER_BASE_DOCUMENT_TYPES = {
+    "AADHAAR_FRONT",
+    "AADHAAR_BACK",
+    "PAN",
+    "GST_CERTIFICATE",
+    "OWNER_SELFIE",
+    "SHOP_FRONT",
+}
+SHOPKEEPER_FOOD_TYPES = {
+    "GROCERY",
+    "FRUITS_VEGETABLES",
+    "DAIRY",
+    "BAKERY",
+    "RESTAURANT",
+}
+
+
+def _shopkeeper_required_document_types(profile):
+    required = set(SHOPKEEPER_BASE_DOCUMENT_TYPES)
+    if (
+        profile.shop_id
+        and profile.shop.shop_type in SHOPKEEPER_FOOD_TYPES
+    ):
+        required.add("FSSAI_CERTIFICATE")
+    return required
+
+
+def _auto_approve_verified_shopkeepers(profile_ids, reviewer):
+    approved = 0
+    profiles = ShopkeeperProfile.objects.filter(
+        pk__in=set(profile_ids),
+        terms_accepted=True,
+        shop__isnull=False,
+    ).select_related("user", "shop")
+
+    for profile in profiles:
+        required = _shopkeeper_required_document_types(profile)
+        verified = set(
+            ShopkeeperDocument.objects.filter(
+                profile=profile,
+                status="VERIFIED",
+                document_type__in=required,
+            ).values_list("document_type", flat=True)
+        )
+        bank_verified = ShopkeeperBankAccount.objects.filter(
+            profile=profile,
+            status="VERIFIED",
+        ).exists()
+        if required.issubset(verified) and bank_verified:
+            ShopkeeperProfile.objects.filter(pk=profile.pk).update(
+                verification_status="APPROVED",
+                rejection_reason="",
+                reviewed_by=reviewer,
+                reviewed_at=timezone.now(),
+            )
+            CustomerUser.objects.filter(pk=profile.user_id).update(
+                role="SHOPKEEPER",
+                is_active=True,
+            )
+            Shop.objects.filter(pk=profile.shop_id).update(
+                is_active=True,
+                is_online=False,
+            )
+            approved += 1
+    return approved
+
+
+@admin.register(ShopkeeperProfile)
+class ShopkeeperProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "shop",
+        "verification_status",
+        "onboarding_step",
+        "submitted_at",
+        "reviewed_at",
+    )
+    search_fields = (
+        "user__name",
+        "user__email",
+        "user__phone",
+        "shop__name",
+        "shop__gstin",
+    )
+    list_filter = (
+        "verification_status",
+        "terms_accepted",
+        "submitted_at",
+    )
+    readonly_fields = (
+        "submitted_at",
+        "reviewed_at",
+        "reviewed_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = (
+        "mark_under_review",
+        "approve_shopkeepers",
+        "block_shopkeepers",
+    )
+
+    def save_model(self, request, obj, form, change):
+        if "verification_status" in form.changed_data:
+            obj.reviewed_by = request.user
+            obj.reviewed_at = timezone.now()
+            if obj.verification_status != "REJECTED":
+                obj.rejection_reason = ""
+        super().save_model(request, obj, form, change)
+        if obj.shop_id:
+            if obj.verification_status == "APPROVED":
+                CustomerUser.objects.filter(pk=obj.user_id).update(
+                    role="SHOPKEEPER",
+                    is_active=True,
+                )
+                Shop.objects.filter(pk=obj.shop_id).update(is_active=True)
+            elif obj.verification_status == "BLOCKED":
+                Shop.objects.filter(pk=obj.shop_id).update(
+                    is_active=False,
+                    is_online=False,
+                )
+
+    @admin.action(description="Move selected shopkeepers to Under Review")
+    def mark_under_review(self, request, queryset):
+        changed = queryset.update(
+            verification_status="UNDER_REVIEW",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} shop application(s) in review.")
+
+    @admin.action(description="Approve selected shopkeepers")
+    def approve_shopkeepers(self, request, queryset):
+        profile_rows = list(queryset.values_list("user_id", "shop_id"))
+        changed = queryset.update(
+            verification_status="APPROVED",
+            rejection_reason="",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        CustomerUser.objects.filter(
+            pk__in=[row[0] for row in profile_rows]
+        ).update(role="SHOPKEEPER", is_active=True)
+        Shop.objects.filter(
+            pk__in=[row[1] for row in profile_rows if row[1]]
+        ).update(is_active=True, is_online=False)
+        self.message_user(request, f"{changed} shopkeeper(s) approved.")
+
+    @admin.action(description="Block selected shopkeepers")
+    def block_shopkeepers(self, request, queryset):
+        shop_ids = list(
+            queryset.exclude(shop__isnull=True).values_list(
+                "shop_id",
+                flat=True,
+            )
+        )
+        changed = queryset.update(
+            verification_status="BLOCKED",
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        Shop.objects.filter(pk__in=shop_ids).update(
+            is_active=False,
+            is_online=False,
+        )
+        self.message_user(request, f"{changed} shopkeeper(s) blocked.")
+
+
+@admin.register(ShopkeeperDocument)
+class ShopkeeperDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "profile",
+        "document_type",
+        "masked_document_number",
+        "status",
+        "verified_at",
+    )
+    search_fields = (
+        "profile__user__name",
+        "profile__shop__name",
+        "document_number_last4",
+    )
+    list_filter = ("document_type", "status", "created_at")
+    readonly_fields = (
+        "document_number_hash",
+        "document_number_last4",
+        "masked_document_number",
+        "verified_at",
+        "verified_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = ("verify_documents", "reject_documents")
+
+    def save_model(self, request, obj, form, change):
+        if "status" in form.changed_data:
+            obj.verified_by = request.user
+            obj.verified_at = timezone.now()
+            if obj.status == "VERIFIED":
+                obj.rejection_reason = ""
+        super().save_model(request, obj, form, change)
+        if obj.status == "VERIFIED":
+            _auto_approve_verified_shopkeepers(
+                [obj.profile_id],
+                request.user,
+            )
+
+    @admin.action(description="Verify selected shop documents")
+    def verify_documents(self, request, queryset):
+        profile_ids = list(
+            queryset.values_list("profile_id", flat=True).distinct()
+        )
+        changed = queryset.update(
+            status="VERIFIED",
+            rejection_reason="",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        approved = _auto_approve_verified_shopkeepers(
+            profile_ids,
+            request.user,
+        )
+        self.message_user(
+            request,
+            f"{changed} document(s) verified; {approved} shop(s) approved.",
+        )
+
+    @admin.action(description="Reject selected shop documents")
+    def reject_documents(self, request, queryset):
+        changed = queryset.update(
+            status="REJECTED",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} document(s) rejected.")
+
+
+@admin.register(ShopkeeperBankAccount)
+class ShopkeeperBankAccountAdmin(admin.ModelAdmin):
+    list_display = (
+        "profile",
+        "account_holder_name",
+        "bank_name",
+        "masked_account_number",
+        "ifsc_code",
+        "status",
+        "verified_at",
+    )
+    search_fields = (
+        "profile__user__name",
+        "profile__shop__name",
+        "account_holder_name",
+        "ifsc_code",
+    )
+    list_filter = ("status", "bank_name", "created_at")
+    readonly_fields = (
+        "account_number_hash",
+        "account_number_last4",
+        "masked_account_number",
+        "verified_at",
+        "verified_by",
+        "created_at",
+        "updated_at",
+    )
+    actions = ("verify_bank_accounts", "reject_bank_accounts")
+
+    def save_model(self, request, obj, form, change):
+        if "status" in form.changed_data:
+            obj.verified_by = request.user
+            obj.verified_at = timezone.now()
+            if obj.status == "VERIFIED":
+                obj.rejection_reason = ""
+        super().save_model(request, obj, form, change)
+        if obj.status == "VERIFIED":
+            _auto_approve_verified_shopkeepers(
+                [obj.profile_id],
+                request.user,
+            )
+
+    @admin.action(description="Verify selected shop bank accounts")
+    def verify_bank_accounts(self, request, queryset):
+        profile_ids = list(
+            queryset.values_list("profile_id", flat=True).distinct()
+        )
+        changed = queryset.update(
+            status="VERIFIED",
+            rejection_reason="",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        approved = _auto_approve_verified_shopkeepers(
+            profile_ids,
+            request.user,
+        )
+        self.message_user(
+            request,
+            f"{changed} bank account(s) verified; {approved} shop(s) approved.",
+        )
+
+    @admin.action(description="Reject selected shop bank accounts")
+    def reject_bank_accounts(self, request, queryset):
+        changed = queryset.update(
+            status="REJECTED",
+            verified_by=request.user,
+            verified_at=timezone.now(),
+        )
+        self.message_user(request, f"{changed} bank account(s) rejected.")
 
 
 # =========================================================

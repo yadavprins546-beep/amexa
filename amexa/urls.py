@@ -85,6 +85,9 @@ from customer.views import (
     delivery_verification_status_view,
     delivery_dashboard_view,
     delivery_assignment_action_view,
+    shopkeeper_dashboard_view,
+    shopkeeper_onboarding_view,
+    shopkeeper_verification_status_view,
     cancel_order_view,
     order_success_view,
 )
@@ -515,6 +518,35 @@ urlpatterns = [
         "admin/control-center/",
         admin_control_center_view,
         name="admin_control_center_legacy",
+    ),
+
+
+    # =====================================================
+    # SHOPKEEPER APP / ONBOARDING
+    # =====================================================
+
+    path(
+        "shopkeeper/",
+        shopkeeper_dashboard_view,
+        name="shopkeeper_dashboard",
+    ),
+
+    path(
+        "shopkeeper/onboarding/",
+        shopkeeper_onboarding_view,
+        name="shopkeeper_onboarding_start",
+    ),
+
+    path(
+        "shopkeeper/onboarding/<int:step>/",
+        shopkeeper_onboarding_view,
+        name="shopkeeper_onboarding",
+    ),
+
+    path(
+        "shopkeeper/verification-status/",
+        shopkeeper_verification_status_view,
+        name="shopkeeper_verification_status",
     ),
 
 
