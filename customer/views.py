@@ -20,10 +20,14 @@ from .forms import (
     DeliveryPersonalDetailsForm,
     LoginForm,
     ShopkeeperBankDetailsForm,
+    ShopkeeperBadStockForm,
     ShopkeeperBusinessDetailsForm,
     ShopkeeperDocumentsForm,
     ShopkeeperFinalVerificationForm,
+    ShopkeeperInventoryUpdateForm,
     ShopkeeperPersonalDetailsForm,
+    ShopkeeperProductForm,
+    ShopkeeperProfileSettingsForm,
 )
 
 from .wallet_services import (
@@ -36,6 +40,7 @@ from .wallet_services import (
 from .models import (
     AboutPage,
     Address,
+    BadInventoryRecord,
     Brand,
     Cart,
     CartItem,
@@ -49,6 +54,7 @@ from .models import (
     DeliveryPartnerDocument,
     DeliveryPartnerProfile,
     DeliverySupportRequest,
+    InventoryBatch,
     MasterOrder,
     MonthlyPack,
     MonthlyPackItem,
@@ -57,6 +63,7 @@ from .models import (
     OTPVerification,
     Payment,
     Product,
+    ProductBarcode,
     Referral,
     SearchAlias,
     Settlement,
@@ -1464,6 +1471,19 @@ def _referrer_from_link_code(code):
     )
 
 
+def _login_destination(user):
+    """Send every AMEXA account to its own app after login."""
+    role = getattr(user, "role", "CUSTOMER")
+
+    if user.is_superuser or (user.is_staff and role == "ADMIN"):
+        return "admin_control_center"
+    if role == "SHOPKEEPER":
+        return "shopkeeper_dashboard"
+    if role == "DELIVERY":
+        return "delivery_dashboard"
+    return "home"
+
+
 def login_view(request):
 
     # Referral is captured silently from URL.
@@ -1484,7 +1504,7 @@ def login_view(request):
         return redirect("login")
 
     if request.user.is_authenticated:
-        return redirect("home")
+        return redirect(_login_destination(request.user))
 
     session_phone = request.session.get(
         "otp_phone",
@@ -1665,7 +1685,7 @@ def login_view(request):
                         f"Welcome to AMEXA, {user.name}!"
                     )
 
-                    return redirect("home")
+                    return redirect(_login_destination(user))
 
             else:
                 otp = _create_otp_for_phone(
@@ -5013,13 +5033,603 @@ def shopkeeper_dashboard_view(request):
             ).count(),
             "total_sales": total_sales,
             "total_profit": total_profit,
-            "inventory_count": ShopProduct.objects.filter(shop=shop).count(),
-            "low_stock_count": ShopProduct.objects.filter(
+            "inventory_count": Product.objects.filter(shop=shop).count(),
+            "low_stock_count": Product.objects.filter(
                 shop=shop,
                 stock_quantity__lte=5,
                 is_active=True,
             ).count(),
             "recent_orders": shop_orders.select_related("user")[:6],
+        },
+    )
+
+
+def _shopkeeper_app_profile(request):
+    if request.user.is_staff:
+        return None
+    profile = (
+        ShopkeeperProfile.objects
+        .filter(user=request.user)
+        .select_related("shop", "user")
+        .first()
+    )
+    if profile and profile.can_access_dashboard:
+        return profile
+    return None
+
+
+def _sync_shop_product_listing(product):
+    ShopProduct.objects.update_or_create(
+        product=product,
+        shop=product.shop,
+        defaults={
+            "selling_price": product.price,
+            "mrp": product.mrp,
+            "stock_quantity": product.stock_quantity,
+            "is_active": product.is_active,
+        },
+    )
+
+
+def _move_expired_batches_to_bad_inventory(shop, user=None):
+    today = timezone.localdate()
+    expired_ids = list(
+        InventoryBatch.objects.filter(
+            shop=shop,
+            status="ACTIVE",
+            expiry_date__lt=today,
+            quantity_available__gt=0,
+        ).values_list("pk", flat=True)
+    )
+
+    moved_quantity = 0
+    for batch_id in expired_ids:
+        with transaction.atomic():
+            batch = (
+                InventoryBatch.objects
+                .select_for_update()
+                .select_related("product")
+                .get(pk=batch_id, shop=shop)
+            )
+            if batch.status != "ACTIVE" or batch.quantity_available <= 0:
+                continue
+
+            quantity = batch.quantity_available
+            product = Product.objects.select_for_update().get(
+                pk=batch.product_id,
+                shop=shop,
+            )
+            product.stock_quantity = max(
+                0,
+                product.stock_quantity - quantity,
+            )
+            product.save(update_fields=["stock_quantity"])
+
+            BadInventoryRecord.objects.create(
+                shop=shop,
+                product=product,
+                batch=batch,
+                quantity=quantity,
+                reason="EXPIRED",
+                unit_cost=batch.purchase_price or product.cost_price,
+                note=f"Auto moved after expiry on {batch.expiry_date}.",
+                created_by=user,
+            )
+            batch.quantity_available = 0
+            batch.status = "EXPIRED"
+            batch.save(
+                update_fields=[
+                    "quantity_available",
+                    "status",
+                    "updated_at",
+                ]
+            )
+            _sync_shop_product_listing(product)
+            moved_quantity += quantity
+
+    return moved_quantity
+
+
+@login_required
+def shopkeeper_orders_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    shop = profile.shop
+    if shop.auto_accept_orders:
+        pending_orders = list(
+            Order.objects.filter(shop=shop, status="Pending")
+        )
+        for order in pending_orders:
+            order.status = "Confirmed"
+            order.save(update_fields=["status", "updated_at"])
+            order.create_status_history(
+                "Confirmed",
+                "Automatically accepted by shop settings.",
+            )
+            if order.master_order_id:
+                _update_master_order_status(order.master_order)
+
+    status_filter = (request.GET.get("status") or "ALL").strip()
+    allowed_statuses = {choice[0] for choice in Order.STATUS_CHOICES}
+    orders = (
+        Order.objects
+        .filter(shop=shop)
+        .select_related("user", "address", "master_order")
+        .prefetch_related("items", "items__product")
+    )
+    if status_filter in allowed_statuses:
+        orders = orders.filter(status=status_filter)
+    else:
+        status_filter = "ALL"
+
+    status_counts = {
+        status: Order.objects.filter(shop=shop, status=status).count()
+        for status in allowed_statuses
+    }
+    return render(
+        request,
+        "customer/shopkeeper_orders.html",
+        {
+            "profile": profile,
+            "shop": shop,
+            "orders": orders[:100],
+            "status_filter": status_filter,
+            "status_counts": status_counts,
+            "status_choices": Order.STATUS_CHOICES,
+            "active_tab": "orders",
+        },
+    )
+
+
+@login_required
+def shopkeeper_order_action_view(request, order_number):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+    if request.method != "POST":
+        return redirect("shopkeeper_orders")
+
+    action = (request.POST.get("action") or "").strip().lower()
+    with transaction.atomic():
+        order = get_object_or_404(
+            Order.objects.select_for_update().select_related(
+                "master_order",
+            ),
+            order_number=order_number,
+            shop=profile.shop,
+        )
+
+        if action == "accept" and order.status == "Pending":
+            order.status = "Confirmed"
+            order.save(update_fields=["status", "updated_at"])
+            order.create_status_history("Confirmed", "Accepted by shop.")
+            messages.success(request, f"Order #{order.order_number} accepted.")
+
+        elif action == "prepare" and order.status == "Confirmed":
+            order.status = "Preparing"
+            order.save(update_fields=["status", "updated_at"])
+            order.create_status_history("Preparing", "Shop started packing.")
+            messages.success(request, "Order is being prepared for pickup.")
+
+        elif action == "reject" and order.status in {"Pending", "Confirmed"}:
+            reason = (
+                request.POST.get("reason") or "Rejected by shop"
+            ).strip()[:100]
+            for item in order.items.select_related("product"):
+                if item.product_id:
+                    product = Product.objects.select_for_update().get(
+                        pk=item.product_id,
+                        shop=profile.shop,
+                    )
+                    product.stock_quantity += item.quantity
+                    product.save(update_fields=["stock_quantity"])
+                    _sync_shop_product_listing(product)
+
+            order.status = "Cancelled"
+            order.cancellation_reason = reason
+            order.cancellation_description = "Cancelled from shopkeeper app."
+            order.cancelled_at = timezone.now()
+            order.payment_status = "Refund Pending"
+            order.save(
+                update_fields=[
+                    "status",
+                    "cancellation_reason",
+                    "cancellation_description",
+                    "cancelled_at",
+                    "payment_status",
+                    "updated_at",
+                ]
+            )
+            order.create_status_history("Cancelled", reason)
+            Settlement.objects.filter(order=order).update(status="On Hold")
+            messages.info(request, "Order rejected and stock restored.")
+
+        else:
+            messages.error(request, "This order action is not allowed now.")
+            return redirect("shopkeeper_orders")
+
+        if order.master_order_id:
+            _update_master_order_status(order.master_order)
+
+    return redirect("shopkeeper_orders")
+
+
+@login_required
+def shopkeeper_inventory_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+    shop = profile.shop
+
+    moved_quantity = _move_expired_batches_to_bad_inventory(
+        shop,
+        request.user,
+    )
+    if moved_quantity:
+        messages.warning(
+            request,
+            f"{moved_quantity} expired item(s) moved to Bad Inventory.",
+        )
+
+    query = (request.GET.get("q") or "").strip()
+    products = (
+        Product.objects
+        .filter(shop=shop)
+        .select_related("category", "brand")
+        .prefetch_related("barcodes")
+        .order_by("stock_quantity", "name")
+    )
+    if query:
+        products = products.filter(
+            Q(name__icontains=query)
+            | Q(barcodes__barcode__icontains=query)
+            | Q(brand__name__icontains=query)
+        ).distinct()
+
+    bad_records = (
+        BadInventoryRecord.objects
+        .filter(shop=shop)
+        .select_related("product", "batch")[:30]
+    )
+    bad_loss = sum(
+        (record.loss_amount for record in bad_records),
+        Decimal("0.00"),
+    )
+    return render(
+        request,
+        "customer/shopkeeper_inventory.html",
+        {
+            "profile": profile,
+            "shop": shop,
+            "products": products[:200],
+            "query": query,
+            "bad_records": bad_records,
+            "bad_loss": bad_loss,
+            "low_stock_count": Product.objects.filter(
+                shop=shop,
+                is_active=True,
+                stock_quantity__lte=5,
+            ).count(),
+            "out_of_stock_count": Product.objects.filter(
+                shop=shop,
+                stock_quantity=0,
+            ).count(),
+            "active_tab": "inventory",
+        },
+    )
+
+
+@login_required
+def shopkeeper_product_add_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    form = ShopkeeperProductForm(
+        request.POST or None,
+        request.FILES or None,
+    )
+    if request.method == "POST" and form.is_valid():
+        barcode = form.cleaned_data["barcode"]
+        if ProductBarcode.objects.filter(
+            barcode=barcode,
+            product__shop=profile.shop,
+        ).exists():
+            form.add_error("barcode", "This product is already in your shop.")
+        else:
+            catalog_product = (
+                ProductBarcode.objects
+                .filter(barcode=barcode)
+                .select_related("product", "product__brand")
+                .first()
+            )
+            with transaction.atomic():
+                product = form.save(commit=False)
+                product.shop = profile.shop
+                product.stock_quantity = form.cleaned_data["opening_stock"]
+                brand_name = (form.cleaned_data.get("brand_name") or "").strip()
+                if brand_name:
+                    product.brand, _ = Brand.objects.get_or_create(
+                        name__iexact=brand_name,
+                        defaults={"name": brand_name},
+                    )
+                elif catalog_product and catalog_product.product.brand_id:
+                    product.brand = catalog_product.product.brand
+
+                if (
+                    not form.cleaned_data.get("image")
+                    and catalog_product
+                    and catalog_product.product.image
+                ):
+                    product.image = catalog_product.product.image
+                product.save()
+
+                barcode_type = "OTHER"
+                if barcode.isdigit() and len(barcode) == 12:
+                    barcode_type = "UPC"
+                elif barcode.isdigit() and len(barcode) == 13:
+                    barcode_type = "EAN"
+                elif barcode.isdigit() and len(barcode) == 14:
+                    barcode_type = "GTIN"
+                ProductBarcode.objects.create(
+                    product=product,
+                    barcode=barcode,
+                    barcode_type=barcode_type,
+                    is_primary=True,
+                )
+
+                if product.stock_quantity:
+                    InventoryBatch.objects.create(
+                        shop=profile.shop,
+                        product=product,
+                        batch_number=form.cleaned_data.get("batch_number", ""),
+                        quantity_received=product.stock_quantity,
+                        quantity_available=product.stock_quantity,
+                        purchase_price=product.cost_price,
+                        expiry_date=form.cleaned_data.get("expiry_date"),
+                    )
+                _sync_shop_product_listing(product)
+
+            messages.success(request, f"{product.name} added to inventory.")
+            return redirect("shopkeeper_inventory")
+
+    return render(
+        request,
+        "customer/shopkeeper_product_form.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "form": form,
+            "active_tab": "inventory",
+        },
+    )
+
+
+@login_required
+def shopkeeper_upc_lookup_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return JsonResponse({"found": False, "error": "Access denied"}, status=403)
+
+    barcode = (request.GET.get("barcode") or "").strip().upper()
+    if not barcode:
+        return JsonResponse({"found": False, "error": "Enter a barcode."})
+
+    barcode_row = (
+        ProductBarcode.objects
+        .filter(barcode=barcode)
+        .select_related("product", "product__category", "product__brand")
+        .order_by("-product__shop_id")
+        .first()
+    )
+    if barcode_row is None:
+        return JsonResponse({"found": False, "barcode": barcode})
+
+    product = barcode_row.product
+    try:
+        image_url = product.image.url if product.image else ""
+    except Exception:
+        image_url = ""
+    return JsonResponse(
+        {
+            "found": True,
+            "barcode": barcode,
+            "already_in_shop": ProductBarcode.objects.filter(
+                barcode=barcode,
+                product__shop=profile.shop,
+            ).exists(),
+            "product": {
+                "name": product.name,
+                "description": product.description,
+                "category_id": product.category_id,
+                "brand_name": product.brand.name if product.brand_id else "",
+                "cost_price": str(product.cost_price),
+                "price": str(product.price),
+                "mrp": str(product.mrp),
+                "gst_rate": str(product.gst_rate),
+                "image_url": image_url,
+            },
+        }
+    )
+
+
+@login_required
+def shopkeeper_inventory_update_view(request, product_id):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+    if request.method != "POST":
+        return redirect("shopkeeper_inventory")
+
+    product = get_object_or_404(
+        Product,
+        pk=product_id,
+        shop=profile.shop,
+    )
+    form = ShopkeeperInventoryUpdateForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Please enter valid stock and prices.")
+        return redirect("shopkeeper_inventory")
+
+    old_stock = product.stock_quantity
+    product.stock_quantity = form.cleaned_data["stock_quantity"]
+    product.cost_price = form.cleaned_data["cost_price"]
+    product.price = form.cleaned_data["price"]
+    product.mrp = form.cleaned_data["mrp"]
+    product.is_active = form.cleaned_data["is_active"]
+    product.save(
+        update_fields=[
+            "stock_quantity",
+            "cost_price",
+            "price",
+            "mrp",
+            "is_active",
+        ]
+    )
+    added_stock = product.stock_quantity - old_stock
+    if added_stock > 0:
+        InventoryBatch.objects.create(
+            shop=profile.shop,
+            product=product,
+            batch_number="MANUAL-ADJUSTMENT",
+            quantity_received=added_stock,
+            quantity_available=added_stock,
+            purchase_price=product.cost_price,
+        )
+    _sync_shop_product_listing(product)
+    messages.success(request, f"{product.name} inventory updated.")
+    return redirect("shopkeeper_inventory")
+
+
+@login_required
+def shopkeeper_bad_stock_view(request, product_id):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+    if request.method != "POST":
+        return redirect("shopkeeper_inventory")
+
+    form = ShopkeeperBadStockForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Enter a valid bad-stock quantity.")
+        return redirect("shopkeeper_inventory")
+
+    with transaction.atomic():
+        product = get_object_or_404(
+            Product.objects.select_for_update(),
+            pk=product_id,
+            shop=profile.shop,
+        )
+        quantity = form.cleaned_data["quantity"]
+        if quantity > product.stock_quantity:
+            messages.error(request, "Bad stock cannot exceed available stock.")
+            return redirect("shopkeeper_inventory")
+
+        product.stock_quantity -= quantity
+        product.save(update_fields=["stock_quantity"])
+        BadInventoryRecord.objects.create(
+            shop=profile.shop,
+            product=product,
+            quantity=quantity,
+            reason=form.cleaned_data["reason"],
+            unit_cost=product.cost_price,
+            note=form.cleaned_data.get("note", ""),
+            created_by=request.user,
+        )
+        _sync_shop_product_listing(product)
+
+    messages.success(request, "Item moved to Bad Inventory.")
+    return redirect("shopkeeper_inventory")
+
+
+@login_required
+def shopkeeper_payments_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+    shop = profile.shop
+    settlements = (
+        Settlement.objects
+        .filter(shop=shop)
+        .select_related("order")
+        .order_by("-created_at")
+    )
+    delivered_items = (
+        OrderItem.objects
+        .filter(order__shop=shop, order__status="Delivered")
+        .select_related("product")
+    )
+    goods_cost = sum(
+        (
+            (item.product.cost_price if item.product_id else Decimal("0.00"))
+            * item.quantity
+            for item in delivered_items
+        ),
+        Decimal("0.00"),
+    )
+    bad_records = BadInventoryRecord.objects.filter(shop=shop)
+    bad_loss = sum(
+        (record.loss_amount for record in bad_records),
+        Decimal("0.00"),
+    )
+    totals = settlements.aggregate(
+        product_sales=Sum("product_amount"),
+        commission=Sum("shop_commission"),
+        payout=Sum("shop_payable"),
+        gst=Sum("tax_amount"),
+    )
+    payout = totals["payout"] or Decimal("0.00")
+    return render(
+        request,
+        "customer/shopkeeper_payments.html",
+        {
+            "profile": profile,
+            "shop": shop,
+            "settlements": settlements[:100],
+            "total_sales": totals["product_sales"] or Decimal("0.00"),
+            "total_commission": totals["commission"] or Decimal("0.00"),
+            "total_payout": payout,
+            "total_gst": totals["gst"] or Decimal("0.00"),
+            "goods_cost": goods_cost,
+            "bad_loss": bad_loss,
+            "estimated_profit": payout - goods_cost - bad_loss,
+            "pending_payout": settlements.exclude(status="Settled").aggregate(
+                value=Sum("shop_payable")
+            )["value"] or Decimal("0.00"),
+            "active_tab": "profile",
+        },
+    )
+
+
+@login_required
+def shopkeeper_profile_view(request):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    form = ShopkeeperProfileSettingsForm(
+        request.POST or None,
+        instance=profile.shop,
+    )
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Shop profile settings updated.")
+        return redirect("shopkeeper_profile")
+
+    return render(
+        request,
+        "customer/shopkeeper_profile.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "form": form,
+            "documents": profile.documents.all(),
+            "bank_account": ShopkeeperBankAccount.objects.filter(
+                profile=profile
+            ).first(),
+            "active_tab": "profile",
         },
     )
 

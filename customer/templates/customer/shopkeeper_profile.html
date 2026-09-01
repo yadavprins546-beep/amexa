@@ -1,0 +1,41 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Profile | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.profile-head{display:flex;align-items:center;gap:13px}.avatar{width:72px;height:72px;border-radius:20px;object-fit:cover;border:1px solid var(--line);background:#111c2c}.profile-head h2{margin:0;font-size:16px}.profile-head p{margin:5px 0;color:var(--muted);font-size:8px}.verified{color:var(--green);font-size:8px;font-weight:900}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.settings .field{margin:0}.settings .wide{grid-column:1/-1}.doc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.doc:first-of-type{border:0}.doc small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}.menu{padding:12px;border:1px solid rgba(255,255,255,.065);border-radius:12px;color:#c4d3e0;background:rgba(255,255,255,.025);font-size:9px;font-weight:850}.menu span{float:right;color:var(--cyan)}@media(max-width:650px){.settings,.links{grid-template-columns:1fr}.settings .wide{grid-column:auto}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Profile & Settings</h1><p>Business, verification, bank and account controls.</p></section>
+<section class="grid two">
+    <div class="grid">
+        <article class="panel profile-head">
+            {% if profile.owner_photo %}<img class="avatar" src="{{ profile.owner_photo.url }}" alt="Owner photo">{% else %}<div class="avatar"></div>{% endif %}
+            <div><h2>{{ request.user.name }}</h2><p>{{ request.user.phone }} • {{ shop.name }}</p><span class="verified">✓ AMEXA VERIFIED SHOPKEEPER</span></div>
+        </article>
+        <article class="panel">
+            <div class="section-head"><div><h2>Shop Settings</h2><p>Customer-facing information</p></div><span class="badge {% if shop.is_online %}green{% else %}red{% endif %}">{% if shop.is_online %}ONLINE{% else %}OFFLINE{% endif %}</span></div>
+            <form class="settings" method="post">{% csrf_token %}
+                {% for field in form %}<div class="field {% if field.name == 'address' %}wide{% endif %}"><label>{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+                <button class="btn primary wide" type="submit">Save Shop Settings</button>
+            </form>
+        </article>
+    </div>
+    <div class="grid">
+        <article class="panel">
+            <div class="section-head"><div><h2>KYC & Licences</h2><p>GSTIN {{ shop.gstin }}{% if shop.fssai_number %} • FSSAI {{ shop.fssai_number }}{% endif %}</p></div><span class="badge green">APPROVED</span></div>
+            {% for document in documents %}<div class="doc"><span><b>{{ document.get_document_type_display }}</b><small>{{ document.masked_document_number }}</small></span><span class="badge {% if document.status == 'VERIFIED' %}green{% elif document.status == 'REJECTED' %}red{% endif %}">{{ document.status }}</span></div>{% endfor %}
+        </article>
+        <article class="panel">
+            <div class="section-head"><div><h2>Payout Bank</h2><p>Private and admin-verified</p></div>{% if bank_account %}<span class="badge {% if bank_account.status == 'VERIFIED' %}green{% endif %}">{{ bank_account.status }}</span>{% endif %}</div>
+            {% if bank_account %}<div class="doc"><span><b>{{ bank_account.bank_name }}</b><small>{{ bank_account.account_holder_name }}</small></span><span>{{ bank_account.masked_account_number }}<small>{{ bank_account.ifsc_code }}</small></span></div>{% else %}<div class="empty">Bank account not found.</div>{% endif %}
+            <a class="btn" style="width:100%;margin-top:8px" href="{% url 'shopkeeper_payments' %}">Open Payments & Profit</a>
+        </article>
+        <article class="panel">
+            <div class="section-head"><div><h2>Support & Legal</h2><p>AMEXA information and assistance</p></div></div>
+            <div class="links"><a class="menu" href="{% url 'help_support' %}">Help & Support <span>›</span></a><a class="menu" href="{% url 'about' %}">About AMEXA <span>›</span></a><a class="menu" href="{% url 'privacy_policy' %}">Privacy Policy <span>›</span></a><a class="menu" href="{% url 'terms_conditions' %}">Terms & Conditions <span>›</span></a></div>
+            <a class="btn red" style="width:100%;margin-top:10px" href="{% url 'logout' %}">Logout Shopkeeper App</a>
+        </article>
+    </div>
+</section>
+{% endblock %}

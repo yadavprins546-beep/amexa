@@ -1,0 +1,55 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Inventory | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.search{display:flex;flex:1;min-width:220px}.search input{width:100%;min-height:41px;padding:10px 12px;border:1px solid var(--line);border-radius:11px 0 0 11px;color:var(--text);background:#091322;outline:0}.search button{border-radius:0 11px 11px 0}.products{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.product{padding:13px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(14,27,46,.95),rgba(7,14,27,.98))}.product-top{display:flex;gap:11px}.photo{width:64px;height:64px;flex:0 0 64px;border-radius:13px;object-fit:cover;background:#111c2c}.photo.empty{display:grid;place-items:center;padding:0;font-size:20px}.product h3{margin:2px 0 4px;font-size:11px}.product small{display:block;color:var(--muted);font-size:7px;line-height:1.5}.stock{margin-left:auto;text-align:right}.stock b{display:block;font:1000 18px ui-monospace}.stock span{font-size:7px;color:var(--muted)}details{margin-top:11px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px}summary{cursor:pointer;color:var(--cyan);font-size:8px;font-weight:900}.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:9px}.mini-grid .field{margin:0}.mini-grid .field input,.mini-grid .field select{min-height:36px;padding:7px;font-size:8px}.full{grid-column:1/-1}.record{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.record:first-of-type{border:0}.record small{display:block;color:var(--muted);font-size:7px;margin-top:3px}@media(max-width:720px){.products{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Inventory</h1><p>UPC products, live stock, expiry and bad inventory management.</p></section>
+<section class="metrics">
+    <article class="metric"><span>Total Products</span><b>{{ products|length }}</b><small>Matching current search</small></article>
+    <article class="metric"><span>Low Stock</span><b>{{ low_stock_count }}</b><small>5 or fewer units</small></article>
+    <article class="metric"><span>Out of Stock</span><b>{{ out_of_stock_count }}</b><small>Needs restocking</small></article>
+    <article class="metric"><span>Bad Stock Loss</span><b>₹{{ bad_loss|floatformat:0 }}</b><small>Recent records</small></article>
+</section>
+<div class="tools">
+    <form class="search" method="get"><input name="q" value="{{ query }}" placeholder="Search product or barcode"><button class="btn" type="submit">Search</button></form>
+    <a class="btn primary" href="{% url 'shopkeeper_product_add' %}">＋ Scan / Add Product</a>
+</div>
+<section class="products">
+{% for product in products %}
+    <article class="product">
+        <div class="product-top">
+            {% if product.image %}<img class="photo" src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<div class="photo empty">▦</div>{% endif %}
+            <div><h3>{{ product.name }}</h3><small>{{ product.category.name }}{% if product.brand %} • {{ product.brand.name }}{% endif %}</small>{% with barcode=product.barcodes.first %}<small>UPC: {{ barcode.barcode|default:"Not added" }}</small>{% endwith %}<small>₹{{ product.price }} / MRP ₹{{ product.mrp }}</small></div>
+            <div class="stock"><b>{{ product.stock_quantity }}</b><span>IN STOCK</span></div>
+        </div>
+        <details>
+            <summary>Update product & stock</summary>
+            <form class="mini-grid" method="post" action="{% url 'shopkeeper_inventory_update' product.id %}">{% csrf_token %}
+                <div class="field"><label>Stock</label><input type="number" min="0" name="stock_quantity" value="{{ product.stock_quantity }}" required></div>
+                <div class="field"><label>Cost ₹</label><input type="number" min="0" step="0.01" name="cost_price" value="{{ product.cost_price }}" required></div>
+                <div class="field"><label>Selling ₹</label><input type="number" min="0" step="0.01" name="price" value="{{ product.price }}" required></div>
+                <div class="field"><label>MRP ₹</label><input type="number" min="0" step="0.01" name="mrp" value="{{ product.mrp }}" required></div>
+                <label class="full" style="font-size:8px"><input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %}> Visible to customers</label>
+                <button class="btn primary full" type="submit">Save Inventory</button>
+            </form>
+        </details>
+        <details>
+            <summary style="color:var(--red)">Move to Bad Inventory</summary>
+            <form class="mini-grid" method="post" action="{% url 'shopkeeper_bad_stock' product.id %}">{% csrf_token %}
+                <div class="field"><label>Quantity</label><input type="number" min="1" max="{{ product.stock_quantity }}" name="quantity" required></div>
+                <div class="field"><label>Reason</label><select name="reason"><option value="DAMAGED">Damaged</option><option value="CUSTOMER_RETURN">Customer Return</option><option value="MISSING">Missing</option><option value="OTHER">Other</option></select></div>
+                <div class="field full"><label>Note</label><input name="note" maxlength="255" placeholder="Optional note"></div>
+                <button class="btn red full" type="submit">Confirm Bad Stock</button>
+            </form>
+        </details>
+    </article>
+{% empty %}<div class="panel empty">No products found. Scan a UPC or add your first product.</div>{% endfor %}
+</section>
+<section class="panel" style="margin-top:14px">
+    <div class="section-head"><div><h2>Bad Inventory</h2><p>Expired, damaged, returned or missing stock</p></div><b style="color:var(--red)">₹{{ bad_loss|floatformat:2 }}</b></div>
+    {% for record in bad_records %}<div class="record"><span><b>{{ record.product.name }}</b><small>{{ record.get_reason_display }} • {{ record.created_at|date:"d M Y" }}</small></span><b>−{{ record.quantity }}</b><span class="badge red">₹{{ record.loss_amount|floatformat:2 }}</span></div>{% empty %}<div class="empty">No bad inventory recorded.</div>{% endfor %}
+</section>
+{% endblock %}

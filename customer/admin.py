@@ -5,6 +5,7 @@ from django.utils import timezone
 from .models import (
     AboutPage,
     HelpSupport,
+    BadInventoryRecord,
     PrivacyPolicy,
     TermsConditions,
     Wallet,
@@ -28,6 +29,7 @@ from .models import (
     DeliveryPartnerDocument,
     DeliveryPartnerProfile,
     DeliverySupportRequest,
+    InventoryBatch,
     OTPVerification,
     Order,
     OrderItem,
@@ -291,6 +293,13 @@ class CustomerUserAdmin(admin.ModelAdmin):
             **kwargs,
         )
 
+    def save_model(self, request, obj, form, change):
+        # Shopkeepers use their own app and never receive Django Admin access.
+        if obj.role == "SHOPKEEPER":
+            obj.is_staff = False
+            obj.is_superuser = False
+        super().save_model(request, obj, form, change)
+
 
 # =========================================================
 # BRAND ADMIN
@@ -397,8 +406,10 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "shop",
         "category",
+        "cost_price",
         "price",
         "mrp",
+        "gst_rate",
         "stock_quantity",
         "is_active",
         "created_at",
@@ -474,6 +485,39 @@ class ShopProductAdmin(admin.ModelAdmin):
         "shop",
         "is_active",
     )
+
+
+@admin.register(InventoryBatch)
+class InventoryBatchAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "shop",
+        "batch_number",
+        "quantity_received",
+        "quantity_available",
+        "expiry_date",
+        "status",
+    )
+    search_fields = ("product__name", "shop__name", "batch_number")
+    list_filter = ("status", "expiry_date", "shop")
+    list_select_related = ("product", "shop")
+
+
+@admin.register(BadInventoryRecord)
+class BadInventoryRecordAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "shop",
+        "quantity",
+        "reason",
+        "unit_cost",
+        "loss_amount",
+        "created_at",
+    )
+    search_fields = ("product__name", "shop__name", "note")
+    list_filter = ("reason", "shop", "created_at")
+    list_select_related = ("product", "shop", "batch", "created_by")
+    readonly_fields = ("created_at",)
 
 
 # =========================================================
@@ -1315,6 +1359,8 @@ def _auto_approve_verified_shopkeepers(profile_ids, reviewer):
             CustomerUser.objects.filter(pk=profile.user_id).update(
                 role="SHOPKEEPER",
                 is_active=True,
+                is_staff=False,
+                is_superuser=False,
             )
             Shop.objects.filter(pk=profile.shop_id).update(
                 is_active=True,
@@ -1371,6 +1417,8 @@ class ShopkeeperProfileAdmin(admin.ModelAdmin):
                 CustomerUser.objects.filter(pk=obj.user_id).update(
                     role="SHOPKEEPER",
                     is_active=True,
+                    is_staff=False,
+                    is_superuser=False,
                 )
                 Shop.objects.filter(pk=obj.shop_id).update(is_active=True)
             elif obj.verification_status == "BLOCKED":
@@ -1399,7 +1447,12 @@ class ShopkeeperProfileAdmin(admin.ModelAdmin):
         )
         CustomerUser.objects.filter(
             pk__in=[row[0] for row in profile_rows]
-        ).update(role="SHOPKEEPER", is_active=True)
+        ).update(
+            role="SHOPKEEPER",
+            is_active=True,
+            is_staff=False,
+            is_superuser=False,
+        )
         Shop.objects.filter(
             pk__in=[row[1] for row in profile_rows if row[1]]
         ).update(is_active=True, is_online=False)

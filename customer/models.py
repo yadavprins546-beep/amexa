@@ -235,8 +235,18 @@ class Product(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=170, unique=True, blank=True)
     description = models.TextField(blank=True)
+    cost_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     mrp = models.DecimalField(max_digits=10, decimal_places=2)
+    gst_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=5,
+    )
     stock_quantity = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -247,7 +257,15 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or "product"
+            candidate = base_slug
+            number = 2
+            while Product.objects.exclude(pk=self.pk).filter(
+                slug=candidate
+            ).exists():
+                candidate = f"{base_slug}-{number}"
+                number += 1
+            self.slug = candidate
         super().save(*args, **kwargs)
 
     @property
@@ -273,13 +291,19 @@ class ProductBarcode(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='barcodes')
-    barcode = models.CharField(max_length=50, unique=True, db_index=True)
+    barcode = models.CharField(max_length=50, db_index=True)
     barcode_type = models.CharField(max_length=10, choices=BARCODE_TYPES, default='EAN')
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-is_primary', 'created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "barcode"],
+                name="unique_barcode_per_product",
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         if self.is_primary:
@@ -288,6 +312,110 @@ class ProductBarcode(models.Model):
 
     def __str__(self):
         return f'{self.barcode} - {self.product.name}'
+
+
+class InventoryBatch(models.Model):
+    STATUS_CHOICES = [
+        ("ACTIVE", "Active"),
+        ("EXPIRED", "Expired"),
+        ("DAMAGED", "Damaged"),
+        ("DEPLETED", "Depleted"),
+    ]
+
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name="inventory_batches",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="inventory_batches",
+    )
+    batch_number = models.CharField(max_length=80, blank=True)
+    quantity_received = models.PositiveIntegerField(default=0)
+    quantity_available = models.PositiveIntegerField(default=0)
+    purchase_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+    expiry_date = models.DateField(null=True, blank=True, db_index=True)
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default="ACTIVE",
+        db_index=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["expiry_date", "created_at"]
+        indexes = [
+            models.Index(fields=["shop", "status", "expiry_date"]),
+            models.Index(fields=["shop", "product", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} - {self.batch_number or self.pk}"
+
+
+class BadInventoryRecord(models.Model):
+    REASON_CHOICES = [
+        ("EXPIRED", "Expired"),
+        ("DAMAGED", "Damaged"),
+        ("CUSTOMER_RETURN", "Customer Return"),
+        ("MISSING", "Missing"),
+        ("OTHER", "Other"),
+    ]
+
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name="bad_inventory_records",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        related_name="bad_inventory_records",
+    )
+    batch = models.ForeignKey(
+        InventoryBatch,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="bad_inventory_records",
+    )
+    quantity = models.PositiveIntegerField(default=1)
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    unit_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+    note = models.CharField(max_length=255, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recorded_bad_inventory",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["shop", "reason", "created_at"]),
+        ]
+
+    @property
+    def loss_amount(self):
+        return self.unit_cost * self.quantity
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.reason}"
 
 
 

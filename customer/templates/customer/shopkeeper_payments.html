@@ -1,0 +1,23 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Payments | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.summary{display:grid;grid-template-columns:1.25fr .75fr;gap:13px;margin-bottom:13px}.profit{padding:19px;border:1px solid rgba(53,233,162,.2);border-radius:18px;background:radial-gradient(circle at 100% 0,rgba(53,233,162,.14),transparent 45%),linear-gradient(145deg,#0e1e2a,#07101d)}.profit span{color:var(--muted);font-size:8px;font-weight:900;text-transform:uppercase}.profit strong{display:block;margin:9px 0 5px;color:var(--green);font:1000 29px ui-monospace}.profit small{color:#6d8297;font-size:8px}.gst{padding:17px;border:1px solid rgba(140,134,255,.2);border-radius:18px;background:rgba(140,134,255,.06)}.gst b{display:block;margin-top:9px;font:1000 21px ui-monospace}.settlement{display:grid;grid-template-columns:1fr repeat(3,auto);gap:12px;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.settlement:first-of-type{border:0}.settlement small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.amount{text-align:right;font:900 10px ui-monospace}@media(max-width:720px){.summary{grid-template-columns:1fr}.settlement{grid-template-columns:1fr auto}.settlement .hide-mobile{display:none}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Payments & Profit</h1><p>Sales, settlement, GST and estimated net profit.</p></section>
+<section class="summary"><article class="profit"><span>Estimated Net Profit</span><strong>₹{{ estimated_profit|floatformat:2 }}</strong><small>Shop payout − product cost − bad inventory loss</small></article><article class="gst"><span class="badge">GST Summary</span><b>₹{{ total_gst|floatformat:2 }}</b><p style="color:var(--muted);font-size:8px;margin-bottom:0">GSTIN: {{ shop.gstin }}</p></article></section>
+<section class="metrics">
+    <article class="metric"><span>Total Sales</span><b>₹{{ total_sales|floatformat:0 }}</b><small>Product value</small></article>
+    <article class="metric"><span>Total Payout</span><b>₹{{ total_payout|floatformat:0 }}</b><small>After AMEXA commission</small></article>
+    <article class="metric"><span>Pending</span><b>₹{{ pending_payout|floatformat:0 }}</b><small>Not settled yet</small></article>
+    <article class="metric"><span>Loss</span><b>₹{{ bad_loss|floatformat:0 }}</b><small>Bad inventory</small></article>
+</section>
+<section class="panel">
+    <div class="section-head"><div><h2>Settlement History</h2><p>Order-wise payment details</p></div><span class="badge">Commission ₹{{ total_commission|floatformat:2 }}</span></div>
+    {% for settlement in settlements %}
+        <div class="settlement"><span><b>#{{ settlement.order.order_number }}</b><small>{{ settlement.created_at|date:"d M Y, h:i A" }} • {{ settlement.order.payment_method }}</small></span><span class="amount hide-mobile">Sale<br>₹{{ settlement.product_amount|floatformat:2 }}</span><span class="amount hide-mobile">Commission<br>−₹{{ settlement.shop_commission|floatformat:2 }}</span><span><b style="color:var(--green)">₹{{ settlement.shop_payable|floatformat:2 }}</b><small>{{ settlement.status }}</small></span></div>
+    {% empty %}<div class="empty">No settlement records yet.</div>{% endfor %}
+</section>
+{% endblock %}

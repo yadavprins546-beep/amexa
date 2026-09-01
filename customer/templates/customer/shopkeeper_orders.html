@@ -1,0 +1,37 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Orders | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.filters{display:flex;gap:7px;overflow:auto;padding-bottom:8px;margin-bottom:10px}.filter{white-space:nowrap;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:99px;color:var(--muted);font-size:8px;font-weight:900}.filter.active{border-color:var(--cyan);color:var(--cyan);background:rgba(105,231,255,.07)}.orders{display:grid;gap:12px}.order-card{padding:15px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(14,27,46,.95),rgba(7,14,27,.98))}.order-top{display:flex;justify-content:space-between;gap:10px}.order-top h3{margin:0;font-size:13px}.order-top small{display:block;margin-top:4px;color:var(--muted);font-size:8px}.money{text-align:right;font:1000 15px ui-monospace}.items{margin:12px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.025)}.item{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.05);font-size:9px}.item:first-child{border:0}.address{color:var(--muted);font-size:8px;line-height:1.5}.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.reason{min-width:180px;flex:1;min-height:39px;padding:9px;border:1px solid rgba(255,255,255,.09);border-radius:10px;color:var(--text);background:#091322;font-size:9px}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Orders</h1><p>Accept, reject and prepare orders from {{ shop.name }}.</p></section>
+<div class="filters">
+    <a class="filter {% if status_filter == 'ALL' %}active{% endif %}" href="{% url 'shopkeeper_orders' %}">All</a>
+    {% for value,label in status_choices %}<a class="filter {% if status_filter == value %}active{% endif %}" href="{% url 'shopkeeper_orders' %}?status={{ value|urlencode }}">{{ label }}</a>{% endfor %}
+</div>
+<section class="orders">
+{% for order in orders %}
+    <article class="order-card">
+        <div class="order-top">
+            <div><h3>#{{ order.order_number }}</h3><small>{{ order.created_at|date:"d M Y, h:i A" }} • {{ order.user.name }}</small></div>
+            <div><div class="money">₹{{ order.total_amount|floatformat:2 }}</div><span class="badge {% if order.status == 'Delivered' %}green{% elif order.status == 'Cancelled' %}red{% endif %}">{{ order.status }}</span></div>
+        </div>
+        <div class="items">
+            {% for item in order.items.all %}<div class="item"><span>{{ item.quantity }} × {{ item.product_name|default:item.product.name }}</span><b>₹{{ item.line_total|floatformat:2 }}</b></div>{% endfor %}
+        </div>
+        <div class="address"><b>Delivery:</b> {{ order.address.address_line }}, {{ order.address.city }} - {{ order.address.pincode }}<br><b>Payment:</b> {{ order.get_payment_method_display }} • {{ order.payment_status }}</div>
+        <div class="actions">
+            {% if order.status == 'Pending' %}
+                <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">{% csrf_token %}<input type="hidden" name="action" value="accept"><button class="btn primary" type="submit">Accept Order</button></form>
+                <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">{% csrf_token %}<input type="hidden" name="action" value="reject"><input class="reason" name="reason" placeholder="Reason for rejection" required><button class="btn red" type="submit">Reject</button></form>
+            {% elif order.status == 'Confirmed' %}
+                <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">{% csrf_token %}<input type="hidden" name="action" value="prepare"><button class="btn primary" type="submit">Start Preparing</button></form>
+                <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">{% csrf_token %}<input type="hidden" name="action" value="reject"><input class="reason" name="reason" placeholder="Reason for rejection" required><button class="btn red" type="submit">Reject</button></form>
+            {% elif order.status == 'Preparing' %}<span class="badge green">Ready for delivery pickup workflow</span>{% endif %}
+        </div>
+    </article>
+{% empty %}<div class="panel empty">No orders found in this filter.</div>{% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Add Product | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:13px}.scanner{position:sticky;top:12px;height:max-content}.video-wrap{position:relative;overflow:hidden;margin:12px 0;border:1px solid var(--line);border-radius:16px;background:#02050c;aspect-ratio:4/3}.video-wrap video{width:100%;height:100%;object-fit:cover}.scan-line{position:absolute;left:10%;right:10%;top:50%;height:2px;background:var(--green);box-shadow:0 0 14px var(--green)}.scan-status{min-height:38px;padding:10px;border-radius:10px;color:var(--muted);background:rgba(255,255,255,.025);font-size:8px;line-height:1.5}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-grid .field{margin:0}.full{grid-column:1/-1}.hint{margin-top:10px;color:var(--muted);font-size:8px;line-height:1.6}.preview{display:none;margin-top:9px;padding:9px;border:1px solid rgba(53,233,162,.16);border-radius:11px;color:var(--green);font-size:8px;background:rgba(53,233,162,.05)}@media(max-width:760px){.layout{grid-template-columns:1fr}.scanner{position:static}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="page-title"><h1>Scan or Add Product</h1><p>Scan UPC/EAN for auto-fill, or enter every detail manually.</p></section>
+<section class="layout">
+    <aside class="panel scanner">
+        <div class="section-head"><div><h2>UPC Camera Scanner</h2><p>Use the rear camera on the barcode</p></div></div>
+        <div class="video-wrap"><video id="scannerVideo" playsinline muted></video><span class="scan-line"></span></div>
+        <div style="display:flex;gap:8px"><button class="btn primary" id="startScanner" type="button">Start Camera</button><button class="btn" id="stopScanner" type="button">Stop</button></div>
+        <div class="scan-status" id="scanStatus">Camera scanning works on HTTPS Chrome/Android. Manual barcode entry is always available.</div>
+        <div class="preview" id="catalogPreview"></div>
+        <p class="hint">If this UPC already exists in AMEXA, product details will fill automatically. You can review prices and stock before saving.</p>
+    </aside>
+    <form class="panel" method="post" enctype="multipart/form-data" id="productForm">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<ul class="errors">{{ form.non_field_errors }}</ul>{% endif %}
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="field {% if field.name == 'description' or field.name == 'image' %}full{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="hint">{{ field.help_text }}</small>{% endif %}{{ field.errors }}
+                </div>
+            {% endfor %}
+            <button class="btn primary full" type="submit">Save Product to Inventory</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const video=document.getElementById('scannerVideo'),statusBox=document.getElementById('scanStatus'),preview=document.getElementById('catalogPreview'),barcodeInput=document.getElementById('id_barcode');let stream=null,timer=null,busy=false;
+function setValue(id,value){const el=document.getElementById(id);if(el&&value!==null&&value!==undefined&&value!=="")el.value=value}
+async function lookupBarcode(value){value=(value||"").trim();if(!value)return;statusBox.textContent="Searching AMEXA product catalog…";try{const response=await fetch("{% url 'shopkeeper_upc_lookup' %}?barcode="+encodeURIComponent(value),{headers:{"X-Requested-With":"XMLHttpRequest"}});const data=await response.json();if(data.found){const p=data.product;setValue('id_name',p.name);setValue('id_description',p.description);setValue('id_category',p.category_id);setValue('id_brand_name',p.brand_name);setValue('id_cost_price',p.cost_price);setValue('id_price',p.price);setValue('id_mrp',p.mrp);setValue('id_gst_rate',p.gst_rate);preview.style.display='block';preview.textContent=data.already_in_shop?'This UPC is already present in your shop.':'Product found — details auto-filled. Please review them.';statusBox.textContent="Barcode found: "+value}else{preview.style.display='block';preview.textContent='New UPC — fill product details manually.';statusBox.textContent="New barcode: "+value}}catch(error){statusBox.textContent='Lookup failed. You can continue with manual details.'}}
+async function stopScanner(){if(timer){clearInterval(timer);timer=null}if(stream){stream.getTracks().forEach(track=>track.stop());stream=null}video.srcObject=null}
+async function startScanner(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusBox.textContent='Camera is not supported. Enter UPC manually.';return}if(!('BarcodeDetector' in window)){statusBox.textContent='This browser cannot scan barcodes. Use Chrome/Android or enter UPC manually.';return}try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});video.srcObject=stream;await video.play();const detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});statusBox.textContent='Scanning… keep the barcode inside the frame.';timer=setInterval(async()=>{if(busy||video.readyState<2)return;busy=true;try{const codes=await detector.detect(video);if(codes.length){const value=codes[0].rawValue;barcodeInput.value=value;await lookupBarcode(value);await stopScanner()}}catch(error){}finally{busy=false}},450)}catch(error){statusBox.textContent='Camera permission was denied. Enter UPC manually.'}}
+document.getElementById('startScanner').addEventListener('click',startScanner);document.getElementById('stopScanner').addEventListener('click',stopScanner);barcodeInput.addEventListener('change',()=>lookupBarcode(barcodeInput.value));window.addEventListener('beforeunload',stopScanner);
+</script>
+{% endblock %}

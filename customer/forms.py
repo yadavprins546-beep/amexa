@@ -5,7 +5,9 @@ from django import forms
 
 from .models import (
     Address,
+    Category,
     DeliveryPartnerProfile,
+    Product,
     Shop,
     ShopkeeperProfile,
 )
@@ -678,7 +680,17 @@ class ShopkeeperPersonalDetailsForm(forms.ModelForm):
             self.user.name = self.cleaned_data["name"]
             self.user.phone = self.cleaned_data["phone"]
             self.user.role = "SHOPKEEPER"
-            self.user.save(update_fields=["name", "phone", "role"])
+            self.user.is_staff = False
+            self.user.is_superuser = False
+            self.user.save(
+                update_fields=[
+                    "name",
+                    "phone",
+                    "role",
+                    "is_staff",
+                    "is_superuser",
+                ]
+            )
         if commit:
             profile.save()
         return profile
@@ -885,3 +897,149 @@ class ShopkeeperFinalVerificationForm(forms.Form):
     accept_terms = forms.BooleanField(
         label="I accept AMEXA shopkeeper terms and verification policy."
     )
+
+
+# =========================================================
+# SHOPKEEPER PRODUCT / INVENTORY / PROFILE
+# =========================================================
+
+class ShopkeeperProductForm(forms.ModelForm):
+    barcode = forms.CharField(
+        max_length=50,
+        label="UPC / EAN / GTIN",
+        widget=forms.TextInput(
+            attrs={
+                "inputmode": "numeric",
+                "autocomplete": "off",
+                "placeholder": "Scan or enter barcode",
+            }
+        ),
+    )
+    brand_name = forms.CharField(max_length=120, required=False)
+    opening_stock = forms.IntegerField(min_value=0, initial=0)
+    batch_number = forms.CharField(max_length=80, required=False)
+    expiry_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "category",
+            "description",
+            "cost_price",
+            "price",
+            "mrp",
+            "gst_rate",
+            "image",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "cost_price": forms.NumberInput(
+                attrs={"min": "0", "step": "0.01"}
+            ),
+            "price": forms.NumberInput(
+                attrs={"min": "0.01", "step": "0.01"}
+            ),
+            "mrp": forms.NumberInput(
+                attrs={"min": "0.01", "step": "0.01"}
+            ),
+            "gst_rate": forms.NumberInput(
+                attrs={"min": "0", "max": "100", "step": "0.01"}
+            ),
+            "image": forms.FileInput(attrs={"accept": "image/*"}),
+        }
+
+    def clean_barcode(self):
+        value = re.sub(r"\s+", "", self.cleaned_data["barcode"])
+        if not re.fullmatch(r"[A-Za-z0-9-]{6,50}", value):
+            raise forms.ValidationError("Enter a valid UPC/EAN/GTIN barcode.")
+        return value.upper()
+
+    def clean(self):
+        cleaned = super().clean()
+        cost_price = cleaned.get("cost_price") or 0
+        selling_price = cleaned.get("price") or 0
+        mrp = cleaned.get("mrp") or 0
+        expiry_date = cleaned.get("expiry_date")
+
+        if selling_price and mrp and selling_price > mrp:
+            self.add_error("price", "Selling price cannot be greater than MRP.")
+        if cost_price and selling_price and cost_price > selling_price:
+            self.add_error(
+                "cost_price",
+                "Cost price cannot be greater than selling price.",
+            )
+        if expiry_date and expiry_date < date.today():
+            self.add_error("expiry_date", "Expiry date cannot be in the past.")
+        return cleaned
+
+
+class ShopkeeperInventoryUpdateForm(forms.Form):
+    stock_quantity = forms.IntegerField(min_value=0)
+    cost_price = forms.DecimalField(min_value=0, max_digits=10, decimal_places=2)
+    price = forms.DecimalField(min_value=0, max_digits=10, decimal_places=2)
+    mrp = forms.DecimalField(min_value=0, max_digits=10, decimal_places=2)
+    is_active = forms.BooleanField(required=False)
+
+    def clean(self):
+        cleaned = super().clean()
+        if (
+            cleaned.get("price") is not None
+            and cleaned.get("mrp") is not None
+            and cleaned["price"] > cleaned["mrp"]
+        ):
+            self.add_error("price", "Selling price cannot be greater than MRP.")
+        if (
+            cleaned.get("cost_price") is not None
+            and cleaned.get("price") is not None
+            and cleaned["cost_price"] > cleaned["price"]
+        ):
+            self.add_error(
+                "cost_price",
+                "Cost price cannot be greater than selling price.",
+            )
+        return cleaned
+
+
+class ShopkeeperBadStockForm(forms.Form):
+    quantity = forms.IntegerField(min_value=1)
+    reason = forms.ChoiceField(
+        choices=[
+            ("DAMAGED", "Damaged"),
+            ("CUSTOMER_RETURN", "Customer Return"),
+            ("MISSING", "Missing"),
+            ("OTHER", "Other"),
+        ]
+    )
+    note = forms.CharField(max_length=255, required=False)
+
+
+class ShopkeeperProfileSettingsForm(forms.ModelForm):
+    class Meta:
+        model = Shop
+        fields = [
+            "name",
+            "address",
+            "phone",
+            "minimum_order_value",
+            "opening_time",
+            "closing_time",
+            "auto_accept_orders",
+        ]
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "phone": forms.TextInput(
+                attrs={"inputmode": "numeric", "maxlength": "10"}
+            ),
+            "minimum_order_value": forms.NumberInput(
+                attrs={"min": "0", "step": "1"}
+            ),
+            "opening_time": forms.TimeInput(attrs={"type": "time"}),
+            "closing_time": forms.TimeInput(attrs={"type": "time"}),
+        }
+
+    def clean_phone(self):
+        return normalize_indian_phone(self.cleaned_data["phone"])

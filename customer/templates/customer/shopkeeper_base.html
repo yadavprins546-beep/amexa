@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}AMEXA Shopkeeper{% endblock %}</title>
+    <style>
+        *{box-sizing:border-box} :root{--bg:#060916;--panel:#0d1829;--line:rgba(105,231,255,.15);--text:#f5fbff;--muted:#8ba0b5;--cyan:#69e7ff;--green:#35e9a2;--yellow:#ffd36c;--red:#ff6685;--violet:#8c86ff} body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,system-ui,"Segoe UI",sans-serif;background:radial-gradient(circle at 88% 0,rgba(89,102,255,.18),transparent 28%),var(--bg)} a{text-decoration:none;color:inherit} button,input,select,textarea{font:inherit}.app{width:min(1120px,100%);margin:auto;padding:16px 14px 94px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.brand{font-size:24px;font-weight:1000}.brand small{display:block;color:var(--cyan);font:800 8px ui-monospace;letter-spacing:1.4px}.back{padding:9px 11px;border:1px solid var(--line);border-radius:11px;color:var(--cyan);background:rgba(105,231,255,.05);font-size:9px;font-weight:900}.page-title{margin:3px 0 16px}.page-title h1{margin:0;font-size:22px}.page-title p{margin:5px 0 0;color:var(--muted);font-size:9px}.panel{padding:16px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(14,27,46,.95),rgba(7,14,27,.98));box-shadow:0 16px 46px rgba(0,0,0,.2)}.grid{display:grid;gap:13px}.grid.two{grid-template-columns:1fr 1fr}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.metric{padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(14,27,46,.92)}.metric span{display:block;color:var(--muted);font-size:8px;font-weight:850;text-transform:uppercase}.metric b{display:block;margin-top:8px;font:1000 19px ui-monospace}.metric small{display:block;margin-top:4px;color:#637a90;font-size:7px}.messages{margin:0 0 12px}.message{margin-top:7px;padding:10px 12px;border:1px solid rgba(53,233,162,.2);border-radius:11px;color:var(--green);background:rgba(53,233,162,.06);font-size:9px}.message.error{border-color:rgba(255,102,133,.2);color:var(--red);background:rgba(255,102,133,.06)}.message.warning{border-color:rgba(255,211,108,.2);color:var(--yellow);background:rgba(255,211,108,.06)}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:39px;padding:9px 13px;border:1px solid var(--line);border-radius:11px;color:var(--cyan);background:rgba(105,231,255,.06);font-size:9px;font-weight:950;cursor:pointer}.btn.primary{border:0;color:#03130e;background:linear-gradient(135deg,var(--green),var(--cyan))}.btn.red{border-color:rgba(255,102,133,.25);color:var(--red);background:rgba(255,102,133,.07)}.btn.yellow{border-color:rgba(255,211,108,.25);color:var(--yellow);background:rgba(255,211,108,.07)}.btn:disabled{opacity:.5;cursor:not-allowed}.field{margin-bottom:11px}.field label{display:block;margin-bottom:5px;color:#adc0d2;font-size:8px;font-weight:850}.field input,.field select,.field textarea{width:100%;min-height:42px;padding:10px 11px;border:1px solid rgba(255,255,255,.09);border-radius:11px;outline:0;color:var(--text);background:#091322;font-size:10px}.field textarea{min-height:76px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(105,231,255,.08)}.field select option{color:#111;background:#fff}.errors{margin:4px 0 0;padding:0;list-style:none;color:var(--red);font-size:8px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.section-head h2{margin:0;font-size:13px}.section-head p{margin:3px 0 0;color:var(--muted);font-size:8px}.empty{padding:24px;text-align:center;color:var(--muted);font-size:9px}.badge{display:inline-flex;padding:5px 8px;border-radius:99px;color:var(--yellow);background:rgba(255,211,108,.08);font-size:7px;font-weight:950}.badge.green{color:var(--green);background:rgba(53,233,162,.08)}.badge.red{color:var(--red);background:rgba(255,102,133,.08)}.bottom{position:fixed;z-index:50;left:50%;bottom:11px;transform:translateX(-50%);width:min(520px,calc(100% - 18px));display:grid;grid-template-columns:repeat(4,1fr);padding:7px;border:1px solid var(--line);border-radius:17px;background:rgba(7,14,27,.94);backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.4)}.tab{padding:7px;text-align:center;color:#71869b;font-size:7px;font-weight:900}.tab i{display:block;margin-bottom:4px;font-style:normal;font-size:16px}.tab.active{color:var(--cyan);border-radius:11px;background:rgba(105,231,255,.07)}@media(max-width:760px){.app{padding:12px 9px 92px}.metrics{grid-template-columns:1fr 1fr}.grid.two{grid-template-columns:1fr}.page-title h1{font-size:19px}}
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<main class="app">
+    <header class="top">
+        <div class="brand">AMEXA<small>SHOPKEEPER APP</small></div>
+        <a class="back" href="{% url 'shopkeeper_dashboard' %}">← Dashboard</a>
+    </header>
+    {% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+</main>
+<nav class="bottom">
+    <a class="tab {% if active_tab == 'home' %}active{% endif %}" href="{% url 'shopkeeper_dashboard' %}"><i>⌂</i>HOME</a>
+    <a class="tab {% if active_tab == 'orders' %}active{% endif %}" href="{% url 'shopkeeper_orders' %}"><i>▣</i>ORDERS</a>
+    <a class="tab {% if active_tab == 'inventory' %}active{% endif %}" href="{% url 'shopkeeper_inventory' %}"><i>▦</i>INVENTORY</a>
+    <a class="tab {% if active_tab == 'profile' %}active{% endif %}" href="{% url 'shopkeeper_profile' %}"><i>◎</i>PROFILE</a>
+</nav>
+{% block scripts %}{% endblock %}
+</body>
+</html>
