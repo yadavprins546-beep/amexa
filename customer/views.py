@@ -5226,12 +5226,24 @@ def shopkeeper_orders_view(request):
             if order.master_order_id:
                 _update_master_order_status(order.master_order)
 
+    picker_sync_failed = False
     for accepted_order in Order.objects.filter(
         shop=shop,
         status__in=["Confirmed", "Preparing"],
         picking_task__isnull=True,
     ).prefetch_related("items"):
-        _ensure_order_picking_task(accepted_order)
+        try:
+            _ensure_order_picking_task(accepted_order)
+        except Exception:
+            # Order screen must remain usable even if a legacy order has
+            # incomplete picker data. The action endpoint retries safely.
+            picker_sync_failed = True
+
+    if picker_sync_failed:
+        messages.warning(
+            request,
+            "Some accepted orders are waiting for picker sync.",
+        )
 
     status_filter = (request.GET.get("status") or "ALL").strip()
     allowed_statuses = {choice[0] for choice in Order.STATUS_CHOICES}
@@ -5279,7 +5291,9 @@ def shopkeeper_order_action_view(request, order_number):
     if request.method != "POST":
         return redirect("shopkeeper_orders")
 
-    action = (request.POST.get("action") or "").strip().lower()
+    action = (request.POST.get("action") or "").strip().casefold()
+    accepted_now = False
+
     with transaction.atomic():
         order = get_object_or_404(
             Order.objects.select_for_update().select_related(
@@ -5288,24 +5302,37 @@ def shopkeeper_order_action_view(request, order_number):
             order_number=order_number,
             shop=profile.shop,
         )
+        current_status = (order.status or "").strip().casefold()
 
-        if action == "accept" and order.status == "Pending":
+        if action == "accept" and current_status == "pending":
             order.status = "Confirmed"
             order.save(update_fields=["status", "updated_at"])
-            _ensure_order_picking_task(order)
             order.create_status_history("Confirmed", "Accepted by shop.")
+            accepted_now = True
             messages.success(
                 request,
-                f"Order #{order.order_number} accepted and sent to picker queue.",
+                f"Order #{order.order_number} accepted successfully.",
             )
 
-        elif action == "prepare" and order.status == "Confirmed":
+        elif action == "accept" and current_status in {
+            "confirmed",
+            "preparing",
+        }:
+            messages.info(
+                request,
+                f"Order #{order.order_number} is already accepted.",
+            )
+
+        elif action == "prepare" and current_status == "confirmed":
             order.status = "Preparing"
             order.save(update_fields=["status", "updated_at"])
             order.create_status_history("Preparing", "Shop started packing.")
             messages.success(request, "Order is being prepared for pickup.")
 
-        elif action == "reject" and order.status in {"Pending", "Confirmed"}:
+        elif action == "reject" and current_status in {
+            "pending",
+            "confirmed",
+        }:
             existing_task = OrderPickingTask.objects.filter(order=order).first()
             if existing_task and existing_task.status not in {"WAITING", "CANCELLED"}:
                 messages.error(
@@ -5353,6 +5380,22 @@ def shopkeeper_order_action_view(request, order_number):
 
         if order.master_order_id:
             _update_master_order_status(order.master_order)
+
+    if accepted_now:
+        try:
+            with transaction.atomic():
+                accepted_order = (
+                    Order.objects
+                    .select_related("shop")
+                    .prefetch_related("items")
+                    .get(pk=order.pk)
+                )
+                _ensure_order_picking_task(accepted_order)
+        except Exception:
+            messages.warning(
+                request,
+                "Order accepted. Picker queue sync will retry automatically.",
+            )
 
     return redirect("shopkeeper_orders")
 
