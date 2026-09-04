@@ -84,10 +84,12 @@ from customer.views import (
     picker_order_detail_view,
     picker_scan_item_view,
     delivery_location_update_view,
+    delivery_partner_location_update_view,
     delivery_live_tracking_view,
     delivery_onboarding_view,
     delivery_verification_status_view,
     delivery_dashboard_view,
+    delivery_profile_view,
     delivery_assignment_action_view,
     shopkeeper_dashboard_view,
     shopkeeper_bad_stock_view,
@@ -463,6 +465,18 @@ urlpatterns = [
         "delivery/",
         delivery_dashboard_view,
         name="delivery_dashboard",
+    ),
+
+    path(
+        "delivery/location/update/",
+        delivery_partner_location_update_view,
+        name="delivery_partner_location_update",
+    ),
+
+    path(
+        "delivery/profile/",
+        delivery_profile_view,
+        name="delivery_profile",
     ),
 
     path(

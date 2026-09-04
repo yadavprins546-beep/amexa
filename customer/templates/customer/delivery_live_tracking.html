@@ -4,248 +4,61 @@
 
 {% block content %}
 
-<style>
-    .rider-page {
-        width: min(650px, 100%);
-        margin: 0 auto;
-        padding: 16px 12px 100px;
-    }
-
-    .rider-card {
-        background: #ffffff;
-        border-radius: 22px;
-        padding: 20px;
-        box-shadow: 0 8px 30px rgba(0,0,0,.08);
-    }
-
-    .rider-title {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 900;
-        color: #151515;
-    }
-
-    .rider-subtitle {
-        margin-top: 6px;
-        color: #777;
-        font-size: 13px;
-        line-height: 1.5;
-    }
-
-    .order-box {
-        margin-top: 18px;
-        padding: 14px;
-        border-radius: 14px;
-        background: #f7f7f7;
-    }
-
-    .order-label {
-        font-size: 11px;
-        color: #888;
-        font-weight: 700;
-    }
-
-    .order-value {
-        display: block;
-        margin-top: 4px;
-        font-size: 15px;
-        font-weight: 900;
-        color: #222;
-    }
-
-    .status-box {
-        margin-top: 16px;
-        padding: 14px;
-        border-radius: 14px;
-        background: #f3f4f6;
-        color: #555;
-        font-size: 13px;
-        line-height: 1.5;
-    }
-
-    .status-box.loading {
-        background: #fff8dd;
-        color: #8a6900;
-    }
-
-    .status-box.success {
-        background: #e8fff3;
-        color: #087443;
-    }
-
-    .status-box.error {
-        background: #ffe9ed;
-        color: #b51f3c;
-    }
-
-    .coordinates {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 14px;
-    }
-
-    .coordinate-box {
-        padding: 13px;
-        border-radius: 13px;
-        background: #f7f9ff;
-        border: 1px solid #e8ebf4;
-    }
-
-    .coordinate-box small {
-        display: block;
-        color: #888;
-        font-size: 10px;
-        font-weight: 700;
-    }
-
-    .coordinate-box strong {
-        display: block;
-        margin-top: 5px;
-        color: #222;
-        font-size: 13px;
-    }
-
-    .buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 18px;
-    }
-
-    .tracking-btn {
-        border: 0;
-        min-height: 48px;
-        border-radius: 14px;
-        font-size: 13px;
-        font-weight: 900;
-        cursor: pointer;
-        color: white;
-    }
-
-    .start-btn {
-        background: #0abf7b;
-    }
-
-    .stop-btn {
-        background: #ef476f;
-    }
-
-    .tracking-btn:disabled {
-        opacity: .45;
-        cursor: not-allowed;
-    }
-
-    .last-update {
-        margin-top: 15px;
-        padding: 12px;
-        background: #f8f5ff;
-        border-radius: 12px;
-        color: #6545a5;
-        font-size: 12px;
-    }
-
-    .tracking-note {
-        margin-top: 14px;
-        text-align: center;
-        color: #888;
-        font-size: 11px;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 500px) {
-        .rider-page {
-            padding: 10px 8px 90px;
-        }
-
-        .rider-card {
-            padding: 16px;
-        }
-
-        .rider-title {
-            font-size: 21px;
-        }
-
-        .coordinates,
-        .buttons {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIINfQ3ynkGvY2sHIxFJbQ0Qt0YQ3nZpU5o="
+  crossorigin=""
+>
 
 <style>
     :root {
-        --digital-bg: #040914;
-        --digital-panel: rgba(10, 20, 38, .92);
-        --digital-line: rgba(88, 240, 255, .18);
-        --digital-cyan: #58f0ff;
-        --digital-green: #31f6a5;
-        --digital-muted: #8ea4bd;
+        --bg: #040914;
+        --panel: rgba(10, 20, 38, .94);
+        --panel2: rgba(15, 29, 51, .96);
+        --line: rgba(88, 240, 255, .18);
+        --cyan: #58f0ff;
+        --green: #31f6a5;
+        --muted: #8ea4bd;
+        --danger: #ff7897;
+        --warning: #ffd76c;
     }
 
     body {
         background:
             radial-gradient(circle at 15% 10%, rgba(25, 113, 255, .22), transparent 28%),
             radial-gradient(circle at 90% 25%, rgba(0, 255, 190, .12), transparent 25%),
-            #040914 !important;
+            var(--bg) !important;
     }
 
     .rider-page {
-        position: relative;
-        width: min(760px, 100%);
-        min-height: calc(100vh - 70px);
-        padding: 28px 14px 110px;
-        isolation: isolate;
+        width: min(1000px, 100%);
+        margin: 0 auto;
+        padding: 18px 12px 110px;
     }
 
-    .rider-page::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        opacity: .28;
-        background-image:
-            linear-gradient(rgba(88, 240, 255, .055) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(88, 240, 255, .055) 1px, transparent 1px);
-        background-size: 32px 32px;
-        mask-image: linear-gradient(to bottom, #000, transparent 85%);
-    }
-
-    .rider-card {
-        position: relative;
-        overflow: hidden;
-        padding: 26px;
+    .top-card,
+    .map-card,
+    .info-card {
         color: #eefaff;
         background: linear-gradient(145deg, rgba(13, 27, 49, .97), rgba(5, 12, 25, .98));
-        border: 1px solid var(--digital-line);
-        border-radius: 26px;
-        box-shadow: 0 28px 80px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .04);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 0 22px 65px rgba(0, 0, 0, .38);
     }
 
-    .rider-card::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(115deg, transparent 30%, rgba(88, 240, 255, .045), transparent 70%);
-        transform: translateX(-100%);
-        animation: digitalSweep 6s linear infinite;
-    }
-
-    @keyframes digitalSweep {
-        to { transform: translateX(100%); }
+    .top-card {
+        padding: 18px;
     }
 
     .digital-topline {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 14px;
-        color: var(--digital-cyan);
+        gap: 10px;
+        align-items: center;
+        color: var(--cyan);
         font: 800 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
-        letter-spacing: 1.4px;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
     }
 
@@ -256,7 +69,7 @@
         padding: 7px 10px;
         border: 1px solid rgba(49, 246, 165, .28);
         border-radius: 999px;
-        color: var(--digital-green);
+        color: var(--green);
         background: rgba(49, 246, 165, .08);
     }
 
@@ -265,389 +78,679 @@
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: var(--digital-green);
-        box-shadow: 0 0 14px var(--digital-green);
-        animation: digitalPulse 1.25s ease-in-out infinite;
+        background: var(--green);
+        box-shadow: 0 0 14px var(--green);
     }
 
-    @keyframes digitalPulse {
-        50% { opacity: .35; transform: scale(.75); }
+    .title {
+        margin: 14px 0 4px;
+        font-size: clamp(24px, 5vw, 36px);
+        font-weight: 1000;
+        letter-spacing: -.7px;
     }
 
-    .rider-title {
-        color: #fff;
-        font-size: clamp(25px, 5vw, 38px);
-        letter-spacing: -.8px;
+    .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
     }
 
-    .rider-subtitle {
-        max-width: 600px;
-        color: var(--digital-muted);
-    }
-
-    .radar {
-        position: relative;
-        width: 128px;
-        height: 128px;
-        margin: 22px auto;
-        overflow: hidden;
-        border: 1px solid rgba(88, 240, 255, .3);
-        border-radius: 50%;
-        background:
-            linear-gradient(rgba(88, 240, 255, .2) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(88, 240, 255, .2) 1px, transparent 1px),
-            radial-gradient(circle, transparent 28%, rgba(88, 240, 255, .15) 29%, transparent 30%, transparent 58%, rgba(88, 240, 255, .15) 59%, transparent 60%),
-            rgba(4, 18, 31, .85);
-        background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%;
-        box-shadow: 0 0 34px rgba(88, 240, 255, .14);
-    }
-
-    .radar::before {
-        content: "";
-        position: absolute;
-        inset: 50% 0 0 50%;
-        transform-origin: 0 0;
-        background: conic-gradient(from 270deg, rgba(49, 246, 165, .6), transparent 32%);
-        animation: radarSpin 2.5s linear infinite;
-    }
-
-    .radar::after {
-        content: "⌖";
-        position: absolute;
-        inset: 0;
+    .order-grid {
         display: grid;
-        place-items: center;
-        color: var(--digital-green);
-        font-size: 25px;
-        text-shadow: 0 0 18px var(--digital-green);
-    }
-
-    @keyframes radarSpin { to { transform: rotate(360deg); } }
-
-    .order-box,
-    .coordinate-box,
-    .status-box,
-    .last-update {
-        color: #edf9ff;
-        background: rgba(255, 255, 255, .035);
-        border: 1px solid rgba(88, 240, 255, .12);
-        backdrop-filter: blur(12px);
+        grid-template-columns: 1fr 1.4fr;
+        gap: 10px;
+        margin-top: 15px;
     }
 
     .order-box {
+        padding: 12px;
+        border-radius: 13px;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(88,240,255,.1);
+    }
+
+    .order-box small {
+        display: block;
+        color: #718ba7;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: .8px;
+    }
+
+    .order-box strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .map-card {
+        margin-top: 14px;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    #deliveryMap {
+        width: 100%;
+        height: min(62vh, 560px);
+        min-height: 390px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0a1220;
+    }
+
+    .map-toolbar {
         display: grid;
-        grid-template-columns: 130px 1fr;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        padding: 2px 2px 10px;
         align-items: center;
-        gap: 12px;
     }
 
-    .order-label,
-    .coordinate-box small {
-        color: #6f89a6;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        letter-spacing: 1px;
+    .map-status {
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 800;
     }
 
-    .order-value,
-    .coordinate-box strong {
-        color: #f5fcff;
+    .btn {
+        border: 0;
+        border-radius: 12px;
+        min-height: 42px;
+        padding: 10px 13px;
+        font-size: 11px;
+        font-weight: 950;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .coordinates { gap: 12px; }
-
-    .coordinate-box strong {
-        color: var(--digital-cyan);
-        font: 800 17px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
-        text-shadow: 0 0 14px rgba(88, 240, 255, .25);
+    .btn-green {
+        color: #04140e;
+        background: linear-gradient(135deg, #31f6a5, #29c9f7);
     }
 
-    .status-box {
-        position: relative;
-        padding-left: 42px;
+    .btn-dark {
+        color: #e9faff;
+        background: rgba(255,255,255,.055);
+        border: 1px solid rgba(255,255,255,.09);
     }
 
-    .status-box::before {
-        content: "◉";
-        position: absolute;
-        left: 16px;
-        color: var(--digital-cyan);
-    }
-
-    .status-box.loading { background: rgba(255, 203, 69, .08); color: #ffd76c; }
-    .status-box.success { background: rgba(49, 246, 165, .08); color: var(--digital-green); }
-    .status-box.error { background: rgba(255, 71, 111, .09); color: #ff7897; }
-
-    .tracking-btn {
-        position: relative;
-        min-height: 54px;
-        border: 1px solid transparent;
-        letter-spacing: .2px;
-        transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .tracking-btn:not(:disabled):hover {
-        transform: translateY(-2px);
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
     }
 
     .start-btn {
         color: #03150f;
         background: linear-gradient(135deg, #31f6a5, #28c8f7);
-        box-shadow: 0 12px 30px rgba(49, 246, 165, .2);
     }
 
     .stop-btn {
-        background: rgba(255, 71, 111, .12);
-        border-color: rgba(255, 71, 111, .3);
-        color: #ff7897;
+        color: var(--danger);
+        background: rgba(255,71,111,.12);
+        border: 1px solid rgba(255,71,111,.3);
     }
 
-    .last-update { color: #9db3cb; }
-    .last-update strong { color: var(--digital-cyan); }
-    .tracking-note { color: #7188a2; }
+    .btn:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
 
-    @media (max-width: 500px) {
-        .rider-card { padding: 18px 14px; border-radius: 20px; }
-        .digital-topline { align-items: flex-start; }
-        .order-box { grid-template-columns: 1fr; gap: 5px; }
-        .radar { width: 110px; height: 110px; }
+    .status-box {
+        margin-top: 12px;
+        padding: 12px 13px;
+        border-radius: 12px;
+        font-size: 11px;
+        line-height: 1.5;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(88,240,255,.12);
+        color: #d7e8f6;
+    }
+
+    .status-box.loading { color: var(--warning); background: rgba(255,203,69,.08); }
+    .status-box.success { color: var(--green); background: rgba(49,246,165,.08); }
+    .status-box.error { color: var(--danger); background: rgba(255,71,111,.09); }
+
+    .info-card {
+        margin-top: 14px;
+        padding: 15px;
+    }
+
+    .coordinates {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+    }
+
+    .coord {
+        padding: 11px;
+        border-radius: 12px;
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(88,240,255,.09);
+    }
+
+    .coord small {
+        display: block;
+        color: #718ba7;
+        font-size: 8px;
+        font-weight: 900;
+    }
+
+    .coord strong {
+        display: block;
+        margin-top: 5px;
+        color: var(--cyan);
+        font: 800 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .legend {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .legend-item {
+        padding: 10px;
+        border-radius: 11px;
+        background: rgba(255,255,255,.025);
+        border: 1px solid rgba(255,255,255,.055);
+        font-size: 10px;
+        color: #c9d7e6;
+    }
+
+    .legend-item b {
+        display: block;
+        margin-bottom: 3px;
+        color: #fff;
+    }
+
+    .last-update {
+        margin-top: 12px;
+        color: #8ea4bd;
+        font-size: 10px;
+    }
+
+    .last-update strong { color: var(--cyan); }
+
+    .tracking-note {
+        margin-top: 10px;
+        text-align: center;
+        color: #70879f;
+        font-size: 10px;
+        line-height: 1.45;
+    }
+
+    .amx-div-icon {
+        background: transparent;
+        border: 0;
+    }
+
+    .marker-wrap {
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .marker-pin {
+        width: 42px;
+        height: 42px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        margin: auto;
+        font-size: 22px;
+        border: 2px solid rgba(255,255,255,.92);
+        box-shadow: 0 6px 18px rgba(0,0,0,.34);
+    }
+
+    .marker-label {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 4px 7px;
+        border-radius: 999px;
+        background: rgba(5,12,25,.92);
+        color: #fff;
+        font-size: 9px;
+        font-weight: 950;
+        border: 1px solid rgba(255,255,255,.15);
+        box-shadow: 0 5px 16px rgba(0,0,0,.28);
+    }
+
+    .rider-pin { background: #138cff; }
+    .shop-pin { background: #13b875; }
+    .parcel-pin { background: #7b42ff; }
+
+    .leaflet-control-zoom a {
+        background: #0a1628 !important;
+        color: #fff !important;
+        border-color: rgba(255,255,255,.12) !important;
+    }
+
+    .leaflet-control-attribution {
+        font-size: 8px !important;
+    }
+
+    @media (max-width: 650px) {
+        .rider-page { padding: 10px 8px 95px; }
+        .top-card { padding: 14px; }
+        .order-grid { grid-template-columns: 1fr; }
+        .map-toolbar { grid-template-columns: 1fr 1fr; }
+        .map-status { grid-column: 1 / -1; }
+        #deliveryMap { height: 58vh; min-height: 360px; }
+        .coordinates { grid-template-columns: 1fr; }
+        .legend { grid-template-columns: 1fr; }
     }
 </style>
 
-
 <div class="rider-page">
 
-    <div class="rider-card">
-
+    <section class="top-card">
         <div class="digital-topline">
-            <span>AMEXA · NAVIGATION SYSTEM</span>
+            <span>AMEXA · LIVE DELIVERY MAP</span>
             <span class="live-chip">GPS READY</span>
         </div>
 
-        <h1 class="rider-title">
-            🛵 Rider Live Tracking
-        </h1>
+        <h1 class="title">🛵 Rider Navigation</h1>
+        <p class="subtitle">
+            Shop se parcel pickup karke customer ke exact delivery point tak live route follow karo.
+        </p>
 
-        <div class="rider-subtitle">
-            Delivery ke time is page ko rider ke phone me open rakho.
-            AMEXA rider ki live GPS location customer ke tracking page tak bhejega.
-        </div>
-
-        <div class="radar" aria-hidden="true"></div>
-
-
-        <div class="order-box">
-
-            <div class="order-label">
-                ORDER NUMBER
+        <div class="order-grid">
+            <div class="order-box">
+                <small>ORDER NUMBER</small>
+                <strong>#{{ order.order_number }}</strong>
             </div>
 
-            <strong class="order-value">
-                {{ order.order_number }}
-            </strong>
-
-        </div>
-
-
-        <div class="order-box">
-
-            <div class="order-label">
-                DELIVERY ADDRESS
+            <div class="order-box">
+                <small>AMEXA PARCEL ADDRESS</small>
+                <strong>
+                    {% if order.address %}
+                        {{ order.address.address_line }}
+                        {% if order.address.city %}, {{ order.address.city }}{% endif %}
+                        {% if order.address.pincode %} - {{ order.address.pincode }}{% endif %}
+                    {% else %}
+                        Delivery address unavailable
+                    {% endif %}
+                </strong>
             </div>
+        </div>
+    </section>
 
-            <strong class="order-value">
-
-                {% if order.address %}
-
-                    {{ order.address.address_line }}
-
-                    {% if order.address.city %}
-                        , {{ order.address.city }}
-                    {% endif %}
-
-                    {% if order.address.pincode %}
-                        - {{ order.address.pincode }}
-                    {% endif %}
-
-                {% else %}
-
-                    Delivery address unavailable
-
-                {% endif %}
-
-            </strong>
-
+    <section class="map-card">
+        <div class="map-toolbar">
+            <div class="map-status" id="mapStatus">Map loading...</div>
+            <button type="button" class="btn btn-dark" id="fitMapBtn">◎ Fit Route</button>
+            <a class="btn btn-green" id="navigateBtn" href="#" target="_blank" rel="noopener">
+                🧭 Navigate
+            </a>
         </div>
 
+        <div id="deliveryMap"></div>
+    </section>
 
-        <div
-            id="gpsStatus"
-            class="status-box"
-        >
+    <section class="info-card">
+        <div id="gpsStatus" class="status-box">
             GPS tracking abhi stopped hai.
         </div>
 
-
-        <div class="coordinates">
-
-            <div class="coordinate-box">
-
-                <small>
-                    LATITUDE
-                </small>
-
-                <strong id="latitudeText">
-                    --
-                </strong>
-
-            </div>
-
-
-            <div class="coordinate-box">
-
-                <small>
-                    LONGITUDE
-                </small>
-
-                <strong id="longitudeText">
-                    --
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="buttons">
-
-            <button
-                type="button"
-                id="startButton"
-                class="tracking-btn start-btn"
-            >
+        <div class="controls">
+            <button type="button" id="startButton" class="btn start-btn">
                 ▶ Start Live Tracking
             </button>
 
-
-            <button
-                type="button"
-                id="stopButton"
-                class="tracking-btn stop-btn"
-                disabled
-            >
+            <button type="button" id="stopButton" class="btn stop-btn" disabled>
                 ■ Stop Tracking
             </button>
-
         </div>
 
+        <div class="coordinates">
+            <div class="coord">
+                <small>RIDER LATITUDE</small>
+                <strong id="latitudeText">--</strong>
+            </div>
+
+            <div class="coord">
+                <small>RIDER LONGITUDE</small>
+                <strong id="longitudeText">--</strong>
+            </div>
+
+            <div class="coord">
+                <small>GPS ACCURACY</small>
+                <strong id="accuracyText">--</strong>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <b>🏪 Pickup Shop</b>
+                Order collect karne ka point
+            </div>
+            <div class="legend-item">
+                <b>🛵 AMEXA Rider</b>
+                Aapki live GPS position
+            </div>
+            <div class="legend-item">
+                <b>📦 AMEXA Parcel</b>
+                Customer ka exact delivery point
+            </div>
+        </div>
 
         <div class="last-update">
-
             Last server update:
-
-            <strong id="lastUpdateText">
-                Not sent yet
-            </strong>
-
+            <strong id="lastUpdateText">Not sent yet</strong>
         </div>
-
 
         <div class="tracking-note">
-            Phone ka GPS/Location ON rakho aur browser ko Location permission Allow karo.
+            Phone ka GPS ON rakho. Better gali-level accuracy ke liye Location permission me precise location allow rakho.
         </div>
-
-    </div>
+    </section>
 
 </div>
 
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin="">
+</script>
 
 <script>
-
-    // =====================================================
-    // DJANGO URL
-    // =====================================================
-
     const locationUpdateUrl =
         "{% url 'delivery_location_update' order.order_number %}";
 
+    const shopLat = Number("{{ order.shop.latitude|default:'0' }}");
+    const shopLon = Number("{{ order.shop.longitude|default:'0' }}");
 
-    // =====================================================
-    // ELEMENTS
-    // =====================================================
+    const customerLat = Number("{{ order.address.latitude|default:'0' }}");
+    const customerLon = Number("{{ order.address.longitude|default:'0' }}");
 
-    const gpsStatus =
-        document.getElementById("gpsStatus");
+    const initialRiderLat = Number("{{ assignment.current_latitude|default:'0' }}");
+    const initialRiderLon = Number("{{ assignment.current_longitude|default:'0' }}");
 
-    const latitudeText =
-        document.getElementById("latitudeText");
-
-    const longitudeText =
-        document.getElementById("longitudeText");
-
-    const lastUpdateText =
-        document.getElementById("lastUpdateText");
-
-    const startButton =
-        document.getElementById("startButton");
-
-    const stopButton =
-        document.getElementById("stopButton");
-
-
-    // =====================================================
-    // VARIABLES
-    // =====================================================
+    const gpsStatus = document.getElementById("gpsStatus");
+    const latitudeText = document.getElementById("latitudeText");
+    const longitudeText = document.getElementById("longitudeText");
+    const accuracyText = document.getElementById("accuracyText");
+    const lastUpdateText = document.getElementById("lastUpdateText");
+    const startButton = document.getElementById("startButton");
+    const stopButton = document.getElementById("stopButton");
+    const mapStatus = document.getElementById("mapStatus");
+    const fitMapBtn = document.getElementById("fitMapBtn");
+    const navigateBtn = document.getElementById("navigateBtn");
 
     let watchId = null;
-
     let lastSentTime = 0;
-
     let lastLatitude = null;
-
     let lastLongitude = null;
 
+    let map = null;
+    let riderMarker = null;
+    let shopMarker = null;
+    let parcelMarker = null;
+    let riderAccuracyCircle = null;
+    let routeLine = null;
+    let lastRouteAt = 0;
+    let firstLiveFix = true;
 
-    // =====================================================
-    // CSRF COOKIE
-    // =====================================================
+    function validPoint(lat, lon) {
+        return Number.isFinite(lat) &&
+               Number.isFinite(lon) &&
+               Math.abs(lat) <= 90 &&
+               Math.abs(lon) <= 180 &&
+               !(lat === 0 && lon === 0);
+    }
 
-    function getCookie(name) {
+    function markerIcon(emoji, label, cls) {
+        return L.divIcon({
+            className: "amx-div-icon",
+            html:
+                '<div class="marker-wrap">' +
+                    '<div class="marker-pin ' + cls + '">' + emoji + '</div>' +
+                    '<div class="marker-label">' + label + '</div>' +
+                '</div>',
+            iconSize: [1, 1],
+            iconAnchor: [0, 0]
+        });
+    }
 
-        let cookieValue = null;
+    function initializeMap() {
+        let center = [26.2303, 81.2409];
+
+        if (validPoint(customerLat, customerLon)) {
+            center = [customerLat, customerLon];
+        } else if (validPoint(shopLat, shopLon)) {
+            center = [shopLat, shopLon];
+        } else if (validPoint(initialRiderLat, initialRiderLon)) {
+            center = [initialRiderLat, initialRiderLon];
+        }
+
+        map = L.map("deliveryMap", {
+            zoomControl: true,
+            preferCanvas: true
+        }).setView(center, 16);
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 20,
+                attribution: "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+        if (validPoint(shopLat, shopLon)) {
+            shopMarker = L.marker(
+                [shopLat, shopLon],
+                { icon: markerIcon("🏪", "Pickup Shop", "shop-pin") }
+            ).addTo(map);
+
+            shopMarker.bindPopup(
+                "<b>Pickup Shop</b><br>{{ order.shop.name|escapejs }}"
+            );
+        }
+
+        if (validPoint(customerLat, customerLon)) {
+            parcelMarker = L.marker(
+                [customerLat, customerLon],
+                { icon: markerIcon("📦", "AMEXA Parcel", "parcel-pin") }
+            ).addTo(map);
+
+            parcelMarker.bindPopup(
+                "<b>AMEXA Parcel</b><br>{{ order.address.address_line|escapejs }}"
+            );
+
+            navigateBtn.href =
+                "https://www.google.com/maps/dir/?api=1&destination=" +
+                encodeURIComponent(customerLat + "," + customerLon) +
+                "&travelmode=driving";
+        } else {
+            navigateBtn.removeAttribute("href");
+            navigateBtn.style.opacity = ".45";
+            navigateBtn.style.pointerEvents = "none";
+        }
+
+        if (validPoint(initialRiderLat, initialRiderLon)) {
+            updateRiderMarker(initialRiderLat, initialRiderLon, 0);
+        }
+
+        fitVisiblePoints();
 
         if (
-            document.cookie &&
-            document.cookie !== ""
+            validPoint(initialRiderLat, initialRiderLon) &&
+            validPoint(customerLat, customerLon)
         ) {
+            updateRoadRoute(initialRiderLat, initialRiderLon, true);
+        } else if (
+            validPoint(shopLat, shopLon) &&
+            validPoint(customerLat, customerLon)
+        ) {
+            updateRoadRoute(shopLat, shopLon, true);
+        }
 
-            const cookies =
-                document.cookie.split(";");
+        setTimeout(function () {
+            map.invalidateSize();
+        }, 200);
+    }
 
-            for (
-                let i = 0;
-                i < cookies.length;
-                i++
+    function fitVisiblePoints() {
+        if (!map) return;
+
+        const points = [];
+
+        if (riderMarker) points.push(riderMarker.getLatLng());
+        if (shopMarker) points.push(shopMarker.getLatLng());
+        if (parcelMarker) points.push(parcelMarker.getLatLng());
+
+        if (points.length >= 2) {
+            map.fitBounds(L.latLngBounds(points).pad(.20), {
+                maxZoom: 17
+            });
+        } else if (points.length === 1) {
+            map.setView(points[0], 17);
+        }
+    }
+
+    function updateRiderMarker(lat, lon, accuracy) {
+        if (!map || !validPoint(lat, lon)) return;
+
+        const point = [lat, lon];
+
+        if (!riderMarker) {
+            riderMarker = L.marker(
+                point,
+                { icon: markerIcon("🛵", "AMEXA Rider", "rider-pin") }
+            ).addTo(map);
+        } else {
+            riderMarker.setLatLng(point);
+        }
+
+        if (Number.isFinite(accuracy) && accuracy > 0) {
+            if (!riderAccuracyCircle) {
+                riderAccuracyCircle = L.circle(point, {
+                    radius: accuracy,
+                    weight: 1,
+                    opacity: .45,
+                    fillOpacity: .06
+                }).addTo(map);
+            } else {
+                riderAccuracyCircle.setLatLng(point);
+                riderAccuracyCircle.setRadius(accuracy);
+            }
+        }
+
+        if (firstLiveFix) {
+            firstLiveFix = false;
+            fitVisiblePoints();
+        }
+    }
+
+    async function updateRoadRoute(fromLat, fromLon, force = false) {
+        if (!map || !validPoint(fromLat, fromLon)) return;
+        if (!validPoint(customerLat, customerLon)) return;
+
+        const now = Date.now();
+
+        if (!force && now - lastRouteAt < 15000) {
+            return;
+        }
+
+        lastRouteAt = now;
+        mapStatus.textContent = "Road route updating...";
+
+        const routeUrl =
+            "https://router.project-osrm.org/route/v1/driving/" +
+            fromLon + "," + fromLat + ";" +
+            customerLon + "," + customerLat +
+            "?overview=full&geometries=geojson&steps=false";
+
+        try {
+            const response = await fetch(routeUrl);
+
+            if (!response.ok) {
+                throw new Error("Route service unavailable.");
+            }
+
+            const data = await response.json();
+
+            if (
+                !data.routes ||
+                !data.routes.length ||
+                !data.routes[0].geometry
             ) {
+                throw new Error("Road route not found.");
+            }
 
-                const cookie =
-                    cookies[i].trim();
+            const coords =
+                data.routes[0].geometry.coordinates.map(function (point) {
+                    return [point[1], point[0]];
+                });
+
+            if (routeLine) {
+                routeLine.setLatLngs(coords);
+            } else {
+                routeLine = L.polyline(coords, {
+                    weight: 6,
+                    opacity: .82
+                }).addTo(map);
+            }
+
+            const distanceKm =
+                (data.routes[0].distance / 1000).toFixed(1);
+
+            const minutes =
+                Math.max(1, Math.round(data.routes[0].duration / 60));
+
+            mapStatus.textContent =
+                "AMEXA route · " + distanceKm +
+                " km · approx " + minutes + " min";
+
+        } catch (error) {
+            console.warn("Route error:", error);
+
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+
+            routeLine = L.polyline(
+                [
+                    [fromLat, fromLon],
+                    [customerLat, customerLon]
+                ],
+                {
+                    weight: 4,
+                    opacity: .55,
+                    dashArray: "8 8"
+                }
+            ).addTo(map);
+
+            mapStatus.textContent =
+                "Road route unavailable · direct line shown";
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
 
                 if (
-                    cookie.substring(
-                        0,
-                        name.length + 1
-                    ) ===
-                    (
-                        name + "="
-                    )
+                    cookie.substring(0, name.length + 1) ===
+                    (name + "=")
                 ) {
-
                     cookieValue =
                         decodeURIComponent(
-                            cookie.substring(
-                                name.length + 1
-                            )
+                            cookie.substring(name.length + 1)
                         );
-
                     break;
                 }
             }
@@ -656,72 +759,34 @@
         return cookieValue;
     }
 
+    const csrfToken = getCookie("csrftoken");
 
-    const csrfToken =
-        getCookie("csrftoken");
-
-
-    // =====================================================
-    // STATUS
-    // =====================================================
-
-    function showStatus(
-        message,
-        type = ""
-    ) {
-
-        gpsStatus.className =
-            "status-box";
+    function showStatus(message, type = "") {
+        gpsStatus.className = "status-box";
 
         if (type) {
             gpsStatus.classList.add(type);
         }
 
-        gpsStatus.textContent =
-            message;
+        gpsStatus.textContent = message;
     }
 
+    async function sendLocation(latitude, longitude) {
+        const currentTime = Date.now();
 
-    // =====================================================
-    // SEND GPS TO DJANGO
-    // =====================================================
-
-    async function sendLocation(
-        latitude,
-        longitude
-    ) {
-
-        const currentTime =
-            Date.now();
-
-
-        // Minimum 5 seconds gap
-        if (
-            currentTime - lastSentTime
-            < 5000
-        ) {
+        if (currentTime - lastSentTime < 5000) {
             return;
         }
 
-
-        // Same exact GPS ko baar-baar mat bhejo
         if (
             lastLatitude !== null &&
             lastLongitude !== null
         ) {
-
             const latitudeDifference =
-                Math.abs(
-                    latitude -
-                    lastLatitude
-                );
+                Math.abs(latitude - lastLatitude);
 
             const longitudeDifference =
-                Math.abs(
-                    longitude -
-                    lastLongitude
-                );
-
+                Math.abs(longitude - lastLongitude);
 
             if (
                 latitudeDifference < 0.000005 &&
@@ -731,113 +796,51 @@
             }
         }
 
-
         try {
-
             showStatus(
-                "Live GPS AMEXA ko send ho rahi hai...",
+                "Live GPS AMEXA server ko send ho rahi hai...",
                 "loading"
             );
 
+            const formData = new FormData();
+            formData.append("latitude", latitude);
+            formData.append("longitude", longitude);
 
-            const formData =
-                new FormData();
-
-
-            formData.append(
-                "latitude",
-                latitude
+            const response = await fetch(
+                locationUpdateUrl,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: formData,
+                    credentials: "same-origin"
+                }
             );
 
+            const data = await response.json();
 
-            formData.append(
-                "longitude",
-                longitude
-            );
-
-
-            const response =
-                await fetch(
-                    locationUpdateUrl,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "X-CSRFToken":
-                                csrfToken,
-
-                            "X-Requested-With":
-                                "XMLHttpRequest"
-                        },
-
-                        body:
-                            formData,
-
-                        credentials:
-                            "same-origin"
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            if (
-                !response.ok ||
-                !data.ok
-            ) {
-
+            if (!response.ok || !data.ok) {
                 throw new Error(
-                    data.error ||
-                    "Location update failed."
+                    data.error || "Location update failed."
                 );
             }
 
-
-            lastSentTime =
-                Date.now();
-
-
-            lastLatitude =
-                latitude;
-
-
-            lastLongitude =
-                longitude;
-
-
-            latitudeText.textContent =
-                Number(
-                    latitude
-                ).toFixed(6);
-
-
-            longitudeText.textContent =
-                Number(
-                    longitude
-                ).toFixed(6);
-
+            lastSentTime = Date.now();
+            lastLatitude = latitude;
+            lastLongitude = longitude;
 
             lastUpdateText.textContent =
-                new Date()
-                .toLocaleTimeString();
-
+                new Date().toLocaleTimeString();
 
             showStatus(
-                "✓ Rider live location server par update ho gayi.",
+                "✓ Rider live location AMEXA par update ho gayi.",
                 "success"
             );
 
-        }
-
-        catch (error) {
-
-            console.error(
-                "AMEXA GPS Error:",
-                error
-            );
-
+        } catch (error) {
+            console.error("AMEXA GPS Error:", error);
 
             showStatus(
                 error.message ||
@@ -847,30 +850,28 @@
         }
     }
 
+    function positionSuccess(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const accuracy = position.coords.accuracy || 0;
 
-    // =====================================================
-    // GPS SUCCESS
-    // =====================================================
+        latitudeText.textContent = latitude.toFixed(6);
+        longitudeText.textContent = longitude.toFixed(6);
+        accuracyText.textContent =
+            accuracy > 0
+                ? "±" + Math.round(accuracy) + " m"
+                : "--";
 
-    function positionSuccess(
-        position
-    ) {
+        updateRiderMarker(
+            latitude,
+            longitude,
+            accuracy
+        );
 
-        const latitude =
-            position.coords.latitude;
-
-
-        const longitude =
-            position.coords.longitude;
-
-
-        latitudeText.textContent =
-            latitude.toFixed(6);
-
-
-        longitudeText.textContent =
-            longitude.toFixed(6);
-
+        updateRoadRoute(
+            latitude,
+            longitude
+        );
 
         sendLocation(
             latitude,
@@ -878,48 +879,24 @@
         );
     }
 
-
-    // =====================================================
-    // GPS ERROR
-    // =====================================================
-
-    function positionError(
-        error
-    ) {
-
+    function positionError(error) {
         let message =
             "Live location nahi mil rahi.";
 
-
-        if (
-            error.code ===
-            error.PERMISSION_DENIED
-        ) {
-
+        if (error.code === error.PERMISSION_DENIED) {
             message =
-                "Location permission blocked hai. Browser me Location Allow karo.";
-        }
-
-
-        else if (
-            error.code ===
-            error.POSITION_UNAVAILABLE
+                "Location permission blocked hai. Browser me precise Location Allow karo.";
+        } else if (
+            error.code === error.POSITION_UNAVAILABLE
         ) {
-
             message =
                 "GPS unavailable hai. Phone ka Location/GPS ON karo.";
-        }
-
-
-        else if (
-            error.code ===
-            error.TIMEOUT
+        } else if (
+            error.code === error.TIMEOUT
         ) {
-
             message =
                 "GPS location lene me timeout hua. Dobara try karo.";
         }
-
 
         showStatus(
             message,
@@ -927,127 +904,72 @@
         );
     }
 
-
-    // =====================================================
-    // START TRACKING
-    // =====================================================
-
     function startLiveTracking() {
-
-        if (
-            !navigator.geolocation
-        ) {
-
+        if (!navigator.geolocation) {
             showStatus(
                 "Is browser me GPS support nahi hai.",
                 "error"
             );
-
             return;
         }
 
-
-        if (
-            watchId !== null
-        ) {
+        if (watchId !== null) {
             return;
         }
-
 
         showStatus(
-            "GPS start ho raha hai...",
+            "High accuracy GPS connect ho raha hai...",
             "loading"
         );
 
-
         watchId =
             navigator.geolocation.watchPosition(
-
                 positionSuccess,
-
                 positionError,
-
                 {
                     enableHighAccuracy: true,
-
-                    timeout: 15000,
-
-                    maximumAge: 3000
+                    timeout: 20000,
+                    maximumAge: 1500
                 }
             );
 
-
-        startButton.disabled =
-            true;
-
-
-        stopButton.disabled =
-            false;
+        startButton.disabled = true;
+        stopButton.disabled = false;
     }
 
-
-    // =====================================================
-    // STOP TRACKING
-    // =====================================================
-
     function stopLiveTracking() {
-
-        if (
-            watchId !== null
-        ) {
-
-            navigator.geolocation.clearWatch(
-                watchId
-            );
-
-
-            watchId =
-                null;
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
         }
 
-
-        startButton.disabled =
-            false;
-
-
-        stopButton.disabled =
-            true;
-
+        startButton.disabled = false;
+        stopButton.disabled = true;
 
         showStatus(
             "GPS tracking stopped."
         );
     }
 
-
-    // =====================================================
-    // BUTTON EVENTS
-    // =====================================================
-
     startButton.addEventListener(
         "click",
         startLiveTracking
     );
-
 
     stopButton.addEventListener(
         "click",
         stopLiveTracking
     );
 
-
-    // =====================================================
-    // PAGE CLOSE
-    // =====================================================
+    fitMapBtn.addEventListener(
+        "click",
+        fitVisiblePoints
+    );
 
     window.addEventListener(
         "beforeunload",
         function () {
-
-            if (
-                watchId !== null
-            ) {
-
+            if (watchId !== null) {
                 navigator.geolocation.clearWatch(
                     watchId
                 );
@@ -1055,6 +977,7 @@
         }
     );
 
+    initializeMap();
 </script>
 
 {% endblock %}

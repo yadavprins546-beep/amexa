@@ -674,6 +674,33 @@ class DeliveryPartnerProfile(models.Model):
     )
     vehicle_number = models.CharField(max_length=20, blank=True)
 
+    # =====================================================
+    # RIDER PERMANENT LIVE LOCATION
+    # Used before order assignment so AMEXA can choose
+    # a nearby online rider.
+    # =====================================================
+    current_latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    current_longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    location_accuracy = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="GPS accuracy in metres.",
+    )
+    current_area = models.CharField(max_length=180, blank=True)
+    location_updated_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
     onboarding_step = models.PositiveSmallIntegerField(default=1)
     terms_accepted = models.BooleanField(default=False)
     verification_status = models.CharField(

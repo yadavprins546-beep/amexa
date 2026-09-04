@@ -1,0 +1,287 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMEXA Delivery Partner | Profile</title>
+
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#030812;
+  --panel:#0b1528;
+  --panel2:#101e35;
+  --line:rgba(255,255,255,.09);
+  --text:#f7fbff;
+  --muted:#93a2b9;
+  --cyan:#55efff;
+  --green:#2ff6a3;
+  --blue:#2e9cff;
+  --purple:#7d3cff;
+  --red:#ff506c;
+  --yellow:#ffd34d;
+}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 85% 0,rgba(46,156,255,.18),transparent 30%),
+    radial-gradient(circle at 8% 52%,rgba(47,246,163,.08),transparent 25%),
+    var(--bg);
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;opacity:.18;
+  background-image:
+    linear-gradient(rgba(85,239,255,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(85,239,255,.06) 1px,transparent 1px);
+  background-size:34px 34px;
+}
+a{text-decoration:none;color:inherit}
+.wrap{width:min(1080px,100%);margin:auto;padding:22px 18px 100px;position:relative;z-index:1}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{font-size:24px;font-weight:1000;letter-spacing:.5px}
+.brand small{display:block;color:var(--cyan);font-size:9px;letter-spacing:1.4px;margin-top:3px}
+.back{
+  padding:10px 13px;border-radius:12px;border:1px solid var(--line);
+  background:rgba(255,255,255,.045);font-size:12px;font-weight:900
+}
+.hero,.card{
+  border:1px solid rgba(85,239,255,.13);
+  background:linear-gradient(145deg,rgba(14,29,52,.96),rgba(5,12,25,.98));
+  box-shadow:0 20px 55px rgba(0,0,0,.25);
+}
+.hero{padding:20px;border-radius:22px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}
+.avatar{
+  width:82px;height:82px;border-radius:24px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#1a8fff,#763cff);
+  font-size:34px;font-weight:1000;
+  box-shadow:0 0 30px rgba(85,239,255,.18)
+}
+.hero h1{font-size:24px;margin:0}
+.hero p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.badges{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.badge{
+  padding:6px 9px;border-radius:999px;font-size:9px;font-weight:950;
+  border:1px solid var(--line);background:rgba(255,255,255,.04)
+}
+.badge.ok{color:#baffdd;border-color:rgba(47,246,163,.22);background:rgba(47,246,163,.08)}
+.badge.warn{color:#ffe69b;border-color:rgba(255,211,77,.22);background:rgba(255,211,77,.08)}
+.online{font-weight:1000;color:var(--green);font-size:13px}
+.offline{font-weight:1000;color:#ff8095;font-size:13px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:15px;margin-top:15px}
+.card{padding:18px;border-radius:19px}
+.card h2{font-size:17px;margin:0 0 13px}
+.rows{display:grid;gap:9px}
+.row{
+  display:flex;justify-content:space-between;gap:14px;align-items:center;
+  padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.025)
+}
+.row span{font-size:10px;color:var(--muted)}
+.row b{font-size:11px;text-align:right;word-break:break-word}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stat{
+  padding:13px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(85,239,255,.1)
+}
+.stat small{display:block;color:var(--muted);font-size:9px}
+.stat b{display:block;margin-top:5px;font-size:18px}
+.money{color:var(--green)}
+.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.menu a{
+  min-height:72px;padding:13px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.03);
+  display:flex;align-items:center;gap:11px;font-size:11px;font-weight:900
+}
+.menu a:hover{border-color:rgba(85,239,255,.28);background:rgba(85,239,255,.05)}
+.ico{font-size:22px}
+.docs{display:grid;gap:8px}
+.doc{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  padding:10px 11px;border:1px solid rgba(255,255,255,.06);
+  border-radius:11px;background:rgba(255,255,255,.025)
+}
+.doc b{font-size:10px}.doc span{font-size:9px;color:var(--muted)}
+.status{font-size:9px!important;font-weight:950!important;color:var(--cyan)!important}
+.logout{
+  display:flex;justify-content:center;align-items:center;width:100%;margin-top:10px;
+  min-height:46px;border-radius:13px;background:rgba(255,80,108,.08);
+  border:1px solid rgba(255,80,108,.18);color:#ff91a3;font-weight:950;font-size:12px
+}
+.bottom-nav{
+  position:fixed;z-index:20;left:50%;bottom:10px;transform:translateX(-50%);
+  width:min(620px,calc(100% - 18px));display:grid;grid-template-columns:repeat(5,1fr);
+  padding:7px;gap:5px;border-radius:20px;background:rgba(5,13,28,.94);
+  border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(18px);
+  box-shadow:0 15px 50px rgba(0,0,0,.5)
+}
+.bottom-nav a{padding:8px 3px;border-radius:13px;text-align:center;font-size:9px;color:#aebbd0;font-weight:850}
+.bottom-nav a span{display:block;font-size:18px;margin-bottom:2px}
+.bottom-nav a.active{color:#fff;background:linear-gradient(135deg,#198fff,#703cff)}
+.msg{margin:10px 0;padding:11px 13px;border-radius:12px;background:rgba(46,156,255,.08);border:1px solid rgba(46,156,255,.15);font-size:11px}
+@media(max-width:760px){
+  .wrap{padding:14px 10px 95px}
+  .hero{grid-template-columns:auto 1fr;padding:15px}
+  .hero .availability{grid-column:1/-1}
+  .avatar{width:66px;height:66px;border-radius:19px;font-size:27px}
+  .hero h1{font-size:20px}
+  .grid{grid-template-columns:1fr}
+  .menu{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">AMEXA<small>DELIVERY PARTNER ACCOUNT</small></div>
+    <a class="back" href="{% url 'delivery_dashboard' %}">← Dashboard</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="msg">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <section class="hero">
+    <div class="avatar">
+      {{ request.user.name|default:"D"|slice:":1"|upper }}
+    </div>
+
+    <div>
+      <h1>{{ request.user.name|default:"Delivery Partner" }}</h1>
+      <p>
+        {{ request.user.phone|default:"Mobile not available" }}
+        {% if request.user.email %} · {{ request.user.email }}{% endif %}
+      </p>
+
+      <div class="badges">
+        {% if profile.verification_status == "APPROVED" %}
+          <span class="badge ok">✓ VERIFIED PARTNER</span>
+        {% else %}
+          <span class="badge warn">{{ profile.verification_status|default:"PENDING" }}</span>
+        {% endif %}
+
+        <span class="badge">AMEXA DELIVERY</span>
+      </div>
+    </div>
+
+    <div class="availability">
+      {% if request.user.is_active_delivery %}
+        <div class="online">● ONLINE</div>
+      {% else %}
+        <div class="offline">● OFFLINE</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <section class="card">
+      <h2>👤 Personal Details</h2>
+      <div class="rows">
+        <div class="row"><span>Name</span><b>{{ request.user.name|default:"—" }}</b></div>
+        <div class="row"><span>Mobile</span><b>{{ request.user.phone|default:"—" }}</b></div>
+        <div class="row"><span>Email</span><b>{{ request.user.email|default:"—" }}</b></div>
+        <div class="row"><span>Verification</span><b>{{ profile.verification_status|default:"—" }}</b></div>
+        <div class="row"><span>Onboarding Step</span><b>{{ profile.onboarding_step|default:"—" }}</b></div>
+        <div class="row"><span>Vehicle Number</span><b>{{ profile.vehicle_number|default:"Not added" }}</b></div>
+        <div class="row"><span>Terms Accepted</span><b>{% if profile.terms_accepted %}Yes{% else %}No{% endif %}</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>₹ Earnings & Deliveries</h2>
+      <div class="stats">
+        <div class="stat"><small>Today</small><b class="money">₹{{ today_earnings }}</b></div>
+        <div class="stat"><small>This Week</small><b class="money">₹{{ week_earnings }}</b></div>
+        <div class="stat"><small>This Month</small><b class="money">₹{{ month_earnings }}</b></div>
+        <div class="stat"><small>Total Earnings</small><b class="money">₹{{ total_earnings }}</b></div>
+        <div class="stat"><small>Today's Orders</small><b>{{ today_deliveries }}</b></div>
+        <div class="stat"><small>Total Deliveries</small><b>{{ all_deliveries }}</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🏦 Bank Details</h2>
+      {% if bank_account %}
+        <div class="rows">
+          <div class="row"><span>Account Holder</span><b>{{ bank_account.account_holder_name|default:"—" }}</b></div>
+          <div class="row"><span>Bank</span><b>{{ bank_account.bank_name|default:"—" }}</b></div>
+          <div class="row"><span>IFSC</span><b>{{ bank_account.ifsc_code|default:"—" }}</b></div>
+          <div class="row"><span>Status</span><b>{{ bank_account.status|default:"Pending" }}</b></div>
+        </div>
+      {% else %}
+        <div class="row"><span>Bank Account</span><b>Not added</b></div>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>📄 Documents</h2>
+      <div class="docs">
+        {% for document in documents %}
+          <div class="doc">
+            <div>
+              <b>{{ document.get_document_type_display|default:document.document_type }}</b>
+              <span>Document submitted</span>
+            </div>
+            <span class="status">{{ document.status|default:"PENDING" }}</span>
+          </div>
+        {% empty %}
+          <div class="row"><span>Documents</span><b>No documents found</b></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>⚙️ Account & Support</h2>
+
+      <div class="menu">
+        <a href="{% url 'delivery_dashboard' %}#deliveries"><span class="ico">📦</span><div>My Orders</div></a>
+        <a href="{% url 'delivery_dashboard' %}#earnings"><span class="ico">₹</span><div>Earnings</div></a>
+        <a href="{% url 'delivery_dashboard' %}#support"><span class="ico">🎧</span><div>Help & Support</div></a>
+        <a href="{% url 'delivery_dashboard' %}#claims"><span class="ico">📄</span><div>Claims & Issues</div></a>
+        <a href="{% url 'terms_conditions' %}"><span class="ico">📜</span><div>Terms & Conditions</div></a>
+        <a href="{% url 'privacy_policy' %}"><span class="ico">🔐</span><div>Privacy Policy</div></a>
+        <a href="{% url 'about' %}"><span class="ico">ℹ️</span><div>About AMEXA</div></a>
+        <a href="{% url 'delivery_dashboard' %}"><span class="ico">📍</span><div>Location / Availability</div></a>
+      </div>
+
+      <div class="rows" style="margin-top:12px">
+        <div class="row"><span>Support Requests</span><b>{{ support_count }}</b></div>
+        <div class="row"><span>Open Support</span><b>{{ open_support_count }}</b></div>
+      </div>
+
+      <a href="{% url 'logout' %}" class="logout">⏻ Logout Delivery Account</a>
+    </section>
+
+    <section class="card">
+      <h2>📍 Next Delivery Upgrades</h2>
+      <div class="rows">
+        <div class="row"><span>Live Rider GPS</span><b>Next Step</b></div>
+        <div class="row"><span>Nearby Area Orders</span><b>Next Step</b></div>
+        <div class="row"><span>Order Tune + Vibration</span><b>Next Step</b></div>
+        <div class="row"><span>Return / Cancel Flow</span><b>Next Step</b></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="{% url 'delivery_dashboard' %}"><span>🏠</span>Home</a>
+  <a href="{% url 'delivery_dashboard' %}#deliveries"><span>📦</span>Orders</a>
+  <a href="{% url 'delivery_dashboard' %}#earnings"><span>₹</span>Earnings</a>
+  <a href="{% url 'delivery_dashboard' %}#support"><span>🎧</span>Help</a>
+  <a class="active" href="{% url 'delivery_profile' %}"><span>👤</span>Profile</a>
+</nav>
+
+</body>
+</html>

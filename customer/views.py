@@ -89,6 +89,8 @@ from .models import (
 DELIVERY_FEE_PER_SHOP = Decimal("20.00")
 PLATFORM_FEE_PER_SHOP = Decimal("5.00")
 DELIVERY_PARTNER_PAYOUT_PER_SHOP = Decimal("15.00")
+DELIVERY_ASSIGNMENT_RADIUS_KM = 5.0
+RIDER_LOCATION_FRESH_MINUTES = 5
 SHOP_COMMISSION_RATE = Decimal("0.05")
 TAX_RATE = Decimal("0.00")
 
@@ -3836,6 +3838,122 @@ def order_tracking_data_view(request, order_number):
 
 
 # =========================================================
+# DELIVERY PARTNER LIVE GPS HEARTBEAT
+# Rider online hone par dashboard / Android app yahan
+# current GPS bhejega. This location exists even before
+# an order is assigned, so nearby-order matching can work.
+# =========================================================
+
+@login_required
+def delivery_partner_location_update_view(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"ok": False, "error": "POST request required."},
+            status=405,
+        )
+
+    if getattr(request.user, "role", "") != "DELIVERY":
+        return JsonResponse(
+            {"ok": False, "error": "Delivery partner access required."},
+            status=403,
+        )
+
+    profile = _delivery_profile_for_user(request.user)
+
+    if not profile.can_access_dashboard:
+        return JsonResponse(
+            {"ok": False, "error": "Approved delivery account required."},
+            status=403,
+        )
+
+    if not request.user.is_active_delivery:
+        return JsonResponse(
+            {"ok": False, "error": "Go online to share live location."},
+            status=409,
+        )
+
+    try:
+        latitude = Decimal(str(request.POST.get("latitude", "")).strip())
+        longitude = Decimal(str(request.POST.get("longitude", "")).strip())
+    except Exception:
+        return JsonResponse(
+            {"ok": False, "error": "Valid latitude and longitude are required."},
+            status=400,
+        )
+
+    if not (Decimal("-90") <= latitude <= Decimal("90")):
+        return JsonResponse({"ok": False, "error": "Latitude is out of range."}, status=400)
+    if not (Decimal("-180") <= longitude <= Decimal("180")):
+        return JsonResponse({"ok": False, "error": "Longitude is out of range."}, status=400)
+
+    accuracy = None
+    raw_accuracy = (request.POST.get("accuracy") or "").strip()
+    if raw_accuracy:
+        try:
+            accuracy = max(Decimal("0"), Decimal(raw_accuracy))
+        except Exception:
+            accuracy = None
+
+    current_area = (request.POST.get("area") or "").strip()[:180]
+    now = timezone.now()
+
+    profile.current_latitude = latitude
+    profile.current_longitude = longitude
+    profile.location_accuracy = accuracy
+    profile.current_area = current_area
+    profile.location_updated_at = now
+    profile.save(
+        update_fields=[
+            "current_latitude",
+            "current_longitude",
+            "location_accuracy",
+            "current_area",
+            "location_updated_at",
+            "updated_at",
+        ]
+    )
+
+    DeliveryAssignment.objects.filter(
+        delivery_partner=request.user,
+        status__in=["Assigned", "Accepted", "Picked"],
+    ).update(
+        current_latitude=latitude,
+        current_longitude=longitude,
+        location_updated_at=now,
+    )
+
+    waiting_orders = (
+        Order.objects
+        .filter(
+            picking_task__status="PACKED",
+            status__in=["Confirmed", "Preparing"],
+        )
+        .select_related("shop", "address")
+        .order_by("created_at")[:10]
+    )
+
+    newly_assigned_order = ""
+    for waiting_order in waiting_orders:
+        if waiting_order.delivery_assignments.exclude(status="Rejected").exists():
+            continue
+        assignment = _assign_available_rider(waiting_order)
+        if assignment and assignment.delivery_partner_id == request.user.id:
+            newly_assigned_order = waiting_order.order_number
+            break
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "latitude": float(latitude),
+            "longitude": float(longitude),
+            "accuracy": float(accuracy) if accuracy is not None else None,
+            "location_updated_at": now.isoformat(),
+            "newly_assigned_order": newly_assigned_order,
+        }
+    )
+
+
+# =========================================================
 # DELIVERY PARTNER LOCATION UPDATE
 # Delivery app/browser rider ka GPS yahan POST karega.
 # =========================================================
@@ -5128,31 +5246,69 @@ def _assign_available_rider(order):
     if current_assignment:
         return current_assignment
 
-    rider = (
-        get_user_model().objects
-        .filter(
-            role="DELIVERY",
-            is_active=True,
-            is_active_delivery=True,
-            delivery_profile__verification_status="APPROVED",
-        )
-        .annotate(
-            active_jobs=Count(
-                "deliveries",
-                filter=Q(
-                    deliveries__status__in=["Assigned", "Accepted", "Picked"]
-                ),
-            )
-        )
-        .order_by("active_jobs", "pk")
-        .first()
-    )
-    if rider is None:
+    if not order.shop_id:
         return None
+
+    try:
+        shop_lat = float(order.shop.latitude or 0)
+        shop_lon = float(order.shop.longitude or 0)
+    except (TypeError, ValueError):
+        return None
+
+    if shop_lat == 0 or shop_lon == 0:
+        return None
+
+    fresh_after = timezone.now() - timedelta(minutes=RIDER_LOCATION_FRESH_MINUTES)
+
+    profiles = (
+        DeliveryPartnerProfile.objects
+        .filter(
+            verification_status="APPROVED",
+            user__role="DELIVERY",
+            user__is_active=True,
+            user__is_active_delivery=True,
+            current_latitude__isnull=False,
+            current_longitude__isnull=False,
+            location_updated_at__gte=fresh_after,
+        )
+        .select_related("user")
+    )
+
+    candidates = []
+    for profile in profiles:
+        try:
+            rider_lat = float(profile.current_latitude)
+            rider_lon = float(profile.current_longitude)
+        except (TypeError, ValueError):
+            continue
+
+        distance_km = order.shop.distance_to(rider_lat, rider_lon)
+        if distance_km > DELIVERY_ASSIGNMENT_RADIUS_KM:
+            continue
+
+        active_jobs = DeliveryAssignment.objects.filter(
+            delivery_partner=profile.user,
+            status__in=["Assigned", "Accepted", "Picked"],
+        ).count()
+
+        if active_jobs >= 2:
+            continue
+
+        candidates.append((distance_km, active_jobs, profile.user_id, profile.user))
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda item: (item[0], item[1], item[2]))
+    _, _, _, rider = candidates[0]
+
     return DeliveryAssignment.objects.create(
         order=order,
         delivery_partner=rider,
         status="Assigned",
+        current_latitude=rider.delivery_profile.current_latitude,
+        current_longitude=rider.delivery_profile.current_longitude,
+        location_updated_at=rider.delivery_profile.location_updated_at,
     )
 
 
@@ -6413,6 +6569,88 @@ def delivery_dashboard_view(request):
     return render(
         request,
         "customer/delivery_dashboard.html",
+        context,
+    )
+
+
+@login_required
+def delivery_profile_view(request):
+    if not _delivery_access_allowed(request.user):
+        messages.error(request, "Delivery partner access required.")
+        return redirect("home")
+
+    profile = _delivery_profile_for_user(request.user)
+
+    if not request.user.is_staff and not profile.can_access_dashboard:
+        if profile.verification_status == "DRAFT":
+            return redirect(
+                "delivery_onboarding",
+                step=profile.onboarding_step,
+            )
+        return redirect("delivery_verification_status")
+
+    bank_account = (
+        DeliveryPartnerBankAccount.objects
+        .filter(profile=profile)
+        .first()
+    )
+
+    documents = profile.documents.all().order_by("document_type")
+
+    assignments = DeliveryAssignment.objects.filter(
+        delivery_partner=request.user
+    )
+
+    completed_assignments = assignments.filter(status="Completed")
+
+    now = timezone.now()
+    today_start = now.replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    week_start = today_start - timedelta(days=today_start.weekday())
+    month_start = today_start.replace(day=1)
+
+    payout_per_delivery = DELIVERY_PARTNER_PAYOUT_PER_SHOP
+
+    today_deliveries = completed_assignments.filter(
+        completed_at__gte=today_start
+    ).count()
+    week_deliveries = completed_assignments.filter(
+        completed_at__gte=week_start
+    ).count()
+    month_deliveries = completed_assignments.filter(
+        completed_at__gte=month_start
+    ).count()
+    all_deliveries = completed_assignments.count()
+
+    context = {
+        "profile": profile,
+        "bank_account": bank_account,
+        "documents": documents,
+        "payout_per_delivery": payout_per_delivery,
+        "today_deliveries": today_deliveries,
+        "week_deliveries": week_deliveries,
+        "month_deliveries": month_deliveries,
+        "all_deliveries": all_deliveries,
+        "today_earnings": payout_per_delivery * today_deliveries,
+        "week_earnings": payout_per_delivery * week_deliveries,
+        "month_earnings": payout_per_delivery * month_deliveries,
+        "total_earnings": payout_per_delivery * all_deliveries,
+        "support_count": DeliverySupportRequest.objects.filter(
+            delivery_partner=request.user
+        ).count(),
+        "open_support_count": DeliverySupportRequest.objects.filter(
+            delivery_partner=request.user,
+            status__in=["Open", "In Review"],
+        ).count(),
+    }
+
+    return render(
+        request,
+        "customer/delivery_profile.html",
         context,
     )
 
