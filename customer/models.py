@@ -2362,3 +2362,17 @@ class Referral(models.Model):
     def __str__(self):
         return f"{self.referrer} -> {self.referred_user}"
 
+class Banner(models.Model):
+    title = models.CharField(max_length=150, blank=True)
+    image = models.ImageField(upload_to="banners/")
+    link = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["display_order", "-created_at"]
+
+    def __str__(self):
+        return self.title or f"Banner {self.id}"

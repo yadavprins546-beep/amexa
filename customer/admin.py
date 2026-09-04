@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from .models import (
     AboutPage,
+    Banner,
     HelpSupport,
     BadInventoryRecord,
     PrivacyPolicy,
@@ -303,6 +304,50 @@ class CustomerUserAdmin(admin.ModelAdmin):
             obj.is_superuser = False
         super().save_model(request, obj, form, change)
 
+
+
+# =========================================================
+# BANNER ADMIN
+# =========================================================
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "is_active",
+        "display_order",
+        "created_at",
+        "updated_at",
+    )
+
+    list_filter = (
+        "is_active",
+    )
+
+    search_fields = (
+        "title",
+        "link",
+    )
+
+    ordering = (
+        "display_order",
+        "-created_at",
+    )
+
+    fields = (
+        "title",
+        "image",
+        "link",
+        "is_active",
+        "display_order",
+        "created_at",
+        "updated_at",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
 
 # =========================================================
 # BRAND ADMIN
