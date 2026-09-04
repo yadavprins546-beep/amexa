@@ -41,6 +41,7 @@ from .models import (
     AboutPage,
     Address,
     BadInventoryRecord,
+    Banner,
     Brand,
     Cart,
     CartItem,
@@ -1176,6 +1177,15 @@ def home(request):
     products = top_products
 
     # =====================================================
+    # ADMIN-MANAGED HOME BANNERS
+    # =====================================================
+    banners = (
+        Banner.objects
+        .filter(is_active=True)
+        .order_by("display_order", "-created_at")
+    )
+
+    # =====================================================
     # 10) AMEXA WALLET / COINS
     # =====================================================
     wallet = None
@@ -1188,6 +1198,7 @@ def home(request):
         coin_balance = wallet.coin_balance
 
     context = {
+        "banners": banners,
         "categories": categories,
         "shops": shops,
         "products": products,

@@ -332,6 +332,52 @@
 
         @keyframes floating{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
+        /* ADMIN-MANAGED DYNAMIC BANNERS */
+        .dynamic-banner-slide{
+            padding:0;
+            display:block;
+            background:#070b20;
+        }
+
+        .dynamic-banner-link{
+            position:absolute;
+            inset:0;
+            display:block;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+        }
+
+        .dynamic-banner-photo{
+            width:100%;
+            height:100%;
+            display:block;
+            object-fit:cover;
+            object-position:center;
+        }
+
+        .dynamic-banner-caption{
+            position:absolute;
+            left:18px;
+            right:18px;
+            bottom:18px;
+            display:flex;
+            pointer-events:none;
+        }
+
+        .dynamic-banner-caption span{
+            max-width:80%;
+            padding:9px 14px;
+            border-radius:12px;
+            color:#fff;
+            font-size:14px;
+            font-weight:900;
+            background:rgba(3,6,21,.72);
+            border:1px solid rgba(255,255,255,.16);
+            box-shadow:0 8px 25px rgba(0,0,0,.28);
+            backdrop-filter:blur(10px);
+        }
+
         .dots{
 
             position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
@@ -2087,81 +2133,107 @@
 
     <section class="slider" id="heroSlider">
 
-        <div class="slide slide1 active">
+        {% if banners %}
 
-            <div class="slide-content">
+            {% for banner in banners %}
 
-                <div class="slide-label">AMEXA SMART SHOPPING ⚡</div>
+                <div class="slide dynamic-banner-slide {% if forloop.first %}active{% endif %}">
 
-                <h2>Shop from your <span class="highlight">nearby store</span></h2>
+                    {% if banner.link %}
+                        <a href="{{ banner.link }}" class="dynamic-banner-link">
+                    {% else %}
+                        <div class="dynamic-banner-link">
+                    {% endif %}
 
-                <p>
+                        <img
+                            src="{{ banner.image.url }}"
+                            alt="{{ banner.title|default:'AMEXA Banner' }}"
+                            class="dynamic-banner-photo"
+                            loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
 
-                    Choose a local shop, see its products together and add everything you need without confusion.
+                        {% if banner.title %}
+                            <div class="dynamic-banner-caption">
+                                <span>{{ banner.title }}</span>
+                            </div>
+                        {% endif %}
 
-                </p>
+                    {% if banner.link %}
+                        </a>
+                    {% else %}
+                        </div>
+                    {% endif %}
 
-                <a href="#shop-first" class="shop-btn">Explore Shops →</a>
+                </div>
+
+            {% endfor %}
+
+            {% if banners|length > 1 %}
+                <div class="dots">
+                    {% for banner in banners %}
+                        <span
+                            class="dot {% if forloop.first %}active{% endif %}"
+                            onclick="goToSlide({{ forloop.counter0 }})">
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        {% else %}
+
+            <!-- Fallback banners: shown until an active banner is added in Admin -->
+
+            <div class="slide slide1 active">
+
+                <div class="slide-content">
+                    <div class="slide-label">AMEXA SMART SHOPPING ⚡</div>
+                    <h2>Shop from your <span class="highlight">nearby store</span></h2>
+                    <p>
+                        Choose a local shop, see its products together and add everything you need without confusion.
+                    </p>
+                    <a href="#shop-first" class="shop-btn">Explore Shops →</a>
+                </div>
+
+                <div class="banner-image">🏪</div>
 
             </div>
 
-            <div class="banner-image">🏪</div>
+            <div class="slide slide2">
 
-        </div>
+                <div class="slide-content">
+                    <div class="slide-label">MONTHLY ESSENTIALS</div>
+                    <h2>Plan your monthly groceries</h2>
+                    <p>
+                        Choose a nearby store first, then build monthly essentials from that same store.
+                    </p>
+                    <a href="{% url 'monthly_packs' %}" class="shop-btn">📦 Open Monthly Packs →</a>
+                </div>
 
-        <div class="slide slide2">
-
-            <div class="slide-content">
-
-                <div class="slide-label">MONTHLY ESSENTIALS</div>
-
-                <h2>Plan your monthly groceries</h2>
-
-                <p>
-
-                    Choose a nearby store first, then build monthly essentials from that same store.
-
-                </p>
-
-                <a href="{% url 'monthly_packs' %}" class="shop-btn">📦 Open Monthly Packs →</a>
+                <div class="banner-image">📦</div>
 
             </div>
 
-            <div class="banner-image">📦</div>
+            <div class="slide slide3">
 
-        </div>
+                <div class="slide-content">
+                    <div class="slide-label">DEALS NEAR YOU</div>
+                    <h2>Save more on <span class="highlight">local deals</span></h2>
+                    <p>
+                        Check discounted products and open the exact product or store you want.
+                    </p>
+                    <a href="#deals" class="shop-btn">View Deals →</a>
+                </div>
 
-        <div class="slide slide3">
-
-            <div class="slide-content">
-
-                <div class="slide-label">DEALS NEAR YOU</div>
-
-                <h2>Save more on <span class="highlight">local deals</span></h2>
-
-                <p>
-
-                    Check discounted products and open the exact product or store you want.
-
-                </p>
-
-                <a href="#deals" class="shop-btn">View Deals →</a>
+                <div class="banner-image">🔥</div>
 
             </div>
 
-            <div class="banner-image">🔥</div>
+            <div class="dots">
+                <span class="dot active" onclick="goToSlide(0)"></span>
+                <span class="dot" onclick="goToSlide(1)"></span>
+                <span class="dot" onclick="goToSlide(2)"></span>
+            </div>
 
-        </div>
-
-        <div class="dots">
-
-            <span class="dot active" onclick="goToSlide(0)"></span>
-
-            <span class="dot" onclick="goToSlide(1)"></span>
-
-            <span class="dot" onclick="goToSlide(2)"></span>
-
-        </div>
+        {% endif %}
 
     </section>
 
