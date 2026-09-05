@@ -5867,6 +5867,14 @@ def shopkeeper_pick_order_view(request, order_number):
         task.shop = profile.shop
         task.save(update_fields=["shop", "updated_at"])
 
+    # Once exact picking is complete, never reopen the scanner.
+    # Shopkeeper goes straight to the rider handover screen.
+    if task.status in {"PACKED", "HANDED_OVER"}:
+        return redirect(
+            "shopkeeper_rider_detail",
+            order_number=order_number,
+        )
+
     for order_item in order.items.all():
         OrderPickingItem.objects.get_or_create(
             task=task,
@@ -5902,91 +5910,23 @@ def shopkeeper_pick_order_view(request, order_number):
 
 @login_required
 def shopkeeper_pick_item_view(request, order_number, picking_item_id):
+    """
+    Legacy compatibility endpoint.
+
+    AMEXA shopkeeper picking is UPC-only now. This route is kept so old
+    bookmarks/templates do not 404, but it is not allowed to change
+    picked_quantity. Exact quantity can only change through
+    shopkeeper_pick_scan_view after a valid product barcode scan.
+    """
     profile = _shopkeeper_app_profile(request)
     if profile is None:
         return redirect("shopkeeper_dashboard")
 
-    if request.method != "POST":
-        return redirect(
-            "shopkeeper_pick_order",
-            order_number=order_number,
+    if request.method == "POST":
+        messages.error(
+            request,
+            "Manual picking is disabled. Scan the product UPC / barcode.",
         )
-
-    with transaction.atomic():
-        task = get_object_or_404(
-            OrderPickingTask.objects
-            .select_for_update()
-            .select_related("order"),
-            order__order_number=order_number,
-            shop=profile.shop,
-        )
-
-        if task.status in {"PACKED", "HANDED_OVER", "CANCELLED"}:
-            messages.info(request, "Picking is already closed for this order.")
-            return redirect(
-                "shopkeeper_pick_order",
-                order_number=order_number,
-            )
-
-        picking_item = get_object_or_404(
-            OrderPickingItem.objects
-            .select_for_update()
-            .select_related("order_item", "order_item__product"),
-            pk=picking_item_id,
-            task=task,
-        )
-
-        action = (request.POST.get("pick_action") or "one").strip()
-
-        if picking_item.is_complete:
-            messages.info(request, "This product is already fully picked.")
-            return redirect(
-                "shopkeeper_pick_order",
-                order_number=order_number,
-            )
-
-        if action == "all":
-            picking_item.picked_quantity = picking_item.required_quantity
-        else:
-            picking_item.picked_quantity = min(
-                picking_item.required_quantity,
-                picking_item.picked_quantity + 1,
-            )
-
-        picking_item.save(
-            update_fields=["picked_quantity", "updated_at"]
-        )
-
-        all_items = list(
-            task.picking_items.select_for_update().all()
-        )
-
-        if all(item.is_complete for item in all_items):
-            task.status = "PACKED"
-            task.packed_at = timezone.now()
-            task.save(
-                update_fields=["status", "packed_at", "updated_at"]
-            )
-
-            if task.order.status in {"Confirmed", "Preparing"}:
-                task.order.status = "Preparing"
-                task.order.save(
-                    update_fields=["status", "updated_at"]
-                )
-
-            try:
-                _assign_available_rider(task.order)
-            except Exception:
-                pass
-
-            messages.success(
-                request,
-                "All products picked. Order packed and ready for rider.",
-            )
-        else:
-            task.status = "PICKING"
-            task.save(update_fields=["status", "updated_at"])
-            messages.success(request, "Product picked.")
 
     return redirect(
         "shopkeeper_pick_order",

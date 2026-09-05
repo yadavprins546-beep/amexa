@@ -64,7 +64,7 @@
 </style>
 {% endblock %}
 {% block content %}
-<section class="page-title"><h1>Orders</h1><p>Accept or reject an order, then track its picker progress.</p></section>
+<section class="page-title"><h1>Orders</h1><p>Accept karte hi UPC picking start hoti hai. Exact quantity complete hone ke baad rider handover khulega.</p></section>
 <div class="filters">
     <a class="filter {% if status_filter == 'ALL' %}active{% endif %}" href="{% url 'shopkeeper_orders' %}">All</a>
     {% for value,label in status_choices %}<a class="filter {% if status_filter == value %}active{% endif %}" href="{% url 'shopkeeper_orders' %}?status={{ value|urlencode }}">{{ label }}</a>{% endfor %}
@@ -90,33 +90,29 @@
             {% if order.status == 'Pending' %}
                 <form method="post" action="{% url 'shopkeeper_order_accept' order.order_number %}">
                     {% csrf_token %}
-                    <button class="btn primary accept-order-btn" type="submit">✓ ACCEPT ORDER</button>
+                    <button class="btn primary accept-order-btn" type="submit">✓ ACCEPT & START PICKING</button>
                 </form>
                 <a class="btn red reject-page-btn"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
                     ✕ REJECT ORDER
                 </a>
+            {% elif order.picking_task.status == 'PACKED' or order.picking_task.status == 'HANDED_OVER' %}
+                <span class="badge green">✓ Picking complete</span>
+                <a class="btn primary"
+                   href="{% url 'shopkeeper_rider_detail' order.order_number %}">
+                    OPEN RIDER DETAILS
+                </a>
             {% elif order.status == 'Confirmed' %}
                 <span class="badge green">✓ ORDER ACCEPTED</span>
                 <a class="btn primary"
                    href="{% url 'shopkeeper_pick_order' order.order_number %}">
-                    START / CONTINUE UPC PICKING
-                </a>
-                <a class="btn red reject-page-btn"
-                   href="{% url 'shopkeeper_order_reject' order.order_number %}">
-                    ✕ REJECT ORDER
+                    CONTINUE UPC PICKING
                 </a>
             {% elif order.status == 'Preparing' %}
                 <span class="badge green">Picking in progress</span>
                 <a class="btn primary"
                    href="{% url 'shopkeeper_pick_order' order.order_number %}">
                     CONTINUE UPC PICKING
-                </a>
-            {% elif order.picking_task.status == 'PACKED' %}
-                <span class="badge green">✓ Picking complete</span>
-                <a class="btn primary"
-                   href="{% url 'shopkeeper_rider_detail' order.order_number %}">
-                    OPEN RIDER DETAILS
                 </a>
             {% elif order.status == 'Cancelled' %}
                 <span class="badge red">Order rejected / cancelled</span>
