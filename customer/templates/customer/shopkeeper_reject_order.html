@@ -2,273 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reject Order | AMEXA Shop</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reject Order | AMEXA</title>
 <style>
-*{box-sizing:border-box}
-body{
-    margin:0;
-    font-family:Inter,Arial,sans-serif;
-    background:#07101d;
-    color:#edf6ff;
-}
-.wrap{
-    width:min(760px,calc(100% - 24px));
-    margin:24px auto 90px;
-}
-.top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:14px;
-}
-.brand{
-    font-size:20px;
-    font-weight:1000;
-    letter-spacing:.8px;
-}
-.brand small{
-    display:block;
-    margin-top:3px;
-    color:#69e7ff;
-    font-size:9px;
-    letter-spacing:1.4px;
-}
-.back{
-    color:#c8d7e5;
-    text-decoration:none;
-    padding:9px 12px;
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:10px;
-    background:#0c1726;
-    font-size:11px;
-}
-.card{
-    padding:20px;
-    border:1px solid rgba(255,255,255,.09);
-    border-radius:18px;
-    background:#0c1726;
-    box-shadow:0 18px 55px rgba(0,0,0,.28);
-}
-h1{
-    margin:0 0 6px;
-    font-size:24px;
-}
-.sub{
-    margin:0 0 17px;
-    color:#8fa4b9;
-    font-size:11px;
-    line-height:1.6;
-}
-.order-number{
-    display:inline-block;
-    margin-bottom:15px;
-    padding:7px 10px;
-    border:1px solid rgba(255,102,133,.24);
-    border-radius:999px;
-    background:rgba(255,102,133,.08);
-    color:#ff8ca4;
-    font-weight:900;
-    font-size:10px;
-}
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:9px;
-}
-.info{
-    padding:12px;
-    border:1px solid rgba(255,255,255,.07);
-    border-radius:12px;
-    background:#091321;
-}
-.info small{
-    display:block;
-    margin-bottom:5px;
-    color:#7f94aa;
-    font-size:8px;
-    text-transform:uppercase;
-}
-.info b{font-size:11px}
-.items{
-    margin-top:14px;
-    padding:12px;
-    border:1px solid rgba(255,255,255,.07);
-    border-radius:12px;
-    background:#091321;
-}
-.item{
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-    padding:8px 0;
-    border-top:1px solid rgba(255,255,255,.05);
-    font-size:10px;
-}
-.item:first-child{border-top:0}
-label{
-    display:block;
-    margin:17px 0 7px;
-    font-size:11px;
-    font-weight:900;
-}
-textarea{
-    width:100%;
-    min-height:115px;
-    padding:12px;
-    resize:vertical;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:12px;
-    outline:none;
-    background:#07101d;
-    color:#fff;
-    font:inherit;
-}
-textarea:focus{border-color:#ff6d8b}
-.warning{
-    margin-top:12px;
-    padding:11px;
-    border:1px solid rgba(255,208,100,.16);
-    border-radius:11px;
-    background:rgba(255,208,100,.06);
-    color:#dbc888;
-    font-size:9px;
-    line-height:1.55;
-}
-.actions{
-    display:flex;
-    gap:9px;
-    margin-top:17px;
-}
-.cancel{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-height:48px;
-    padding:0 16px;
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:11px;
-    color:#dce8f3;
-    background:#101c2b;
-    text-decoration:none;
-    font-size:11px;
-    font-weight:900;
-}
-.reject{
-    flex:1;
-    min-height:48px;
-    border:0;
-    border-radius:11px;
-    background:linear-gradient(135deg,#ff6684,#ff8b68);
-    color:#fff;
-    cursor:pointer;
-    font-size:11px;
-    font-weight:1000;
-}
-@media(max-width:560px){
-    .grid{grid-template-columns:1fr}
-    .actions{display:grid}
-}
+*{box-sizing:border-box}body{margin:0;background:#07101d;color:#eef6ff;font-family:Arial,sans-serif}.wrap{width:min(760px,calc(100% - 24px));margin:24px auto}.card{background:#0c1726;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:20px}h1{margin:0 0 8px;font-size:24px}p{color:#8fa4b9;font-size:11px;line-height:1.6}.info{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.box{padding:12px;background:#091321;border:1px solid rgba(255,255,255,.07);border-radius:12px}.box small{display:block;color:#7f94aa;font-size:8px;margin-bottom:5px}.items{margin:14px 0;padding:12px;background:#091321;border-radius:12px}.item{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05);font-size:10px}.item:first-child{border-top:0}textarea{width:100%;min-height:110px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#07101d;color:white}.actions{display:flex;gap:9px;margin-top:15px}.btn{min-height:46px;padding:0 16px;border:0;border-radius:11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.back{background:#162638;color:#fff}.reject{flex:1;background:linear-gradient(135deg,#ff6684,#ff8b68);color:white}.success{padding:20px;text-align:center;border:1px solid rgba(53,233,162,.25);border-radius:14px;background:rgba(53,233,162,.07)}.success h2{color:#54e8a8}.errorlist{color:#ff819a}@media(max-width:560px){.info{grid-template-columns:1fr}.actions{display:grid}}
 </style>
 </head>
 <body>
-<div class="wrap">
-    <div class="top">
-        <div class="brand">AMEXA<small>SHOPKEEPER APP</small></div>
-        <a class="back" href="{% url 'shopkeeper_orders' %}">← Orders</a>
-    </div>
-
-    <main class="card">
-        <span class="order-number">ORDER #{{ order.order_number }}</span>
-        <h1>Reject Order</h1>
-        <p class="sub">Reason select/likh kar confirm karein. Confirm ke baad order cancel hoga.</p>
-
-        <div class="grid">
-            <div class="info">
-                <small>Customer</small>
-                <b>{{ order.user.name|default:"Customer" }}</b>
-            </div>
-            <div class="info">
-                <small>Amount</small>
-                <b>₹{{ order.total_amount|floatformat:2 }}</b>
-            </div>
-            <div class="info">
-                <small>Status</small>
-                <b>{{ order.status }}</b>
-            </div>
-            <div class="info">
-                <small>Payment</small>
-                <b>{{ order.get_payment_method_display }} • {{ order.payment_status }}</b>
-            </div>
-        </div>
-
-        <div class="items">
-            {% for item in order.items.all %}
-            <div class="item">
-                <span>{{ item.quantity }} × {{ item.product_name|default:item.product.name }}</span>
-                <b>₹{{ item.line_total|floatformat:2 }}</b>
-            </div>
-            {% empty %}
-            <div class="item"><span>No order items found.</span></div>
-            {% endfor %}
-        </div>
-
-        {% if reject_success or order.status == "Cancelled" %}
-        <div style="
-            margin-top:18px;
-            padding:18px;
-            border:1px solid rgba(53,233,162,.24);
-            border-radius:14px;
-            background:rgba(53,233,162,.07);
-            text-align:center;">
-            <div style="font-size:32px;margin-bottom:8px;">✓</div>
-            <div style="font-size:16px;font-weight:1000;color:#54e8a8;">
-                ORDER SUCCESSFULLY REJECTED
-            </div>
-            <div style="margin-top:7px;color:#91a8ba;font-size:10px;">
-                Order #{{ order.order_number }} has been cancelled successfully.
-            </div>
-            <a href="{% url 'shopkeeper_orders' %}"
-               style="
-                    display:inline-flex;
-                    margin-top:15px;
-                    min-height:44px;
-                    padding:0 17px;
-                    align-items:center;
-                    justify-content:center;
-                    border-radius:11px;
-                    background:#162638;
-                    color:#edf6ff;
-                    text-decoration:none;
-                    font-size:10px;
-                    font-weight:900;">
-                ← BACK TO ORDERS
-            </a>
-        </div>
-        {% else %}
-        <form method="post" action="{% url 'shopkeeper_order_reject' order.order_number %}">
-            {% csrf_token %}
-
-            <label for="reason">Reject reason</label>
-            <textarea id="reason"
-                      name="reason"
-                      maxlength="100"
-                      required
-                      placeholder="Example: Product out of stock"></textarea>
-
-            <div class="warning">
-                Confirm Reject dabate hi order isi page par reject ho jayega.
-                Agar picker picking start kar chuka hai to system rejection block karega.
-            </div>
-
-            <div class="actions">
-                <a class="cancel" href="{% url 'shopkeeper_orders' %}">Cancel</a>
-                <button class="reject" type="submit">✕ CONFIRM REJECT</button>
-            </div>
-        </form>
-        {% endif %}
-    </main>
+<div class="wrap"><div class="card">
+{% if messages %}{% for message in messages %}<p class="errorlist">{{ message }}</p>{% endfor %}{% endif %}
+{% if reject_success or order.status == "Cancelled" %}
+<div class="success"><h2>✓ ORDER SUCCESSFULLY REJECTED</h2><p>Order #{{ order.order_number }} cancelled ho gaya hai.</p><a class="btn back" href="{% url 'shopkeeper_orders' %}">← BACK TO ORDERS</a></div>
+{% else %}
+<h1>Reject Order</h1><p>Reason likhkar Confirm Reject dabaiye. Isi page par result dikhega.</p>
+<div class="info">
+<div class="box"><small>ORDER</small><b>#{{ order.order_number }}</b></div>
+<div class="box"><small>STATUS</small><b>{{ order.status }}</b></div>
+<div class="box"><small>CUSTOMER</small><b>{{ order.user.name|default:"Customer" }}</b></div>
+<div class="box"><small>AMOUNT</small><b>₹{{ order.total_amount|floatformat:2 }}</b></div>
 </div>
+<div class="items">{% for item in order.items.all %}<div class="item"><span>{{ item.quantity }} × {{ item.product_name|default:item.product.name }}</span><b>₹{{ item.line_total|floatformat:2 }}</b></div>{% empty %}<div class="item"><span>No items found</span></div>{% endfor %}</div>
+<form method="post" action="{% url 'shopkeeper_order_reject' order.order_number %}">
+{% csrf_token %}
+<textarea name="reason" maxlength="100" required placeholder="Reject reason, e.g. Product out of stock"></textarea>
+<div class="actions"><a class="btn back" href="{% url 'shopkeeper_orders' %}">CANCEL</a><button class="btn reject" type="submit">✕ CONFIRM REJECT</button></div>
+</form>
+{% endif %}
+</div></div>
 </body>
 </html>

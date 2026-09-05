@@ -80,48 +80,38 @@
             {% for item in order.items.all %}<div class="item"><span><b>{{ item.quantity }} × {{ item.product_name|default:item.product.name }}</b><small>{% if item.product %}{{ item.product.pack_size|default:"1 unit" }}{% with barcode=item.product.barcodes.first %}{% if barcode %} • UPC {{ barcode.barcode }}{% endif %}{% endwith %}{% else %}Manual order item{% endif %}</small></span><b>₹{{ item.line_total|floatformat:2 }}</b></div>{% endfor %}
         </div>
         <div class="address"><b>Delivery:</b> {{ order.address.address_line }}, {{ order.address.city }} - {{ order.address.pincode }}<br><b>Payment:</b> {{ order.get_payment_method_display }} • {{ order.payment_status }}</div>
-        {% if order.status == 'Confirmed' or order.status == 'Preparing' %}<div class="workflow"><span>Picker:</span>{% if order.picking_task.picker %}<b>{{ order.picking_task.picker.name }}</b>{% else %}<b>Waiting for picker</b>{% endif %}<span class="badge {% if order.picking_task.status == 'PACKED' %}green{% endif %}">{{ order.picking_task.get_status_display|default:"Waiting for Picker" }}</span><span>{{ order.picking_task.picked_units|default:0 }}/{{ order.picking_task.required_units|default:0 }} units</span></div>{% endif %}
-        <div class="actions" style="position:relative;z-index:20;">
+        {% if order.status == 'Confirmed' or order.status == 'Preparing' %}
+        <div class="workflow">
+            <span>Picking:</span>
+            <span class="badge">Open product picking page</span>
+        </div>
+        {% endif %}
+        <div class="actions">
             {% if order.status == 'Pending' %}
-                <form method="post"
-                      action="{% url 'shopkeeper_order_accept' order.order_number %}"
-                      style="display:inline-block;min-width:0;flex:0 0 auto;position:relative;z-index:30;">
+                <form method="post" action="{% url 'shopkeeper_order_accept' order.order_number %}">
                     {% csrf_token %}
-                    <input type="hidden" name="action" value="accept">
-                    <button
-                        class="btn primary accept-order-btn"
-                        type="submit"
-                        style="pointer-events:auto;cursor:pointer;position:relative;z-index:31;">
-                        ✓ ACCEPT ORDER
-                    </button>
+                    <button class="btn primary accept-order-btn" type="submit">✓ ACCEPT ORDER</button>
                 </form>
-
                 <a class="btn red reject-page-btn"
-                   style="position:relative;z-index:31;pointer-events:auto;cursor:pointer;text-decoration:none;"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
                     ✕ REJECT ORDER
                 </a>
-
             {% elif order.status == 'Confirmed' %}
-                <span class="badge green"
-                      style="padding:11px 15px;font-size:9px;">
-                    ✓ ORDER ACCEPTED
-                </span>
-
+                <span class="badge green">✓ ORDER ACCEPTED</span>
+                <a class="btn primary"
+                   href="{% url 'shopkeeper_pick_order' order.order_number %}">
+                    START / CONTINUE PICKING
+                </a>
                 <a class="btn red reject-page-btn"
-                   style="position:relative;z-index:31;pointer-events:auto;cursor:pointer;text-decoration:none;"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
                     ✕ REJECT ORDER
                 </a>
-
-                {% if order.picking_task.status == 'WAITING' %}
-                    <span class="badge">Waiting for picker</span>
-                {% else %}
-                    <span class="badge">Order is in picker workflow</span>
-                {% endif %}
-
             {% elif order.status == 'Preparing' %}
-                <span class="badge green">Picker is preparing this order</span>
+                <span class="badge green">Picking in progress</span>
+                <a class="btn primary"
+                   href="{% url 'shopkeeper_pick_order' order.order_number %}">
+                    CONTINUE PICKING
+                </a>
             {% elif order.status == 'Cancelled' %}
                 <span class="badge red">Order rejected / cancelled</span>
             {% elif order.status == 'Delivered' %}

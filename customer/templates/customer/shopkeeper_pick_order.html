@@ -1,0 +1,80 @@
+{% extends "customer/shopkeeper_base.html" %}
+{% block title %}Pick Order | AMEXA Shop{% endblock %}
+{% block extra_head %}
+<style>
+.pick-head{padding:16px;margin-bottom:12px}.pick-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pick-top h1{margin:0;font-size:20px}.pick-top p{margin:5px 0 0;color:var(--muted);font-size:9px}.progress{height:8px;margin:14px 0 7px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:inherit}.progress-text{display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.pick-list{display:grid;gap:10px}.pick-item{padding:14px}.item-row{display:flex;gap:12px;align-items:flex-start}.photo{width:58px;height:58px;flex:0 0 58px;border-radius:12px;object-fit:cover;background:#101c2a;display:grid;place-items:center}.item-main{flex:1;min-width:0}.item-main h3{margin:0 0 5px;font-size:13px}.item-main small{display:block;color:var(--muted);font-size:8px;line-height:1.5}.qty{text-align:right}.qty b{display:block;font:1000 18px ui-monospace;color:var(--green)}.qty small{color:var(--muted);font-size:8px}.pick-actions{display:flex;gap:8px;margin-top:11px}.pick-actions form{flex:1}.pick-actions button{width:100%;min-height:42px}.done{border-color:rgba(53,233,162,.25)!important;background:rgba(53,233,162,.04)!important}.complete-box{padding:18px;text-align:center;border:1px solid rgba(53,233,162,.22);border-radius:15px;background:rgba(53,233,162,.06)}.complete-box h2{margin:6px 0;color:var(--green)}@media(max-width:560px){.pick-actions{display:grid}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="panel pick-head">
+    <div class="pick-top">
+        <div>
+            <h1>Pick Order #{{ order.order_number }}</h1>
+            <p>{{ order.user.name }} • {{ order.address.city }} • {{ task.get_status_display }}</p>
+        </div>
+        <span class="badge {% if task.status == 'PACKED' %}green{% endif %}">{{ task.get_status_display }}</span>
+    </div>
+    <div class="progress"><i style="width:{{ task.progress_percentage }}%"></i></div>
+    <div class="progress-text">
+        <span>{{ task.picked_units }}/{{ task.required_units }} units picked</span>
+        <b>{{ task.progress_percentage }}%</b>
+    </div>
+</section>
+
+{% if task.status == 'PACKED' %}
+<section class="complete-box">
+    <div style="font-size:30px">✓</div>
+    <h2>ORDER PACKED</h2>
+    <p style="color:var(--muted);font-size:9px">Products picked. Order is ready for rider.</p>
+    <a class="btn primary" href="{% url 'shopkeeper_orders' %}">BACK TO ORDERS</a>
+</section>
+{% else %}
+<section class="pick-list">
+    {% for picking_item in picking_items %}
+    <article class="panel pick-item {% if picking_item.is_complete %}done{% endif %}">
+        <div class="item-row">
+            {% if picking_item.order_item.product and picking_item.order_item.product.image %}
+                <img class="photo" src="{{ picking_item.order_item.product.image.url }}" alt="">
+            {% else %}
+                <div class="photo">📦</div>
+            {% endif %}
+            <div class="item-main">
+                <h3>{{ picking_item.order_item.product_name|default:picking_item.order_item.product.name }}</h3>
+                <small>
+                    {% if picking_item.order_item.product %}
+                        {{ picking_item.order_item.product.pack_size|default:"1 unit" }}
+                        {% with barcode=picking_item.order_item.product.barcodes.first %}
+                            {% if barcode %} • Barcode {{ barcode.barcode }}{% endif %}
+                        {% endwith %}
+                    {% endif %}
+                </small>
+            </div>
+            <div class="qty">
+                <b>{{ picking_item.picked_quantity }}/{{ picking_item.required_quantity }}</b>
+                <small>picked</small>
+            </div>
+        </div>
+
+        {% if picking_item.is_complete %}
+            <div style="margin-top:10px"><span class="badge green">✓ PICKED</span></div>
+        {% else %}
+            <div class="pick-actions">
+                <form method="post" action="{% url 'shopkeeper_pick_item' order.order_number picking_item.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pick_action" value="one">
+                    <button class="btn" type="submit">+ PICK 1</button>
+                </form>
+                <form method="post" action="{% url 'shopkeeper_pick_item' order.order_number picking_item.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="pick_action" value="all">
+                    <button class="btn primary" type="submit">PICK REMAINING</button>
+                </form>
+            </div>
+        {% endif %}
+    </article>
+    {% empty %}
+    <div class="panel empty">No picking items found for this order.</div>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

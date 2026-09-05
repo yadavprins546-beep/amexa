@@ -100,6 +100,8 @@ from customer.views import (
     shopkeeper_order_action_view,
     shopkeeper_order_accept_view,
     shopkeeper_order_reject_view,
+    shopkeeper_pick_order_view,
+    shopkeeper_pick_item_view,
     shopkeeper_orders_view,
     shopkeeper_payments_view,
     shopkeeper_product_add_view,
@@ -600,6 +602,18 @@ urlpatterns = [
         "shopkeeper/orders/<str:order_number>/accept/",
         shopkeeper_order_accept_view,
         name="shopkeeper_order_accept",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/pick/",
+        shopkeeper_pick_order_view,
+        name="shopkeeper_pick_order",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/pick/<int:picking_item_id>/",
+        shopkeeper_pick_item_view,
+        name="shopkeeper_pick_item",
     ),
 
     path(

@@ -5536,20 +5536,12 @@ def shopkeeper_orders_view(request):
 
 @login_required
 def shopkeeper_order_accept_view(request, order_number):
-    """
-    Dedicated shopkeeper Accept endpoint.
-    Accepts Pending -> Confirmed and immediately creates/syncs the picker task.
-    Then it returns to the same Orders screen with a clear success message.
-    """
     profile = _shopkeeper_app_profile(request)
     if profile is None:
         return redirect("shopkeeper_dashboard")
 
     if request.method != "POST":
         return redirect("shopkeeper_orders")
-
-    master_order_id = None
-    picker_sync_ok = True
 
     with transaction.atomic():
         order = get_object_or_404(
@@ -5566,46 +5558,50 @@ def shopkeeper_order_accept_view(request, order_number):
         if current_status == "Pending":
             order.status = "Confirmed"
             order.save(update_fields=["status", "updated_at"])
-
             try:
-                order.create_status_history(
-                    "Confirmed",
-                    "Accepted by shop.",
-                )
+                order.create_status_history("Confirmed", "Accepted by shop.")
             except Exception:
                 pass
-
-            master_order_id = order.master_order_id
-
-        elif current_status in {"Confirmed", "Preparing"}:
-            messages.info(
-                request,
-                f"Order #{order.order_number} is already accepted.",
-            )
-            return redirect("shopkeeper_orders")
-
-        else:
+        elif current_status not in {"Confirmed", "Preparing"}:
             messages.error(
                 request,
                 f"Order #{order.order_number} cannot be accepted now.",
             )
             return redirect("shopkeeper_orders")
 
-    # Create the picker task after order acceptance.
-    # This is the bridge to the picker/product-scanning workflow.
-    try:
-        accepted_order = (
-            Order.objects
-            .select_related("shop")
-            .prefetch_related("items")
-            .get(
-                order_number=order_number,
-                shop=profile.shop,
-            )
+        task, _ = OrderPickingTask.objects.get_or_create(
+            order=order,
+            defaults={"shop": profile.shop},
         )
-        _ensure_order_picking_task(accepted_order)
-    except Exception:
-        picker_sync_ok = False
+
+        if task.shop_id != profile.shop_id:
+            task.shop = profile.shop
+            task.save(update_fields=["shop", "updated_at"])
+
+        for order_item in order.items.all():
+            picking_item, created = OrderPickingItem.objects.get_or_create(
+                task=task,
+                order_item=order_item,
+                defaults={"required_quantity": order_item.quantity},
+            )
+            if (
+                not created
+                and picking_item.required_quantity != order_item.quantity
+            ):
+                picking_item.required_quantity = order_item.quantity
+                picking_item.picked_quantity = min(
+                    picking_item.picked_quantity,
+                    order_item.quantity,
+                )
+                picking_item.save(
+                    update_fields=[
+                        "required_quantity",
+                        "picked_quantity",
+                        "updated_at",
+                    ]
+                )
+
+        master_order_id = order.master_order_id
 
     if master_order_id:
         try:
@@ -5617,28 +5613,18 @@ def shopkeeper_order_accept_view(request, order_number):
         except Exception:
             pass
 
-    if picker_sync_ok:
-        messages.success(
-            request,
-            f"Order #{order_number} accepted successfully. "
-            "Picker task is ready.",
-        )
-    else:
-        messages.warning(
-            request,
-            f"Order #{order_number} accepted, but picker task sync is pending.",
-        )
-
-    return redirect("shopkeeper_orders")
+    messages.success(
+        request,
+        f"Order #{order_number} accepted successfully. Start picking products.",
+    )
+    return redirect(
+        "shopkeeper_pick_order",
+        order_number=order_number,
+    )
 
 
 @login_required
 def shopkeeper_order_reject_view(request, order_number):
-    """
-    GET: show reject confirmation page.
-    POST: reject the order on this same endpoint and render success on the
-    same page. No extra redirect/action page is required.
-    """
     profile = _shopkeeper_app_profile(request)
     if profile is None:
         return redirect("shopkeeper_dashboard")
@@ -5651,143 +5637,127 @@ def shopkeeper_order_reject_view(request, order_number):
         shop=profile.shop,
     )
 
-    # Already cancelled: keep the page visible and show success state.
-    if order.status == "Cancelled":
-        return render(
-            request,
-            "customer/shopkeeper_reject_order.html",
-            {
-                "profile": profile,
-                "shop": profile.shop,
-                "order": order,
-                "active_tab": "orders",
-                "reject_success": True,
-            },
-        )
-
-    if order.status not in {"Pending", "Confirmed"}:
-        messages.error(
-            request,
-            "This order can no longer be rejected.",
-        )
-        return redirect("shopkeeper_orders")
-
     if request.method == "POST":
-        reason = (
-            request.POST.get("reason")
-            or "Rejected by shop"
-        ).strip()[:100]
+        if order.status == "Cancelled":
+            return render(
+                request,
+                "customer/shopkeeper_reject_order.html",
+                {
+                    "profile": profile,
+                    "shop": profile.shop,
+                    "order": order,
+                    "active_tab": "orders",
+                    "reject_success": True,
+                },
+            )
 
+        if order.status not in {"Pending", "Confirmed"}:
+            messages.error(request, "This order can no longer be rejected.")
+            return redirect("shopkeeper_orders")
+
+        reason = (request.POST.get("reason") or "Rejected by shop").strip()[:100]
         product_ids_to_sync = []
-        master_order_id = None
+        master_order_id = order.master_order_id
 
-        with transaction.atomic():
-            locked_order = get_object_or_404(
-                Order.objects
-                .select_for_update()
-                .select_related("master_order"),
-                pk=order.pk,
-                shop=profile.shop,
-            )
-
-            current_status = (locked_order.status or "").strip()
-
-            if current_status == "Cancelled":
-                return redirect(
-                    "shopkeeper_order_reject",
-                    order_number=locked_order.order_number,
+        try:
+            with transaction.atomic():
+                locked_order = get_object_or_404(
+                    Order.objects.select_for_update().select_related("master_order"),
+                    pk=order.pk,
+                    shop=profile.shop,
                 )
 
-            if current_status not in {"Pending", "Confirmed"}:
-                messages.error(
-                    request,
-                    "This order can no longer be rejected.",
-                )
-                return redirect("shopkeeper_orders")
+                if locked_order.status == "Cancelled":
+                    order = locked_order
+                else:
+                    if locked_order.status not in {"Pending", "Confirmed"}:
+                        messages.error(request, "This order can no longer be rejected.")
+                        return redirect("shopkeeper_orders")
 
-            existing_task = (
-                OrderPickingTask.objects
-                .filter(order=locked_order)
-                .first()
+                    task = (
+                        OrderPickingTask.objects
+                        .select_for_update()
+                        .filter(order=locked_order)
+                        .first()
+                    )
+
+                    if task and task.status not in {"WAITING", "CANCELLED"}:
+                        messages.error(
+                            request,
+                            "Picking has already started, so this order cannot be rejected.",
+                        )
+                        return redirect("shopkeeper_orders")
+
+                    for item in locked_order.items.select_related("product").all():
+                        if not item.product_id:
+                            continue
+                        product = (
+                            Product.objects
+                            .select_for_update()
+                            .filter(pk=item.product_id)
+                            .first()
+                        )
+                        if product is None:
+                            continue
+                        product.stock_quantity = (
+                            int(product.stock_quantity or 0)
+                            + int(item.quantity or 0)
+                        )
+                        product.save(update_fields=["stock_quantity"])
+                        product_ids_to_sync.append(product.pk)
+
+                    locked_order.status = "Cancelled"
+                    locked_order.cancellation_reason = reason
+                    locked_order.cancellation_description = "Rejected by shopkeeper."
+                    locked_order.cancelled_at = timezone.now()
+
+                    update_fields = [
+                        "status",
+                        "cancellation_reason",
+                        "cancellation_description",
+                        "cancelled_at",
+                        "updated_at",
+                    ]
+
+                    if locked_order.payment_method == "ONLINE":
+                        locked_order.payment_status = "Refund Pending"
+                        update_fields.append("payment_status")
+
+                    locked_order.save(update_fields=update_fields)
+
+                    if task:
+                        task.status = "CANCELLED"
+                        task.save(update_fields=["status", "updated_at"])
+
+                    try:
+                        Settlement.objects.filter(order=locked_order).update(
+                            status="On Hold"
+                        )
+                    except Exception:
+                        pass
+
+                    try:
+                        locked_order.create_status_history("Cancelled", reason)
+                    except Exception:
+                        pass
+
+                    master_order_id = locked_order.master_order_id
+                    order = locked_order
+
+        except Exception as exc:
+            messages.error(request, f"Reject failed: {exc}")
+            return render(
+                request,
+                "customer/shopkeeper_reject_order.html",
+                {
+                    "profile": profile,
+                    "shop": profile.shop,
+                    "order": order,
+                    "active_tab": "orders",
+                    "reject_success": False,
+                },
             )
 
-            if (
-                existing_task
-                and existing_task.status not in {"WAITING", "CANCELLED"}
-            ):
-                messages.error(
-                    request,
-                    "Picker has already started this order, so it cannot be rejected.",
-                )
-                return redirect(
-                    "shopkeeper_order_reject",
-                    order_number=locked_order.order_number,
-                )
-
-            for item in locked_order.items.select_related("product").all():
-                if not item.product_id:
-                    continue
-
-                product = (
-                    Product.objects
-                    .select_for_update()
-                    .filter(pk=item.product_id)
-                    .first()
-                )
-                if product is None:
-                    continue
-
-                product.stock_quantity = (
-                    product.stock_quantity + item.quantity
-                )
-                product.save(update_fields=["stock_quantity"])
-                product_ids_to_sync.append(product.pk)
-
-            locked_order.status = "Cancelled"
-            locked_order.cancellation_reason = reason
-            locked_order.cancellation_description = (
-                "Cancelled from shopkeeper app."
-            )
-            locked_order.cancelled_at = timezone.now()
-            locked_order.payment_status = (
-                "Pending"
-                if locked_order.payment_method == "COD"
-                else "Refund Pending"
-            )
-            locked_order.save(
-                update_fields=[
-                    "status",
-                    "cancellation_reason",
-                    "cancellation_description",
-                    "cancelled_at",
-                    "payment_status",
-                    "updated_at",
-                ]
-            )
-
-            try:
-                locked_order.create_status_history(
-                    "Cancelled",
-                    reason,
-                )
-            except Exception:
-                pass
-
-            OrderPickingTask.objects.filter(
-                order=locked_order
-            ).update(
-                status="CANCELLED"
-            )
-
-            Settlement.objects.filter(
-                order=locked_order
-            ).update(
-                status="On Hold"
-            )
-
-            master_order_id = locked_order.master_order_id
-
-        # Non-critical syncs must not break a completed rejection.
         for product_id in product_ids_to_sync:
             try:
                 product = Product.objects.filter(pk=product_id).first()
@@ -5798,9 +5768,7 @@ def shopkeeper_order_reject_view(request, order_number):
 
         if master_order_id:
             try:
-                master_order = MasterOrder.objects.filter(
-                    pk=master_order_id
-                ).first()
+                master_order = MasterOrder.objects.filter(pk=master_order_id).first()
                 if master_order:
                     _update_master_order_status(master_order)
             except Exception:
@@ -5821,7 +5789,7 @@ def shopkeeper_order_reject_view(request, order_number):
                 "shop": profile.shop,
                 "order": order,
                 "active_tab": "orders",
-                "reject_success": True,
+                "reject_success": order.status == "Cancelled",
             },
         )
 
@@ -5833,8 +5801,170 @@ def shopkeeper_order_reject_view(request, order_number):
             "shop": profile.shop,
             "order": order,
             "active_tab": "orders",
-            "reject_success": False,
+            "reject_success": order.status == "Cancelled",
         },
+    )
+
+
+@login_required
+def shopkeeper_pick_order_view(request, order_number):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    order = get_object_or_404(
+        Order.objects
+        .select_related("user", "address", "shop", "master_order")
+        .prefetch_related(
+            "items",
+            "items__product",
+            "items__product__barcodes",
+        ),
+        order_number=order_number,
+        shop=profile.shop,
+    )
+
+    if order.status == "Cancelled":
+        messages.info(request, "This order has been cancelled.")
+        return redirect("shopkeeper_orders")
+
+    if order.status == "Pending":
+        messages.error(request, "Accept this order before picking.")
+        return redirect("shopkeeper_orders")
+
+    task, _ = OrderPickingTask.objects.get_or_create(
+        order=order,
+        defaults={"shop": profile.shop},
+    )
+
+    if task.shop_id != profile.shop_id:
+        task.shop = profile.shop
+        task.save(update_fields=["shop", "updated_at"])
+
+    for order_item in order.items.all():
+        OrderPickingItem.objects.get_or_create(
+            task=task,
+            order_item=order_item,
+            defaults={"required_quantity": order_item.quantity},
+        )
+
+    task = (
+        OrderPickingTask.objects
+        .select_related("order", "order__user", "order__address")
+        .prefetch_related(
+            "picking_items",
+            "picking_items__order_item",
+            "picking_items__order_item__product",
+            "picking_items__order_item__product__barcodes",
+        )
+        .get(pk=task.pk)
+    )
+
+    return render(
+        request,
+        "customer/shopkeeper_pick_order.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "order": order,
+            "task": task,
+            "picking_items": task.picking_items.all(),
+            "active_tab": "orders",
+        },
+    )
+
+
+@login_required
+def shopkeeper_pick_item_view(request, order_number, picking_item_id):
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    if request.method != "POST":
+        return redirect(
+            "shopkeeper_pick_order",
+            order_number=order_number,
+        )
+
+    with transaction.atomic():
+        task = get_object_or_404(
+            OrderPickingTask.objects
+            .select_for_update()
+            .select_related("order"),
+            order__order_number=order_number,
+            shop=profile.shop,
+        )
+
+        if task.status in {"PACKED", "HANDED_OVER", "CANCELLED"}:
+            messages.info(request, "Picking is already closed for this order.")
+            return redirect(
+                "shopkeeper_pick_order",
+                order_number=order_number,
+            )
+
+        picking_item = get_object_or_404(
+            OrderPickingItem.objects
+            .select_for_update()
+            .select_related("order_item", "order_item__product"),
+            pk=picking_item_id,
+            task=task,
+        )
+
+        action = (request.POST.get("pick_action") or "one").strip()
+
+        if picking_item.is_complete:
+            messages.info(request, "This product is already fully picked.")
+            return redirect(
+                "shopkeeper_pick_order",
+                order_number=order_number,
+            )
+
+        if action == "all":
+            picking_item.picked_quantity = picking_item.required_quantity
+        else:
+            picking_item.picked_quantity = min(
+                picking_item.required_quantity,
+                picking_item.picked_quantity + 1,
+            )
+
+        picking_item.save(
+            update_fields=["picked_quantity", "updated_at"]
+        )
+
+        all_items = list(
+            task.picking_items.select_for_update().all()
+        )
+
+        if all(item.is_complete for item in all_items):
+            task.status = "PACKED"
+            task.packed_at = timezone.now()
+            task.save(
+                update_fields=["status", "packed_at", "updated_at"]
+            )
+
+            if task.order.status in {"Confirmed", "Preparing"}:
+                task.order.status = "Preparing"
+                task.order.save(
+                    update_fields=["status", "updated_at"]
+                )
+
+            try:
+                _assign_available_rider(task.order)
+            except Exception:
+                pass
+
+            messages.success(
+                request,
+                "All products picked. Order packed and ready for rider.",
+            )
+        else:
+            task.status = "PICKING"
+            task.save(update_fields=["status", "updated_at"])
+            messages.success(request, "Product picked.")
+
+    return redirect(
+        "shopkeeper_pick_order",
+        order_number=order_number,
     )
 
 
