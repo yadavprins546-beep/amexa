@@ -3674,32 +3674,24 @@ def order_success_view(request, order_id):
 
 @login_required
 def orders_view(request):
+    """
+    Safe customer My Orders page.
+    Keep this view intentionally simple so one optional relation/cart helper
+    cannot crash the whole /orders/ page.
+    """
     orders = (
         Order.objects
-        .filter(
-            user_id__in=_customer_order_user_ids(request.user)
-        )
-        .select_related(
-            "shop",
-            "address",
-            "master_order",
-        )
-        .prefetch_related(
-            "items"
-        )
+        .filter(user=request.user)
+        .select_related("shop")
         .order_by("-id")
     )
-
-    context = {
-        "orders": orders,
-    }
-
-    context.update(_cart_context(request))
 
     return render(
         request,
         "customer/orders.html",
-        context,
+        {
+            "orders": orders,
+        },
     )
 
 
