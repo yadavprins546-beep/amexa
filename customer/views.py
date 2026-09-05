@@ -1818,6 +1818,15 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
+    # Role-safe profile routing:
+    # even if any old template still points a shopkeeper to /profile/,
+    # send them to the dedicated shopkeeper profile instead of customer profile.
+    if (
+        request.user.is_authenticated
+        and getattr(request.user, "role", "") == "SHOPKEEPER"
+    ):
+        return redirect("shopkeeper_profile")
+
     addresses = request.user.addresses.all()[:3]
 
     wallet, created = Wallet.objects.get_or_create(
@@ -5601,6 +5610,24 @@ def shopkeeper_order_accept_view(request, order_number):
                     ]
                 )
 
+        # Accept means picking starts immediately for the shopkeeper.
+        # Do not leave a second "start picking" state in between.
+        if task.status not in {"PACKED", "HANDED_OVER", "CANCELLED"}:
+            if task.status != "PICKING":
+                task.status = "PICKING"
+                task.save(update_fields=["status", "updated_at"])
+
+            if order.status in {"Pending", "Confirmed"}:
+                order.status = "Preparing"
+                order.save(update_fields=["status", "updated_at"])
+                try:
+                    order.create_status_history(
+                        "Preparing",
+                        "Shop accepted the order and picking started.",
+                    )
+                except Exception:
+                    pass
+
         master_order_id = order.master_order_id
 
     if master_order_id:
@@ -5615,7 +5642,7 @@ def shopkeeper_order_accept_view(request, order_number):
 
     messages.success(
         request,
-        f"Order #{order_number} accepted successfully. Start picking products.",
+        f"Order #{order_number} accepted. Picking started.",
     )
     return redirect(
         "shopkeeper_pick_order",
