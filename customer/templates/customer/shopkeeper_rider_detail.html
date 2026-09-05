@@ -1,0 +1,115 @@
+{% extends "customer/shopkeeper_base.html" %}
+
+{% block title %}Rider Handover | AMEXA Shop{% endblock %}
+
+{% block extra_head %}
+<style>
+.handover{max-width:820px;margin:0 auto}.hero{padding:18px;margin-bottom:13px}
+.hero h1{margin:7px 0;font-size:21px}.hero p{margin:0;color:var(--muted);font-size:9px;line-height:1.6}
+.rider-card{padding:17px}.rider-top{display:grid;grid-template-columns:82px minmax(0,1fr) auto;gap:14px;align-items:center}
+.avatar{width:82px;height:82px;border-radius:18px;object-fit:cover;background:#111c2c;display:grid;place-items:center;font-size:30px}
+.rider-name h2{margin:0;font-size:17px}.rider-name p{margin:5px 0;color:var(--muted);font-size:9px}
+.live{padding:7px 10px;border-radius:99px;color:var(--green);background:rgba(53,233,162,.08);font-size:8px;font-weight:950}
+.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
+.detail{padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.025)}
+.detail small{display:block;color:var(--muted);font-size:7px}.detail b{display:block;margin-top:5px;font-size:10px}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.actions .btn{flex:1;min-width:150px;text-align:center;text-decoration:none}
+.wait{padding:28px;text-align:center}.wait h2{margin:8px 0;font-size:18px}.wait p{color:var(--muted);font-size:9px;line-height:1.6}
+.order-check{margin-top:13px;padding:12px;border:1px solid rgba(105,231,255,.1);border-radius:12px;background:rgba(105,231,255,.035);font-size:9px}
+@media(max-width:620px){.rider-top{grid-template-columns:70px 1fr}.rider-top>.live{grid-column:1/-1;width:max-content}.avatar{width:70px;height:70px}.detail-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="handover">
+    <section class="panel hero">
+        <span class="badge green">✓ PICKING COMPLETE</span>
+        <h1>Rider Handover</h1>
+        <p>Order #{{ order.order_number }} exact quantity ke saath packed hai. Parcel sirf neeche dikh rahe assigned AMEXA rider ko handover karein.</p>
+        <div class="order-check">
+            Packed units: <b>{{ task.picked_units }}/{{ task.required_units }}</b> •
+            Picking status: <b>{{ task.get_status_display }}</b>
+        </div>
+    </section>
+
+    {% if assignment %}
+    <section class="panel rider-card">
+        <div class="rider-top">
+            {% if rider_profile and rider_profile.profile_photo %}
+                <img class="avatar" src="{{ rider_profile.profile_photo.url }}" alt="Rider">
+            {% else %}
+                <div class="avatar">🛵</div>
+            {% endif %}
+
+            <div class="rider-name">
+                <h2>{{ assignment.delivery_partner.name }}</h2>
+                <p>AMEXA Delivery Partner</p>
+                <span class="badge">{{ assignment.status }}</span>
+            </div>
+
+            <div class="live">● ASSIGNED</div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail">
+                <small>PERSONAL / REGISTERED PHONE</small>
+                <b>{{ assignment.delivery_partner.phone|default:"Not available" }}</b>
+            </div>
+            <div class="detail">
+                <small>VEHICLE</small>
+                <b>
+                    {% if rider_profile %}
+                        {{ rider_profile.get_vehicle_type_display|default:"Vehicle" }}
+                        {% if rider_profile.vehicle_number %} • {{ rider_profile.vehicle_number }}{% endif %}
+                    {% else %}
+                        Not available
+                    {% endif %}
+                </b>
+            </div>
+            <div class="detail">
+                <small>ASSIGNMENT STATUS</small>
+                <b>{{ assignment.get_status_display }}</b>
+            </div>
+            <div class="detail">
+                <small>LAST LIVE LOCATION</small>
+                <b>
+                    {% if assignment.location_updated_at %}
+                        {{ assignment.location_updated_at|date:"d M Y, h:i:s A" }}
+                    {% else %}
+                        Waiting for rider GPS
+                    {% endif %}
+                </b>
+            </div>
+        </div>
+
+        <div class="actions">
+            {% if assignment.delivery_partner.phone %}
+                <a class="btn primary" href="tel:{{ assignment.delivery_partner.phone }}">📞 CALL RIDER</a>
+            {% endif %}
+
+            {% if assignment.current_latitude and assignment.current_longitude %}
+                <a class="btn"
+                   target="_blank"
+                   rel="noopener"
+                   href="https://www.google.com/maps?q={{ assignment.current_latitude }},{{ assignment.current_longitude }}">
+                    📍 OPEN RIDER LOCATION
+                </a>
+            {% endif %}
+
+            <a class="btn" href="{% url 'shopkeeper_orders' %}">BACK TO ORDERS</a>
+        </div>
+    </section>
+    {% else %}
+    <section class="panel wait">
+        <div style="font-size:34px">🛵</div>
+        <h2>Waiting for an online rider</h2>
+        <p>Picking complete hai. Verified online rider milte hi ye page automatically refresh hoke rider name, phone, vehicle aur location dikhayega.</p>
+        <a class="btn primary" href="{% url 'shopkeeper_rider_detail' order.order_number %}">CHECK AGAIN</a>
+    </section>
+
+    <script>
+        setTimeout(function(){ location.reload(); }, 10000);
+    </script>
+    {% endif %}
+</div>
+{% endblock %}

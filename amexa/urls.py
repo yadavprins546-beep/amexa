@@ -102,6 +102,9 @@ from customer.views import (
     shopkeeper_order_reject_view,
     shopkeeper_pick_order_view,
     shopkeeper_pick_item_view,
+    shopkeeper_pick_scan_view,
+    shopkeeper_complete_picking_view,
+    shopkeeper_rider_detail_view,
     shopkeeper_orders_view,
     shopkeeper_payments_view,
     shopkeeper_product_add_view,
@@ -614,6 +617,24 @@ urlpatterns = [
         "shopkeeper/orders/<str:order_number>/pick/<int:picking_item_id>/",
         shopkeeper_pick_item_view,
         name="shopkeeper_pick_item",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/scan/",
+        shopkeeper_pick_scan_view,
+        name="shopkeeper_pick_scan",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/complete-picking/",
+        shopkeeper_complete_picking_view,
+        name="shopkeeper_complete_picking",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/rider/",
+        shopkeeper_rider_detail_view,
+        name="shopkeeper_rider_detail",
     ),
 
     path(

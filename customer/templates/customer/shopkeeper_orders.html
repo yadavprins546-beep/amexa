@@ -100,7 +100,7 @@
                 <span class="badge green">✓ ORDER ACCEPTED</span>
                 <a class="btn primary"
                    href="{% url 'shopkeeper_pick_order' order.order_number %}">
-                    START / CONTINUE PICKING
+                    START / CONTINUE UPC PICKING
                 </a>
                 <a class="btn red reject-page-btn"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
@@ -110,7 +110,13 @@
                 <span class="badge green">Picking in progress</span>
                 <a class="btn primary"
                    href="{% url 'shopkeeper_pick_order' order.order_number %}">
-                    CONTINUE PICKING
+                    CONTINUE UPC PICKING
+                </a>
+            {% elif order.picking_task.status == 'PACKED' %}
+                <span class="badge green">✓ Picking complete</span>
+                <a class="btn primary"
+                   href="{% url 'shopkeeper_rider_detail' order.order_number %}">
+                    OPEN RIDER DETAILS
                 </a>
             {% elif order.status == 'Cancelled' %}
                 <span class="badge red">Order rejected / cancelled</span>

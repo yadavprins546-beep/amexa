@@ -1,80 +1,243 @@
 {% extends "customer/shopkeeper_base.html" %}
+
 {% block title %}Pick Order | AMEXA Shop{% endblock %}
+
 {% block extra_head %}
 <style>
-.pick-head{padding:16px;margin-bottom:12px}.pick-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pick-top h1{margin:0;font-size:20px}.pick-top p{margin:5px 0 0;color:var(--muted);font-size:9px}.progress{height:8px;margin:14px 0 7px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:inherit}.progress-text{display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.pick-list{display:grid;gap:10px}.pick-item{padding:14px}.item-row{display:flex;gap:12px;align-items:flex-start}.photo{width:58px;height:58px;flex:0 0 58px;border-radius:12px;object-fit:cover;background:#101c2a;display:grid;place-items:center}.item-main{flex:1;min-width:0}.item-main h3{margin:0 0 5px;font-size:13px}.item-main small{display:block;color:var(--muted);font-size:8px;line-height:1.5}.qty{text-align:right}.qty b{display:block;font:1000 18px ui-monospace;color:var(--green)}.qty small{color:var(--muted);font-size:8px}.pick-actions{display:flex;gap:8px;margin-top:11px}.pick-actions form{flex:1}.pick-actions button{width:100%;min-height:42px}.done{border-color:rgba(53,233,162,.25)!important;background:rgba(53,233,162,.04)!important}.complete-box{padding:18px;text-align:center;border:1px solid rgba(53,233,162,.22);border-radius:15px;background:rgba(53,233,162,.06)}.complete-box h2{margin:6px 0;color:var(--green)}@media(max-width:560px){.pick-actions{display:grid}}
+.pick-head{display:grid;grid-template-columns:1.25fr .75fr;gap:12px;margin-bottom:14px}
+.hero,.scan-panel{padding:17px}
+.hero h1{margin:0;font-size:20px}.hero p{margin:7px 0 0;color:var(--muted);font-size:9px;line-height:1.6}
+.big-progress{height:10px;margin-top:14px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.big-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.summary div{padding:10px;border-radius:11px;background:rgba(255,255,255,.03)}
+.summary small{display:block;color:var(--muted);font-size:7px}.summary b{display:block;margin-top:4px;font:1000 16px ui-monospace}
+.scanner-box{position:relative;overflow:hidden;border-radius:14px;background:#02050c;aspect-ratio:16/8;margin:10px 0}
+.scanner-box video{width:100%;height:100%;object-fit:cover}
+.scan-line{position:absolute;left:9%;right:9%;top:50%;height:2px;background:var(--green);box-shadow:0 0 13px var(--green)}
+.scan-status{padding:9px;border-radius:10px;background:rgba(255,255,255,.03);color:var(--muted);font-size:8px;line-height:1.5}
+.manual{display:flex;gap:7px;margin-top:9px}.manual input{flex:1;min-height:42px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#081220;color:white;outline:0}
+.pick-list{display:grid;gap:11px}.pick-item{padding:14px}.pick-item.done{border-color:rgba(53,233,162,.22);background:rgba(53,233,162,.035)}
+.item-row{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center}
+.photo{width:72px;height:72px;border-radius:14px;object-fit:cover;background:#101b2b;display:grid;place-items:center;font-size:28px}
+.item-main h3{margin:0 0 5px;font-size:12px}.item-main small{display:block;color:var(--muted);font-size:8px;line-height:1.55}
+.qty{text-align:right}.qty b{display:block;font:1000 20px ui-monospace}.qty small{color:var(--muted);font-size:7px}
+.qty-rule{margin-top:9px;padding:8px 10px;border-radius:9px;background:rgba(105,231,255,.045);color:#9bc7d1;font-size:8px}
+.complete-wrap{position:sticky;bottom:82px;z-index:30;margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:rgba(7,14,27,.95);backdrop-filter:blur(12px)}
+.complete-btn{width:100%;min-height:50px;font-size:11px;font-weight:1000}
+.complete-btn[disabled]{opacity:.45;cursor:not-allowed}
+@media(max-width:760px){.pick-head{grid-template-columns:1fr}.item-row{grid-template-columns:62px minmax(0,1fr) auto}.photo{width:62px;height:62px}.summary{grid-template-columns:repeat(3,1fr)}}
 </style>
 {% endblock %}
+
 {% block content %}
-<section class="panel pick-head">
-    <div class="pick-top">
-        <div>
-            <h1>Pick Order #{{ order.order_number }}</h1>
-            <p>{{ order.user.name }} • {{ order.address.city }} • {{ task.get_status_display }}</p>
+{% with required=task.required_units picked=task.picked_units progress=task.progress_percentage %}
+<section class="pick-head">
+    <article class="panel hero">
+        <span class="badge">ORDER #{{ order.order_number }}</span>
+        <h1 style="margin-top:9px">Exact UPC Picking</h1>
+        <p>Har successful UPC scan sirf <b>1 unit</b> pick karega. Required quantity se zyada system accept nahi karega.</p>
+        <div class="big-progress"><i style="width:{{ progress }}%"></i></div>
+        <div class="summary">
+            <div><small>ORDERED</small><b>{{ required }}</b></div>
+            <div><small>PICKED</small><b>{{ picked }}</b></div>
+            <div><small>PROGRESS</small><b>{{ progress }}%</b></div>
         </div>
-        <span class="badge {% if task.status == 'PACKED' %}green{% endif %}">{{ task.get_status_display }}</span>
-    </div>
-    <div class="progress"><i style="width:{{ task.progress_percentage }}%"></i></div>
-    <div class="progress-text">
-        <span>{{ task.picked_units }}/{{ task.required_units }} units picked</span>
-        <b>{{ task.progress_percentage }}%</b>
-    </div>
+    </article>
+
+    <article class="panel scan-panel">
+        <div class="section-head"><div><h2>UPC Scanner</h2><p>Rear camera se barcode scan karein</p></div></div>
+
+        <div class="scanner-box">
+            <video id="scanVideo" playsinline muted></video>
+            <span class="scan-line"></span>
+        </div>
+
+        <div style="display:flex;gap:7px">
+            <button class="btn primary" id="startScan" type="button">START PICKING / CAMERA</button>
+            <button class="btn" id="stopScan" type="button">STOP</button>
+        </div>
+
+        <div class="scan-status" id="scanStatus">
+            Camera start karke ordered product ka UPC scan karein. Ek scan = ek quantity.
+        </div>
+
+        <form class="manual" id="barcodeForm" method="post" action="{% url 'shopkeeper_pick_scan' order.order_number %}">
+            {% csrf_token %}
+            <input id="barcodeInput" name="barcode" autocomplete="off" inputmode="numeric" placeholder="Manual UPC / EAN">
+            <button class="btn primary" type="submit">VERIFY & PICK 1</button>
+        </form>
+    </article>
 </section>
 
-{% if task.status == 'PACKED' %}
-<section class="complete-box">
-    <div style="font-size:30px">✓</div>
-    <h2>ORDER PACKED</h2>
-    <p style="color:var(--muted);font-size:9px">Products picked. Order is ready for rider.</p>
-    <a class="btn primary" href="{% url 'shopkeeper_orders' %}">BACK TO ORDERS</a>
-</section>
-{% else %}
 <section class="pick-list">
-    {% for picking_item in picking_items %}
+{% for picking_item in picking_items %}
     <article class="panel pick-item {% if picking_item.is_complete %}done{% endif %}">
         <div class="item-row">
             {% if picking_item.order_item.product and picking_item.order_item.product.image %}
-                <img class="photo" src="{{ picking_item.order_item.product.image.url }}" alt="">
+                <img class="photo" src="{{ picking_item.order_item.product.image.url }}" alt="{{ picking_item.order_item.product_name }}">
             {% else %}
                 <div class="photo">📦</div>
             {% endif %}
+
             <div class="item-main">
                 <h3>{{ picking_item.order_item.product_name|default:picking_item.order_item.product.name }}</h3>
                 <small>
                     {% if picking_item.order_item.product %}
                         {{ picking_item.order_item.product.pack_size|default:"1 unit" }}
-                        {% with barcode=picking_item.order_item.product.barcodes.first %}
-                            {% if barcode %} • Barcode {{ barcode.barcode }}{% endif %}
+                        {% with barcodes=picking_item.order_item.product.barcodes.all %}
+                            {% if barcodes %}
+                                {% for barcode in barcodes %}
+                                    {% if forloop.first %} • UPC {{ barcode.barcode }}{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                • <b style="color:#ff8aa0">UPC MISSING</b>
+                            {% endif %}
                         {% endwith %}
                     {% endif %}
                 </small>
+                <div class="qty-rule">
+                    Required: <b>{{ picking_item.required_quantity }}</b> unit(s) •
+                    Remaining: <b>{{ picking_item.remaining_quantity }}</b> •
+                    {% if picking_item.is_complete %}
+                        <span style="color:var(--green)">✓ EXACT QUANTITY COMPLETE</span>
+                    {% else %}
+                        Scan same product UPC {{ picking_item.remaining_quantity }} more time(s).
+                    {% endif %}
+                </div>
             </div>
+
             <div class="qty">
                 <b>{{ picking_item.picked_quantity }}/{{ picking_item.required_quantity }}</b>
-                <small>picked</small>
+                <small>PICKED</small>
             </div>
         </div>
-
-        {% if picking_item.is_complete %}
-            <div style="margin-top:10px"><span class="badge green">✓ PICKED</span></div>
-        {% else %}
-            <div class="pick-actions">
-                <form method="post" action="{% url 'shopkeeper_pick_item' order.order_number picking_item.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="pick_action" value="one">
-                    <button class="btn" type="submit">+ PICK 1</button>
-                </form>
-                <form method="post" action="{% url 'shopkeeper_pick_item' order.order_number picking_item.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="pick_action" value="all">
-                    <button class="btn primary" type="submit">PICK REMAINING</button>
-                </form>
-            </div>
-        {% endif %}
     </article>
-    {% empty %}
+{% empty %}
     <div class="panel empty">No picking items found for this order.</div>
-    {% endfor %}
+{% endfor %}
 </section>
-{% endif %}
+
+<div class="complete-wrap">
+    <form method="post" action="{% url 'shopkeeper_complete_picking' order.order_number %}">
+        {% csrf_token %}
+        <button
+            class="btn primary complete-btn"
+            type="submit"
+            {% if picked != required or required == 0 %}disabled{% endif %}>
+            {% if picked == required and required > 0 %}
+                ✓ COMPLETE PICKING & OPEN RIDER DETAILS
+            {% else %}
+                COMPLETE PICKING — {{ picked }}/{{ required }} UNITS VERIFIED
+            {% endif %}
+        </button>
+    </form>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+    const video = document.getElementById("scanVideo");
+    const startBtn = document.getElementById("startScan");
+    const stopBtn = document.getElementById("stopScan");
+    const statusEl = document.getElementById("scanStatus");
+    const form = document.getElementById("barcodeForm");
+    const input = document.getElementById("barcodeInput");
+
+    let stream = null;
+    let detector = null;
+    let scanning = false;
+    let busy = false;
+    let lastValue = "";
+    let lastAt = 0;
+
+    function setStatus(text){ statusEl.textContent = text; }
+
+    function beep(){
+        try{
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            gain.gain.value = 0.08;
+            osc.start();
+            osc.stop(ctx.currentTime + 0.09);
+        }catch(e){}
+        if(navigator.vibrate) navigator.vibrate(80);
+    }
+
+    function stopCamera(){
+        scanning = false;
+        if(stream){
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+    }
+
+    async function submitBarcode(value){
+        if(busy || !value) return;
+        busy = true;
+        stopCamera();
+        beep();
+        input.value = value;
+        setStatus("UPC detected: " + value + " — verifying exact quantity...");
+        form.submit();
+    }
+
+    async function loop(){
+        if(!scanning || !detector || busy) return;
+        try{
+            const codes = await detector.detect(video);
+            if(codes && codes.length){
+                const value = (codes[0].rawValue || "").trim();
+                const now = Date.now();
+                if(value && (value !== lastValue || now - lastAt > 1800)){
+                    lastValue = value;
+                    lastAt = now;
+                    await submitBarcode(value);
+                    return;
+                }
+            }
+        }catch(e){}
+        requestAnimationFrame(loop);
+    }
+
+    startBtn.addEventListener("click", async function(){
+        if(!("BarcodeDetector" in window)){
+            setStatus("Camera barcode detector is not supported here. Manual UPC box use karein.");
+            input.focus();
+            return;
+        }
+
+        try{
+            detector = new BarcodeDetector({
+                formats:["ean_13","ean_8","upc_a","upc_e","code_128"]
+            });
+            stream = await navigator.mediaDevices.getUserMedia({
+                video:{facingMode:{ideal:"environment"}},
+                audio:false
+            });
+            video.srcObject = stream;
+            await video.play();
+            scanning = true;
+            busy = false;
+            setStatus("Scanning... barcode ko camera ke center me rakhein.");
+            requestAnimationFrame(loop);
+        }catch(err){
+            setStatus("Camera start nahi hua. Permission allow karein ya manual UPC enter karein.");
+        }
+    });
+
+    stopBtn.addEventListener("click", function(){
+        stopCamera();
+        setStatus("Camera stopped.");
+    });
+
+    window.addEventListener("beforeunload", stopCamera);
+})();
+</script>
 {% endblock %}
