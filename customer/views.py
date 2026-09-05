@@ -4190,15 +4190,12 @@ def delivery_location_update_view(
 @login_required
 def cancel_order_view(request, order_id):
     """
-    Safe customer cancellation flow.
-    Uses the logged-in user directly and keeps optional settlement/payment
-    work from crashing the cancellation page.
+    Minimal, defensive customer cancellation flow.
+    GET always renders the cancellation confirmation page.
+    POST updates the order safely and returns to My Orders.
     """
     order = get_object_or_404(
-        Order.objects.select_related(
-            "master_order",
-            "shop",
-        ),
+        Order,
         pk=order_id,
         user=request.user,
     )
@@ -4208,20 +4205,14 @@ def cancel_order_view(request, order_id):
             request,
             "This order is already cancelled."
         )
-        return redirect(
-            "order_detail",
-            order_number=order.order_number,
-        )
+        return redirect("orders")
 
     if order.status not in {"Pending", "Confirmed"}:
         messages.info(
             request,
             "This order can no longer be cancelled."
         )
-        return redirect(
-            "order_detail",
-            order_number=order.order_number,
-        )
+        return redirect("orders")
 
     if request.method == "POST":
         reason = (
@@ -4235,38 +4226,24 @@ def cancel_order_view(request, order_id):
         ).strip()
 
         with transaction.atomic():
-            locked_order = (
+            order = (
                 Order.objects
                 .select_for_update()
-                .select_related("master_order", "shop")
                 .get(
-                    pk=order.pk,
+                    pk=order_id,
                     user=request.user,
                 )
             )
 
-            if locked_order.status == "Cancelled":
-                messages.info(
-                    request,
-                    "Order already cancelled."
-                )
-                return redirect(
-                    "order_detail",
-                    order_number=locked_order.order_number,
-                )
-
-            if locked_order.status not in {"Pending", "Confirmed"}:
+            if order.status not in {"Pending", "Confirmed"}:
                 messages.info(
                     request,
                     "This order can no longer be cancelled."
                 )
-                return redirect(
-                    "order_detail",
-                    order_number=locked_order.order_number,
-                )
+                return redirect("orders")
 
-            # Return stock safely.
-            for item in locked_order.items.select_related("product").all():
+            # Return product stock. Missing/deleted products are skipped.
+            for item in order.items.select_related("product").all():
                 if not item.product_id:
                     continue
 
@@ -4279,21 +4256,26 @@ def cancel_order_view(request, order_id):
                 if product is None:
                     continue
 
-                product.stock_quantity += item.quantity
-                product.save(update_fields=["stock_quantity"])
+                product.stock_quantity = (
+                    product.stock_quantity + item.quantity
+                )
+                product.save(
+                    update_fields=["stock_quantity"]
+                )
 
-            locked_order.status = "Cancelled"
-            locked_order.cancellation_reason = reason
-            locked_order.cancellation_description = description
-            locked_order.cancelled_at = timezone.now()
+            order.status = "Cancelled"
+            order.cancellation_reason = reason
+            order.cancellation_description = description
+            order.cancelled_at = timezone.now()
 
-            # COD has no online refund to wait for.
-            if locked_order.payment_method == "COD":
-                locked_order.payment_status = "Cancelled"
-            else:
-                locked_order.payment_status = "Refund Pending"
+            # Keep existing payment semantics simple and valid.
+            order.payment_status = (
+                "Pending"
+                if order.payment_method == "COD"
+                else "Refund Pending"
+            )
 
-            locked_order.save(
+            order.save(
                 update_fields=[
                     "status",
                     "cancellation_reason",
@@ -4304,54 +4286,27 @@ def cancel_order_view(request, order_id):
                 ]
             )
 
-            locked_order.create_status_history(
-                "Cancelled",
-                reason,
-            )
-
-            # Optional settlement must never break customer cancellation.
+            # Status history should not block the main cancellation.
             try:
-                settlement = locked_order.settlement
+                order.create_status_history(
+                    "Cancelled",
+                    reason,
+                )
             except Exception:
-                settlement = None
+                pass
 
-            if settlement is not None:
-                try:
-                    settlement.status = "On Hold"
-                    settlement.save(
-                        update_fields=[
-                            "status",
-                            "updated_at",
-                        ]
-                    )
-                except Exception:
-                    pass
-
-            # Keep master-order status in sync, but do not let optional
-            # rewards/payment reversal code make cancellation fail.
-            if locked_order.master_order_id:
-                try:
-                    _update_master_order_status(
-                        locked_order.master_order
-                    )
-                except Exception:
-                    pass
-
+    if request.method == "POST":
         messages.success(
             request,
             "Order cancelled successfully."
         )
-        return redirect(
-            "order_detail",
-            order_number=locked_order.order_number,
-        )
+        return redirect("orders")
 
     return render(
         request,
         "customer/cancel_order.html",
         {
             "order": order,
-            "master_order": order.master_order,
         },
     )
 
