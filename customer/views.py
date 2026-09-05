@@ -5535,6 +5535,44 @@ def shopkeeper_orders_view(request):
 
 
 @login_required
+def shopkeeper_order_reject_view(request, order_number):
+    """
+    Dedicated confirmation page before a shopkeeper rejects an order.
+    Actual rejection is still handled by shopkeeper_order_action_view
+    so stock/payment/picker/settlement logic stays in one place.
+    """
+    profile = _shopkeeper_app_profile(request)
+    if profile is None:
+        return redirect("shopkeeper_dashboard")
+
+    order = get_object_or_404(
+        Order.objects
+        .select_related("user", "address", "shop", "master_order")
+        .prefetch_related("items", "items__product"),
+        order_number=order_number,
+        shop=profile.shop,
+    )
+
+    if order.status not in {"Pending", "Confirmed"}:
+        messages.error(
+            request,
+            "This order can no longer be rejected.",
+        )
+        return redirect("shopkeeper_orders")
+
+    return render(
+        request,
+        "customer/shopkeeper_reject_order.html",
+        {
+            "profile": profile,
+            "shop": profile.shop,
+            "order": order,
+            "active_tab": "orders",
+        },
+    )
+
+
+@login_required
 def shopkeeper_order_action_view(request, order_number):
     profile = _shopkeeper_app_profile(request)
     if profile is None:
