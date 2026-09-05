@@ -19,7 +19,8 @@
         <input type="hidden" name="latitude" id="latitudeInput" value="{{ saved_latitude }}">
         <input type="hidden" name="longitude" id="longitudeInput" value="{{ saved_longitude }}">
         <input type="hidden" name="address_text" id="addressTextInput" value="{{ saved_address_text }}">
-        <button type="submit" class="btn primary" style="width:100%">✓ Save This Delivery Point</button>
+        <input type="hidden" name="accuracy" id="accuracyInput" value="">
+        <button type="submit" class="btn primary" style="width:100%">✓ Save Current Location Permanently</button>
       </form>
     </div>
   </div>
@@ -27,7 +28,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
- const latInput=document.getElementById('latitudeInput'),lonInput=document.getElementById('longitudeInput'),addressInput=document.getElementById('addressTextInput'),preview=document.getElementById('addressPreview'),status=document.getElementById('gpsStatus'),coords=document.getElementById('coordsText'),currentBtn=document.getElementById('currentBtn');
+ const latInput=document.getElementById('latitudeInput'),lonInput=document.getElementById('longitudeInput'),addressInput=document.getElementById('addressTextInput'),accuracyInput=document.getElementById('accuracyInput'),preview=document.getElementById('addressPreview'),status=document.getElementById('gpsStatus'),coords=document.getElementById('coordsText'),currentBtn=document.getElementById('currentBtn');
  const savedLat=Number(latInput.value||0),savedLon=Number(lonInput.value||0);
  const valid=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&a!==0&&b!==0&&Math.abs(a)<=90&&Math.abs(b)<=180;
  const start=valid(savedLat,savedLon)?[savedLat,savedLon]:[26.2303,81.2409];
@@ -44,6 +45,7 @@
  }
  function setPoint(lat,lon,accuracy){
    latInput.value=Number(lat).toFixed(6);lonInput.value=Number(lon).toFixed(6);
+   accuracyInput.value=accuracy ? Number(accuracy).toFixed(2) : '';
    marker.setLatLng([lat,lon]);map.setView([lat,lon],18);
    coords.textContent=latInput.value+', '+lonInput.value+(accuracy?' · accuracy ±'+Math.round(accuracy)+'m':'');
    status.textContent='✓ Delivery pin selected. Pin ko drag karke gate/house ke exact point par bhi set kar sakte ho.';

@@ -1134,17 +1134,15 @@
 
                     <div class="order-actions">
 
-                        {% if order.order_number %}
                         <a
+
                             class="order-btn order-btn-primary"
-                            href="{% url 'order_detail' order.order_number %}">
-                            📍 Track / View Order
+
+                            href="{% url 'customer_order_tracking' order.order_number %}">
+
+                            🛵 Live Track Parcel
+
                         </a>
-                        {% else %}
-                        <span class="order-btn order-btn-muted">
-                            ⚠ Order details unavailable
-                        </span>
-                        {% endif %}
 
 
 

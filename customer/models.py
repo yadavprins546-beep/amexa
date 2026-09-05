@@ -95,6 +95,35 @@ class Address(models.Model):
         return f'{self.full_name} - {self.city}'
 
 
+class CustomerSavedLocation(models.Model):
+    """
+    Permanent current/delivery GPS pin for a customer.
+    Survives browser/app restarts and future logins.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_location",
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    accuracy_meters = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    address_text = models.CharField(max_length=255, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Customer Saved Location"
+        verbose_name_plural = "Customer Saved Locations"
+
+    def __str__(self):
+        return f"{self.user} @ {self.latitude}, {self.longitude}"
+
+
 class OTPVerification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='otp_verifications')
     phone = models.CharField(max_length=15)

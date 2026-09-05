@@ -15,6 +15,7 @@ from .models import (
     Payment,
     MasterOrder,
     CouponUsage,
+    CustomerSavedLocation,
     Coupon,
     Address,
     Brand,
@@ -609,6 +610,23 @@ class OrderPickingItemAdmin(admin.ModelAdmin):
 # =========================================================
 # ADDRESS ADMIN
 # =========================================================
+
+@admin.register(CustomerSavedLocation)
+class CustomerSavedLocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "latitude",
+        "longitude",
+        "accuracy_meters",
+        "updated_at",
+    )
+    search_fields = (
+        "user__name",
+        "user__phone",
+        "address_text",
+    )
+    readonly_fields = ("updated_at",)
+
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):

@@ -78,6 +78,7 @@ from customer.views import (
     # ORDERS / TRACKING
     orders_view,
     order_detail_view,
+    customer_order_tracking_view,
     order_tracking_data_view,
     picker_accept_task_view,
     picker_dashboard_view,
@@ -516,6 +517,17 @@ urlpatterns = [
         "orders/<int:order_id>/success/",
         order_success_view,
         name="order_success",
+    ),
+
+
+    # =====================================================
+    # CUSTOMER LIVE TRACKING PAGE
+    # =====================================================
+
+    path(
+        "my-orders/<str:order_number>/track/",
+        customer_order_tracking_view,
+        name="customer_order_tracking",
     ),
 
 
