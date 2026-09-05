@@ -84,7 +84,7 @@
         <div class="actions" style="position:relative;z-index:20;">
             {% if order.status == 'Pending' %}
                 <form method="post"
-                      action="{% url 'shopkeeper_order_action' order.order_number %}"
+                      action="{% url 'shopkeeper_order_accept' order.order_number %}"
                       style="display:inline-block;min-width:0;flex:0 0 auto;position:relative;z-index:30;">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="accept">

@@ -98,6 +98,7 @@ from customer.views import (
     shopkeeper_inventory_view,
     shopkeeper_onboarding_view,
     shopkeeper_order_action_view,
+    shopkeeper_order_accept_view,
     shopkeeper_order_reject_view,
     shopkeeper_orders_view,
     shopkeeper_payments_view,
@@ -593,6 +594,12 @@ urlpatterns = [
         "shopkeeper/orders/",
         shopkeeper_orders_view,
         name="shopkeeper_orders",
+    ),
+
+    path(
+        "shopkeeper/orders/<str:order_number>/accept/",
+        shopkeeper_order_accept_view,
+        name="shopkeeper_order_accept",
     ),
 
     path(

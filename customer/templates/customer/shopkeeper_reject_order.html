@@ -214,9 +214,41 @@ textarea:focus{border-color:#ff6d8b}
             {% endfor %}
         </div>
 
-        <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">
+        {% if reject_success or order.status == "Cancelled" %}
+        <div style="
+            margin-top:18px;
+            padding:18px;
+            border:1px solid rgba(53,233,162,.24);
+            border-radius:14px;
+            background:rgba(53,233,162,.07);
+            text-align:center;">
+            <div style="font-size:32px;margin-bottom:8px;">✓</div>
+            <div style="font-size:16px;font-weight:1000;color:#54e8a8;">
+                ORDER SUCCESSFULLY REJECTED
+            </div>
+            <div style="margin-top:7px;color:#91a8ba;font-size:10px;">
+                Order #{{ order.order_number }} has been cancelled successfully.
+            </div>
+            <a href="{% url 'shopkeeper_orders' %}"
+               style="
+                    display:inline-flex;
+                    margin-top:15px;
+                    min-height:44px;
+                    padding:0 17px;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:11px;
+                    background:#162638;
+                    color:#edf6ff;
+                    text-decoration:none;
+                    font-size:10px;
+                    font-weight:900;">
+                ← BACK TO ORDERS
+            </a>
+        </div>
+        {% else %}
+        <form method="post" action="{% url 'shopkeeper_order_reject' order.order_number %}">
             {% csrf_token %}
-            <input type="hidden" name="action" value="reject">
 
             <label for="reason">Reject reason</label>
             <textarea id="reason"
@@ -226,7 +258,8 @@ textarea:focus{border-color:#ff6d8b}
                       placeholder="Example: Product out of stock"></textarea>
 
             <div class="warning">
-                Agar picker order par kaam start kar chuka hai to system rejection ko block karega.
+                Confirm Reject dabate hi order isi page par reject ho jayega.
+                Agar picker picking start kar chuka hai to system rejection block karega.
             </div>
 
             <div class="actions">
@@ -234,6 +267,7 @@ textarea:focus{border-color:#ff6d8b}
                 <button class="reject" type="submit">✕ CONFIRM REJECT</button>
             </div>
         </form>
+        {% endif %}
     </main>
 </div>
 </body>
