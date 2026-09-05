@@ -36,6 +36,31 @@
     border-radius:10px;
 }
 
+
+.accept-order-btn{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-width:150px!important;
+    min-height:48px!important;
+    border:0!important;
+    border-radius:11px!important;
+    background:linear-gradient(135deg,#2ff6a3,#55efff)!important;
+    color:#04140d!important;
+    font-size:11px!important;
+    font-weight:1000!important;
+    pointer-events:auto!important;
+    cursor:pointer!important;
+}
+.reject-page-btn{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:48px!important;
+    padding:0 16px!important;
+    pointer-events:auto!important;
+    cursor:pointer!important;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -56,26 +81,35 @@
         </div>
         <div class="address"><b>Delivery:</b> {{ order.address.address_line }}, {{ order.address.city }} - {{ order.address.pincode }}<br><b>Payment:</b> {{ order.get_payment_method_display }} • {{ order.payment_status }}</div>
         {% if order.status == 'Confirmed' or order.status == 'Preparing' %}<div class="workflow"><span>Picker:</span>{% if order.picking_task.picker %}<b>{{ order.picking_task.picker.name }}</b>{% else %}<b>Waiting for picker</b>{% endif %}<span class="badge {% if order.picking_task.status == 'PACKED' %}green{% endif %}">{{ order.picking_task.get_status_display|default:"Waiting for Picker" }}</span><span>{{ order.picking_task.picked_units|default:0 }}/{{ order.picking_task.required_units|default:0 }} units</span></div>{% endif %}
-        <div class="actions">
+        <div class="actions" style="position:relative;z-index:20;">
             {% if order.status == 'Pending' %}
-                <form method="post" action="{% url 'shopkeeper_order_action' order.order_number %}">
+                <form method="post"
+                      action="{% url 'shopkeeper_order_action' order.order_number %}"
+                      style="display:inline-block;min-width:0;flex:0 0 auto;position:relative;z-index:30;">
                     {% csrf_token %}
-                    <button class="btn primary accept-order-btn" name="action" value="accept" type="submit">
+                    <input type="hidden" name="action" value="accept">
+                    <button
+                        class="btn primary accept-order-btn"
+                        type="submit"
+                        style="pointer-events:auto;cursor:pointer;position:relative;z-index:31;">
                         ✓ ACCEPT ORDER
                     </button>
                 </form>
 
                 <a class="btn red reject-page-btn"
+                   style="position:relative;z-index:31;pointer-events:auto;cursor:pointer;text-decoration:none;"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
                     ✕ REJECT ORDER
                 </a>
 
             {% elif order.status == 'Confirmed' %}
-                <button class="btn primary accepted-order-btn" type="button" disabled>
-                    ✓ ACCEPTED
-                </button>
+                <span class="badge green"
+                      style="padding:11px 15px;font-size:9px;">
+                    ✓ ORDER ACCEPTED
+                </span>
 
                 <a class="btn red reject-page-btn"
+                   style="position:relative;z-index:31;pointer-events:auto;cursor:pointer;text-decoration:none;"
                    href="{% url 'shopkeeper_order_reject' order.order_number %}">
                     ✕ REJECT ORDER
                 </a>
@@ -88,13 +122,10 @@
 
             {% elif order.status == 'Preparing' %}
                 <span class="badge green">Picker is preparing this order</span>
-
             {% elif order.status == 'Cancelled' %}
                 <span class="badge red">Order rejected / cancelled</span>
-
             {% elif order.status == 'Delivered' %}
                 <span class="badge green">Delivered</span>
-
             {% else %}
                 <span class="badge">{{ order.status }}</span>
             {% endif %}
