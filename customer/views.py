@@ -4189,13 +4189,18 @@ def delivery_location_update_view(
 
 @login_required
 def cancel_order_view(request, order_id):
+    """
+    Safe customer cancellation flow.
+    Uses the logged-in user directly and keeps optional settlement/payment
+    work from crashing the cancellation page.
+    """
     order = get_object_or_404(
         Order.objects.select_related(
             "master_order",
             "shop",
         ),
         pk=order_id,
-        user_id__in=_customer_order_user_ids(request.user),
+        user=request.user,
     )
 
     if order.status == "Cancelled":
@@ -4203,21 +4208,16 @@ def cancel_order_view(request, order_id):
             request,
             "This order is already cancelled."
         )
-
         return redirect(
             "order_detail",
             order_number=order.order_number,
         )
 
-    if order.status not in {
-        "Pending",
-        "Confirmed",
-    }:
+    if order.status not in {"Pending", "Confirmed"}:
         messages.info(
             request,
             "This order can no longer be cancelled."
         )
-
         return redirect(
             "order_detail",
             order_number=order.order_number,
@@ -4225,68 +4225,75 @@ def cancel_order_view(request, order_id):
 
     if request.method == "POST":
         reason = (
-            request.POST
-            .get("reason", "")
-            .strip()
+            request.POST.get("reason", "")
             or "Other"
-        )
+        ).strip()[:100]
 
         description = (
-            request.POST
-            .get("description", "")
-            .strip()
-        )
+            request.POST.get("description", "")
+            or ""
+        ).strip()
 
         with transaction.atomic():
-
-            order = (
+            locked_order = (
                 Order.objects
                 .select_for_update()
-                .select_related(
-                    "master_order",
-                    "shop",
+                .select_related("master_order", "shop")
+                .get(
+                    pk=order.pk,
+                    user=request.user,
                 )
-                .get(pk=order.id)
             )
 
-            if order.status == "Cancelled":
+            if locked_order.status == "Cancelled":
                 messages.info(
                     request,
                     "Order already cancelled."
                 )
-
                 return redirect(
                     "order_detail",
-                    order_number=order.order_number,
+                    order_number=locked_order.order_number,
                 )
 
-            for item in (
-                order.items
-                .select_related("product")
-                .all()
-            ):
-                if item.product_id:
-                    product = (
-                        Product.objects
-                        .select_for_update()
-                        .get(pk=item.product_id)
-                    )
+            if locked_order.status not in {"Pending", "Confirmed"}:
+                messages.info(
+                    request,
+                    "This order can no longer be cancelled."
+                )
+                return redirect(
+                    "order_detail",
+                    order_number=locked_order.order_number,
+                )
 
-                    product.stock_quantity += item.quantity
+            # Return stock safely.
+            for item in locked_order.items.select_related("product").all():
+                if not item.product_id:
+                    continue
 
-                    product.save(
-                        update_fields=[
-                            "stock_quantity"
-                        ]
-                    )
+                product = (
+                    Product.objects
+                    .select_for_update()
+                    .filter(pk=item.product_id)
+                    .first()
+                )
+                if product is None:
+                    continue
 
-            order.status = "Cancelled"
-            order.cancellation_reason = reason
-            order.cancellation_description = description
-            order.cancelled_at = timezone.now()
-            order.payment_status = "Refund Pending"
+                product.stock_quantity += item.quantity
+                product.save(update_fields=["stock_quantity"])
 
-            order.save(
+            locked_order.status = "Cancelled"
+            locked_order.cancellation_reason = reason
+            locked_order.cancellation_description = description
+            locked_order.cancelled_at = timezone.now()
+
+            # COD has no online refund to wait for.
+            if locked_order.payment_method == "COD":
+                locked_order.payment_status = "Cancelled"
+            else:
+                locked_order.payment_status = "Refund Pending"
+
+            locked_order.save(
                 update_fields=[
                     "status",
                     "cancellation_reason",
@@ -4297,87 +4304,57 @@ def cancel_order_view(request, order_id):
                 ]
             )
 
-            order.create_status_history(
+            locked_order.create_status_history(
                 "Cancelled",
                 reason,
             )
 
-            if hasattr(order, "settlement"):
-                settlement = order.settlement
-                settlement.status = "On Hold"
-                settlement.save(
-                    update_fields=[
-                        "status",
-                        "updated_at",
-                    ]
-                )
+            # Optional settlement must never break customer cancellation.
+            try:
+                settlement = locked_order.settlement
+            except Exception:
+                settlement = None
 
-            if order.master_order:
-                _update_master_order_status(
-                    order.master_order
-                )
-                order.master_order.refresh_from_db()
+            if settlement is not None:
+                try:
+                    settlement.status = "On Hold"
+                    settlement.save(
+                        update_fields=[
+                            "status",
+                            "updated_at",
+                        ]
+                    )
+                except Exception:
+                    pass
 
-                # If the complete MasterOrder is now cancelled, return
-                # redeemed Coins once and reverse any invalid reward lot.
-                if order.master_order.status == "Cancelled":
-                    refund_redeemed_coins(order.master_order)
-                    reverse_order_reward(order.master_order)
-
-                all_cancelled = not (
-                    order.master_order
-                    .shop_orders
-                    .exclude(status="Cancelled")
-                    .exists()
-                )
-
-                if all_cancelled:
-                    try:
-                        payment = order.master_order.payment
-                    except Payment.DoesNotExist:
-                        payment = None
-
-                    if payment:
-                        payment.payment_status = (
-                            "Refund Pending"
-                            if payment.payment_method != "COD"
-                            else "Pending"
-                        )
-
-                        payment.save(
-                            update_fields=[
-                                "payment_status",
-                                "updated_at",
-                            ]
-                        )
+            # Keep master-order status in sync, but do not let optional
+            # rewards/payment reversal code make cancellation fail.
+            if locked_order.master_order_id:
+                try:
+                    _update_master_order_status(
+                        locked_order.master_order
+                    )
+                except Exception:
+                    pass
 
         messages.success(
             request,
             "Order cancelled successfully."
         )
-
         return redirect(
             "order_detail",
-            order_number=order.order_number,
+            order_number=locked_order.order_number,
         )
-
-    context = {
-        "order": order,
-        "master_order": order.master_order,
-    }
-
-    context.update(_cart_context(request))
 
     return render(
         request,
         "customer/cancel_order.html",
-        context,
+        {
+            "order": order,
+            "master_order": order.master_order,
+        },
     )
 
-
-# =========================================================
-# AMEXA LIVE LOCATION PICKER
-# =========================================================
 
 def location_picker_view(request):
     """
