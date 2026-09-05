@@ -1025,6 +1025,8 @@ class ShopkeeperProfileSettingsForm(forms.ModelForm):
             "name",
             "address",
             "phone",
+            "latitude",
+            "longitude",
             "minimum_order_value",
             "opening_time",
             "closing_time",
@@ -1040,6 +1042,8 @@ class ShopkeeperProfileSettingsForm(forms.ModelForm):
             ),
             "opening_time": forms.TimeInput(attrs={"type": "time"}),
             "closing_time": forms.TimeInput(attrs={"type": "time"}),
+            "latitude": forms.HiddenInput(attrs={"id": "id_shop_latitude"}),
+            "longitude": forms.HiddenInput(attrs={"id": "id_shop_longitude"}),
         }
 
     def clean_phone(self):

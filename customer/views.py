@@ -1827,8 +1827,19 @@ def addresses_view(request):
 
 @login_required
 def add_address_view(request):
+    initial_location = {}
+    if request.method != "POST":
+        session_lat = request.session.get("customer_lat")
+        session_lon = request.session.get("customer_lon")
+        if session_lat not in (None, "") and session_lon not in (None, ""):
+            initial_location = {
+                "latitude": session_lat,
+                "longitude": session_lon,
+            }
+
     form = AddressForm(
-        request.POST or None
+        request.POST or None,
+        initial=initial_location,
     )
 
     if request.method == "POST" and form.is_valid():
@@ -4281,16 +4292,52 @@ def cancel_order_view(request, order_id):
 
 def location_picker_view(request):
     """
-    Rapido-style map/location selection page.
-    Current selected latitude/longitude session se leta hai.
+    AMEXA customer location picker.
+    Session location ko map par load karta hai. Logged-in customer ke default
+    delivery address ko fallback location ke roop me use karta hai.
     """
-
     latitude = request.session.get("customer_lat")
     longitude = request.session.get("customer_lon")
+    saved_address_text = (
+        request.session.get("customer_location_address", "")
+        or ""
+    ).strip()
+
+    default_address = None
+    if request.user.is_authenticated:
+        default_address = (
+            request.user.addresses
+            .filter(is_default=True)
+            .first()
+            or request.user.addresses.first()
+        )
+
+        if default_address:
+            try:
+                default_lat = float(default_address.latitude or 0)
+                default_lon = float(default_address.longitude or 0)
+            except (TypeError, ValueError):
+                default_lat = 0
+                default_lon = 0
+
+            if not latitude and default_lat:
+                latitude = default_lat
+            if not longitude and default_lon:
+                longitude = default_lon
+
+            if not saved_address_text:
+                saved_address_text = (
+                    f"{default_address.address_line}, "
+                    f"{default_address.city}, "
+                    f"{default_address.state} - "
+                    f"{default_address.pincode}"
+                )
 
     context = {
         "saved_latitude": latitude or "",
         "saved_longitude": longitude or "",
+        "saved_address_text": saved_address_text,
+        "default_address": default_address,
     }
 
     return render(
@@ -4301,38 +4348,37 @@ def location_picker_view(request):
 
 
 # =========================================================
-# SAVE LIVE LOCATION
+# SAVE CUSTOMER LIVE LOCATION
+# Session + default delivery address coordinates are kept in sync.
 # =========================================================
 
 def location_save_view(request):
-    """
-    Map se selected latitude/longitude ko session me save karta hai.
-    """
-
     if request.method != "POST":
         return redirect("location_picker")
 
-    latitude = (
+    latitude_raw = (
         request.POST.get("latitude", "")
         or ""
     ).strip()
-
-    longitude = (
+    longitude_raw = (
         request.POST.get("longitude", "")
         or ""
     ).strip()
+    address_text = (
+        request.POST.get("address_text", "")
+        or ""
+    ).strip()[:255]
 
-    if not latitude or not longitude:
+    if not latitude_raw or not longitude_raw:
         messages.error(
             request,
-            "Please select your location first."
+            "Please select your exact location first."
         )
         return redirect("location_picker")
 
     try:
-        latitude = float(latitude)
-        longitude = float(longitude)
-
+        latitude = float(latitude_raw)
+        longitude = float(longitude_raw)
     except (TypeError, ValueError):
         messages.error(
             request,
@@ -4340,44 +4386,67 @@ def location_save_view(request):
         )
         return redirect("location_picker")
 
-    # Valid GPS coordinate check
     if not (-90 <= latitude <= 90):
-        messages.error(
-            request,
-            "Invalid latitude."
-        )
+        messages.error(request, "Invalid latitude.")
         return redirect("location_picker")
 
     if not (-180 <= longitude <= 180):
-        messages.error(
-            request,
-            "Invalid longitude."
-        )
+        messages.error(request, "Invalid longitude.")
         return redirect("location_picker")
 
-    # -----------------------------------------------------
-    # SAVE LOCATION IN SESSION
-    # These names match our existing AMEXA location system.
-    # -----------------------------------------------------
-
+    # Current browsing / nearby-shop location.
     request.session["customer_lat"] = latitude
     request.session["customer_lon"] = longitude
 
-    # Old selected shop remove karo,
-    # new location ke according nearest shop choose hoga.
-    request.session.pop(
-        "selected_shop_slug",
-        None,
-    )
+    if address_text:
+        request.session["customer_location_address"] = address_text
 
+    request.session.pop("selected_shop_slug", None)
     request.session.modified = True
 
-    messages.success(
-        request,
-        "📍 Current location updated successfully."
-    )
+    permanent_saved = False
+
+    # Logged-in customer's default delivery address gets the exact GPS pin.
+    # Text address is intentionally not auto-overwritten by reverse geocoding.
+    if request.user.is_authenticated:
+        default_address = (
+            request.user.addresses
+            .filter(is_default=True)
+            .first()
+            or request.user.addresses.first()
+        )
+
+        if default_address:
+            default_address.latitude = latitude
+            default_address.longitude = longitude
+            default_address.save(
+                update_fields=[
+                    "latitude",
+                    "longitude",
+                ]
+            )
+            permanent_saved = True
+
+    if permanent_saved:
+        messages.success(
+            request,
+            "📍 Exact live location saved to your delivery address."
+        )
+    elif request.user.is_authenticated:
+        messages.success(
+            request,
+            "📍 Current location saved. Add a delivery address once; "
+            "this GPS pin will be pre-filled automatically."
+        )
+    else:
+        messages.success(
+            request,
+            "📍 Current location selected successfully."
+        )
 
     return redirect("home")
+
+
 @login_required
 def delete_address_view(request, pk):
 
@@ -6712,7 +6781,14 @@ def delivery_assignment_action_view(request, assignment_id):
             if order.master_order:
                 _update_master_order_status(order.master_order)
 
-            messages.success(request, "Order accepted.")
+            messages.success(
+                request,
+                "Order accepted. Navigate to the pickup shop first."
+            )
+            return redirect(
+                "delivery_live_tracking",
+                order_number=order.order_number,
+            )
 
         elif action == "reject":
             if assignment.status not in {"Assigned", "Accepted"}:
