@@ -30,10 +30,11 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+    "10.0.2.2",
+    "amexa.onrender.com",
+    ".onrender.com",
     ".trycloudflare.com",
     ".up.railway.app",
-    ".onrender.com",
-    "amexa.onrender.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken",
     "cloudinary",
     "cloudinary_storage",
     "customer",

@@ -5,7 +5,7 @@ URL configuration for AMEXA project.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 
 from customer.support_views import (
     help_support_view,
@@ -117,7 +117,6 @@ from customer.views import (
 
 
 urlpatterns = [
-    path("api/v1/", include("api.urls")),
 
     # =====================================================
     # HOME
