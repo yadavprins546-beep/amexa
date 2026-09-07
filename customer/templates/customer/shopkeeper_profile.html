@@ -871,64 +871,9 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 
 
 
-            <article class="profile-card">
+            
 
-                <div class="card-head">
 
-                    <div>
-
-                        <h2>Shop Photo</h2>
-
-                        <p>Customer ko dikhne wali shop front image</p>
-
-                    </div>
-
-                    {% if shop_front_document %}
-
-                        <span class="status-badge {% if shop_front_document.status == 'VERIFIED' %}good{% elif shop_front_document.status == 'REJECTED' %}bad{% endif %}">{{ shop_front_document.status }}</span>
-
-                    {% endif %}
-
-                </div>
-
-                <div class="shop-photo">
-
-                    {% if shop_front_document and shop_front_document.document_file %}
-
-                        <img src="{{ shop_front_document.document_file.url }}" alt="{{ shop.name }} front photo">
-
-                    {% else %}
-
-                        <div class="shop-photo-empty">Shop photo abhi available nahi hai.</div>
-
-                    {% endif %}
-
-                </div>
-
-                <details class="edit-box" {% if shop_photo_form.errors %}open{% endif %}>
-                    <summary>Change Shop Photo</summary>
-                <form class="inline-form" method="post" enctype="multipart/form-data">
-
-                    {% csrf_token %}
-
-                    <input type="hidden" name="action" value="shop_photo">
-
-                    <div>
-
-                        <label>{{ shop_photo_form.shop_front.label }}</label>
-
-                        {{ shop_photo_form.shop_front }}
-
-                        {% if shop_photo_form.shop_front.errors %}<span class="form-error">{{ shop_photo_form.shop_front.errors }}</span>{% endif %}
-
-                    </div>
-
-                    <button class="save-btn" type="submit">Change Shop Photo</button>
-
-                </form>
-                </details>
-
-            </article>
 
             <article class="profile-card">
 
