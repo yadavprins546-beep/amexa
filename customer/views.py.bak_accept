@@ -1,4 +1,4 @@
-﻿import random
+import random
 from datetime import datetime, time, timedelta
 from decimal import Decimal
 
@@ -384,7 +384,7 @@ def _coupon_for_cart(request, subtotal):
     if subtotal < coupon.minimum_order_amount:
         coupon_error = (
             f"Minimum order amount for {coupon.code} is "
-            f"â‚¹{coupon.minimum_order_amount}."
+            f"₹{coupon.minimum_order_amount}."
         )
         discount_amount = Decimal("0.00")
     else:
@@ -533,7 +533,7 @@ def _create_multi_shop_order_from_cart(
         if totals["subtotal"] < coupon.minimum_order_amount:
             raise ValueError(
                 f"Minimum order amount for {coupon.code} is "
-                f"â‚¹{coupon.minimum_order_amount}."
+                f"₹{coupon.minimum_order_amount}."
             )
 
         discount_amount = coupon.calculate_discount(
@@ -1024,7 +1024,7 @@ def home(request):
     elif location_ready:
         location_title = "Current Location"
         location_subtitle = (
-            "Live location selected Â· Tap to change"
+            "Live location selected · Tap to change"
         )
 
     elif default_address:
@@ -2653,7 +2653,7 @@ def apply_coupon_view(request):
         messages.error(
             request,
             f"Minimum order amount is "
-            f"â‚¹{coupon.minimum_order_amount}."
+            f"₹{coupon.minimum_order_amount}."
         )
         return redirect("cart")
 
@@ -2672,7 +2672,7 @@ def apply_coupon_view(request):
 
     messages.success(
         request,
-        f"{coupon.code} applied. You save â‚¹{discount}."
+        f"{coupon.code} applied. You save ₹{discount}."
     )
 
     return redirect("cart")
@@ -2748,7 +2748,7 @@ def checkout_view(request):
 
     # =====================================================
     # AMEXA COINS
-    # 1 Coin = â‚¹1, usable only against product value.
+    # 1 Coin = ₹1, usable only against product value.
     # =====================================================
     expire_wallet_coins(request.user)
 
@@ -4468,12 +4468,12 @@ def location_save_view(request):
 
         messages.success(
             request,
-            "ðŸ“ Current location permanently saved."
+            "📍 Current location permanently saved."
         )
     else:
         messages.success(
             request,
-            "ðŸ“ Current location saved for this session."
+            "📍 Current location saved for this session."
         )
 
     return redirect("home")
@@ -5546,89 +5546,80 @@ def shopkeeper_orders_view(request):
 @login_required
 def shopkeeper_order_accept_view(request, order_number):
     profile = _shopkeeper_app_profile(request)
-
     if profile is None:
         return redirect("shopkeeper_dashboard")
 
     if request.method != "POST":
         return redirect("shopkeeper_orders")
 
-    try:
-        with transaction.atomic():
-            order = get_object_or_404(
-                Order.objects
-                .select_for_update()
-                .select_related("master_order", "shop")
-                .prefetch_related("items"),
-                order_number=order_number,
-                shop=profile.shop,
+    with transaction.atomic():
+        order = get_object_or_404(
+            Order.objects
+            .select_for_update()
+            .select_related("master_order", "shop")
+            .prefetch_related("items"),
+            order_number=order_number,
+            shop=profile.shop,
+        )
+
+        current_status = (order.status or "").strip()
+
+        if current_status == "Pending":
+            order.status = "Confirmed"
+            order.save(update_fields=["status", "updated_at"])
+            try:
+                order.create_status_history("Confirmed", "Accepted by shop.")
+            except Exception:
+                pass
+        elif current_status not in {"Confirmed", "Preparing"}:
+            messages.error(
+                request,
+                f"Order #{order.order_number} cannot be accepted now.",
             )
+            return redirect("shopkeeper_orders")
 
-            current_status = (order.status or "").strip()
+        task, _ = OrderPickingTask.objects.get_or_create(
+            order=order,
+            defaults={"shop": profile.shop},
+        )
 
-            if current_status == "Pending":
-                order.status = "Confirmed"
-                order.save(update_fields=["status", "updated_at"])
+        if task.shop_id != profile.shop_id:
+            task.shop = profile.shop
+            task.save(update_fields=["shop", "updated_at"])
 
-                try:
-                    order.create_status_history(
-                        "Confirmed",
-                        "Accepted by shop.",
-                    )
-                except Exception:
-                    pass
-
-            elif current_status not in {"Confirmed", "Preparing"}:
-                messages.error(
-                    request,
-                    f"Order #{order.order_number} cannot be accepted now.",
-                )
-                return redirect("shopkeeper_orders")
-
-            task, created = OrderPickingTask.objects.get_or_create(
-                order=order,
-                defaults={
-                    "shop": profile.shop,
-                    "status": "WAITING",
-                },
+        for order_item in order.items.all():
+            picking_item, created = OrderPickingItem.objects.get_or_create(
+                task=task,
+                order_item=order_item,
+                defaults={"required_quantity": order_item.quantity},
             )
-
-            if task.shop_id != profile.shop_id:
-                task.shop = profile.shop
-                task.save(update_fields=["shop", "updated_at"])
-
-            for order_item in order.items.all():
-                picking_item, item_created = OrderPickingItem.objects.get_or_create(
-                    order_item=order_item,
-                    defaults={
-                        "task": task,
-                        "required_quantity": order_item.quantity,
-                        "picked_quantity": 0,
-                    },
-                )
-
-                if picking_item.task_id != task.id:
-                    picking_item.task = task
-
+            if (
+                not created
+                and picking_item.required_quantity != order_item.quantity
+            ):
                 picking_item.required_quantity = order_item.quantity
+                picking_item.picked_quantity = min(
+                    picking_item.picked_quantity,
+                    order_item.quantity,
+                )
+                picking_item.save(
+                    update_fields=[
+                        "required_quantity",
+                        "picked_quantity",
+                        "updated_at",
+                    ]
+                )
 
-                if picking_item.picked_quantity > order_item.quantity:
-                    picking_item.picked_quantity = order_item.quantity
-
-                picking_item.save()
-
-            if task.status not in {
-                "PACKED",
-                "HANDED_OVER",
-                "CANCELLED",
-            }:
+        # Accept means picking starts immediately for the shopkeeper.
+        # Do not leave a second "start picking" state in between.
+        if task.status not in {"PACKED", "HANDED_OVER", "CANCELLED"}:
+            if task.status != "PICKING":
                 task.status = "PICKING"
                 task.save(update_fields=["status", "updated_at"])
 
             if order.status in {"Pending", "Confirmed"}:
                 order.status = "Preparing"
                 order.save(update_fields=["status", "updated_at"])
-
                 try:
                     order.create_status_history(
                         "Preparing",
@@ -5637,40 +5628,27 @@ def shopkeeper_order_accept_view(request, order_number):
                 except Exception:
                     pass
 
-            master_order_id = order.master_order_id
+        master_order_id = order.master_order_id
 
-        if master_order_id:
+    if master_order_id:
+        try:
             master_order = MasterOrder.objects.filter(
                 pk=master_order_id
             ).first()
-
             if master_order:
                 _update_master_order_status(master_order)
+        except Exception:
+            pass
 
-        messages.success(
-            request,
-            f"Order #{order_number} accepted. Picking started.",
-        )
+    messages.success(
+        request,
+        f"Order #{order_number} accepted. Picking started.",
+    )
+    return redirect(
+        "shopkeeper_pick_order",
+        order_number=order_number,
+    )
 
-        return redirect(
-            "shopkeeper_pick_order",
-            order_number=order_number,
-        )
-
-    except Exception as error:
-        print(
-            f"SHOPKEEPER ACCEPT ERROR | "
-            f"ORDER={order_number} | "
-            f"{type(error).__name__}: {error}",
-            flush=True,
-        )
-
-        messages.error(
-            request,
-            f"ACCEPT ERROR: {type(error).__name__}: {error}",
-        )
-
-        return redirect("shopkeeper_orders")
 
 @login_required
 def shopkeeper_order_reject_view(request, order_number):
@@ -7045,7 +7023,7 @@ def picker_scan_item_view(request, order_number):
                 picking_item.order_item.product_name
                 or picking_item.order_item.product.name
             )
-            messages.success(request, f"Picked {quantity} Ã— {product_name}.")
+            messages.success(request, f"Picked {quantity} × {product_name}.")
 
     return redirect("picker_order_detail", order_number=order_number)
 
@@ -7367,7 +7345,7 @@ def delivery_dashboard_view(request):
 
     # ---------------------------------------------------------
     # Earnings overview.
-    # Existing AMEXA rule: â‚¹15 delivery payout per completed shop order.
+    # Existing AMEXA rule: ₹15 delivery payout per completed shop order.
     # ---------------------------------------------------------
     now = timezone.now()
     today_start = now.replace(
@@ -7761,5 +7739,4 @@ def delivery_assignment_action_view(request, assignment_id):
             messages.error(request, "Invalid delivery action.")
 
     return redirect("delivery_dashboard")
-
 
