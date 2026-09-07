@@ -593,22 +593,46 @@
 }
 
 
+
 .shop-photo{width:100%;aspect-ratio:16/7;border-radius:14px;overflow:hidden;background:#07131f;border:1px solid rgba(255,255,255,.07);margin-bottom:12px;}
+
 .shop-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+
 .shop-photo-empty{height:100%;min-height:150px;display:flex;align-items:center;justify-content:center;color:#7f98ad;font-size:10px;font-weight:800;}
+
 .inline-form{display:grid;gap:10px;}
+
 .inline-form label,.bank-edit-grid label{display:block;margin-bottom:5px;color:#9fb6ca;font-size:9px;font-weight:850;}
+
 .inline-form input,.bank-edit-grid input{width:100%;box-sizing:border-box;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.09);border-radius:11px;outline:none;background:#071320;color:#fff;font-size:10px;}
+
 .location-tools{grid-column:1/-1;display:flex;gap:8px;align-items:center;}
+
 .small-btn{min-height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(105,231,255,.18);background:#0b2236;color:#69e7ff;cursor:pointer;font-size:9px;font-weight:900;}
+
 .location-note{color:#8099af;font-size:8px;}
+
 details.edit-box{margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;}
+
 details.edit-box summary{cursor:pointer;color:#69e7ff;font-size:9px;font-weight:950;list-style:none;}
+
 details.edit-box summary::-webkit-details-marker{display:none;}
+
 .bank-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+
 .bank-edit-grid .wide{grid-column:1/-1;}
+
 .form-error{display:block;margin-top:4px;color:#ff8585;font-size:8px;}
 
+
+.current-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.current-info{padding:11px;border-radius:11px;background:#07131f;border:1px solid rgba(255,255,255,.055);}
+.current-info.wide{grid-column:1/-1;}
+.current-info small{display:block;color:#7f98ad;font-size:8px;margin-bottom:4px;}
+.current-info b{display:block;color:#dce9f3;font-size:10px;word-break:break-word;}
+.edit-box summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;background:#0b2236;border:1px solid rgba(105,231,255,.16);}
+.edit-box summary::after{content:"Edit";padding:4px 8px;border-radius:999px;background:rgba(105,231,255,.10);color:#69e7ff;font-size:8px;}
+.edit-box[open] summary::after{content:"Close";}
 @media(max-width:720px){
 
     .profile-grid{
@@ -680,6 +704,8 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 </style>
 
 {% endblock %}
+
+
 
 
 
@@ -757,6 +783,8 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 
 
 
+
+
     <section class="profile-grid">
 
         <div class="stack">
@@ -775,9 +803,27 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 
                 </div>
 
+                <div class="current-info-grid">
+                    <div class="current-info">
+                        <small>Shop Name</small>
+                        <b>{{ shop.name }}</b>
+                    </div>
+                    <div class="current-info">
+                        <small>Phone</small>
+                        <b>{{ shop.phone }}</b>
+                    </div>
+                    <div class="current-info wide">
+                        <small>Shop Location</small>
+                        <b>{{ shop.address|default:"Location not added" }}</b>
+                    </div>
+                </div>
+
+                <details class="edit-box" {% if form.errors %}open{% endif %}>
+                    <summary>Edit Shop Settings</summary>
                 <form class="settings" method="post">
 
                     {% csrf_token %}
+
                     <input type="hidden" name="action" value="shop_settings">
 
                     {% for field in form %}
@@ -803,47 +849,85 @@ details.edit-box summary::-webkit-details-marker{display:none;}
                     {% endfor %}
 
                     <div class="location-tools">
+
                         <button class="small-btn" type="button" id="useCurrentLocation">Use Current Location</button>
+
                         <span class="location-note" id="locationStatus">Exact map location bhi update kar sakte hain.</span>
+
                     </div>
 
                     <button class="save-btn" type="submit">
+
                         Save Shop Settings
+
                     </button>
 
                 </form>
+                </details>
 
             </article>
 
 
 
+
+
             <article class="profile-card">
+
                 <div class="card-head">
+
                     <div>
+
                         <h2>Shop Photo</h2>
+
                         <p>Customer ko dikhne wali shop front image</p>
+
                     </div>
+
                     {% if shop_front_document %}
+
                         <span class="status-badge {% if shop_front_document.status == 'VERIFIED' %}good{% elif shop_front_document.status == 'REJECTED' %}bad{% endif %}">{{ shop_front_document.status }}</span>
+
                     {% endif %}
+
                 </div>
+
                 <div class="shop-photo">
+
                     {% if shop_front_document and shop_front_document.document_file %}
+
                         <img src="{{ shop_front_document.document_file.url }}" alt="{{ shop.name }} front photo">
+
                     {% else %}
+
                         <div class="shop-photo-empty">Shop photo abhi available nahi hai.</div>
+
                     {% endif %}
+
                 </div>
+
+                <details class="edit-box" {% if shop_photo_form.errors %}open{% endif %}>
+                    <summary>Change Shop Photo</summary>
                 <form class="inline-form" method="post" enctype="multipart/form-data">
+
                     {% csrf_token %}
+
                     <input type="hidden" name="action" value="shop_photo">
+
                     <div>
+
                         <label>{{ shop_photo_form.shop_front.label }}</label>
+
                         {{ shop_photo_form.shop_front }}
+
                         {% if shop_photo_form.shop_front.errors %}<span class="form-error">{{ shop_photo_form.shop_front.errors }}</span>{% endif %}
+
                     </div>
+
                     <button class="save-btn" type="submit">Change Shop Photo</button>
+
                 </form>
+                </details>
+
             </article>
 
             <article class="profile-card">
@@ -928,6 +1012,8 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 
 
 
+
+
         <div class="stack">
 
             <article class="profile-card">
@@ -995,22 +1081,39 @@ details.edit-box summary::-webkit-details-marker{display:none;}
                 {% endif %}
 
                 <details class="edit-box" {% if bank_form.errors %}open{% endif %}>
+
                     <summary>Edit Payment Details</summary>
+
                     <form class="bank-edit-grid" method="post" enctype="multipart/form-data">
+
                         {% csrf_token %}
+
                         <input type="hidden" name="action" value="bank_details">
+
                         {% for field in bank_form %}
+
                             <div class="{% if field.name == 'cancelled_cheque' %}wide{% endif %}">
+
                                 <label>{{ field.label }}</label>
+
                                 {{ field }}
+
                                 {% if field.errors %}<span class="form-error">{{ field.errors }}</span>{% endif %}
+
                             </div>
+
                         {% endfor %}
+
                         {% if bank_account %}
+
                             <div class="wide location-note">Account number blank chhodne par existing {{ bank_account.masked_account_number }} same rahega.</div>
+
                         {% endif %}
+
                         <button class="save-btn wide" type="submit">Save Payment Details</button>
+
                     </form>
+
                 </details>
 
                 <a class="full-btn payment-btn"
@@ -1022,6 +1125,8 @@ details.edit-box summary::-webkit-details-marker{display:none;}
                 </a>
 
             </article>
+
+
 
 
 
@@ -1100,26 +1205,47 @@ details.edit-box summary::-webkit-details-marker{display:none;}
 </div>
 
 <script>
+
 (function(){
+
     const button=document.getElementById("useCurrentLocation");
+
     const status=document.getElementById("locationStatus");
+
     const latitude=document.getElementById("id_shop_latitude");
+
     const longitude=document.getElementById("id_shop_longitude");
+
     if(!button) return;
+
     button.addEventListener("click",function(){
+
         if(!navigator.geolocation){status.textContent="Location support available nahi hai.";return;}
+
         button.disabled=true; status.textContent="Current location mil rahi hai...";
+
         navigator.geolocation.getCurrentPosition(function(position){
+
             if(latitude) latitude.value=position.coords.latitude.toFixed(6);
+
             if(longitude) longitude.value=position.coords.longitude.toFixed(6);
+
             status.textContent="Location set ho gayi. Ab Save Shop Settings dabayein.";
+
             button.disabled=false;
+
         },function(){
+
             status.textContent="Location permission allow karke dobara try karein.";
+
             button.disabled=false;
+
         },{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+
     });
+
 })();
+
 </script>
 
 {% endblock %}
