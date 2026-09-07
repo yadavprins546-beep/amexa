@@ -28,6 +28,8 @@ from .forms import (
     ShopkeeperPersonalDetailsForm,
     ShopkeeperProductForm,
     ShopkeeperProfileSettingsForm,
+    ShopkeeperShopPhotoForm,
+    ShopkeeperBankUpdateForm,
 )
 
 from .wallet_services import (
@@ -6787,26 +6789,94 @@ def shopkeeper_profile_view(request):
     if profile is None:
         return redirect("shopkeeper_dashboard")
 
-    form = ShopkeeperProfileSettingsForm(
-        request.POST or None,
-        instance=profile.shop,
+    shop = profile.shop
+    bank_account = ShopkeeperBankAccount.objects.filter(profile=profile).first()
+    action = request.POST.get("action", "") if request.method == "POST" else ""
+
+    shop_form = ShopkeeperProfileSettingsForm(
+        request.POST if action == "shop_settings" else None,
+        instance=shop,
     )
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Shop profile settings updated.")
+    if request.method == "POST" and action == "shop_settings" and shop_form.is_valid():
+        shop_form.save()
+        messages.success(request, "Shop location and settings updated successfully.")
         return redirect("shopkeeper_profile")
+
+    shop_photo_form = ShopkeeperShopPhotoForm(
+        request.POST if action == "shop_photo" else None,
+        request.FILES if action == "shop_photo" else None,
+    )
+    if request.method == "POST" and action == "shop_photo" and shop_photo_form.is_valid():
+        _save_shopkeeper_document(
+            profile,
+            "SHOP_FRONT",
+            shop_photo_form.cleaned_data["shop_front"],
+        )
+        messages.success(request, "Shop photo updated successfully.")
+        return redirect("shopkeeper_profile")
+
+    bank_initial = {}
+    if bank_account:
+        bank_initial = {
+            "account_holder_name": bank_account.account_holder_name,
+            "bank_name": bank_account.bank_name,
+            "ifsc_code": bank_account.ifsc_code,
+            "upi_id": bank_account.upi_id,
+        }
+
+    bank_form = ShopkeeperBankUpdateForm(
+        request.POST if action == "bank_details" else None,
+        request.FILES if action == "bank_details" else None,
+        initial=bank_initial,
+    )
+
+    if request.method == "POST" and action == "bank_details" and bank_form.is_valid():
+        new_account_number = bank_form.cleaned_data.get("account_number")
+
+        if bank_account is None and not new_account_number:
+            bank_form.add_error(
+                "account_number",
+                "Account number is required for a new payout account.",
+            )
+        else:
+            if bank_account is None:
+                bank_account = ShopkeeperBankAccount(profile=profile)
+
+            bank_account.account_holder_name = bank_form.cleaned_data["account_holder_name"]
+            bank_account.bank_name = bank_form.cleaned_data["bank_name"]
+            bank_account.ifsc_code = bank_form.cleaned_data["ifsc_code"]
+            bank_account.upi_id = bank_form.cleaned_data.get("upi_id", "")
+
+            if new_account_number:
+                bank_account.set_account_number(new_account_number)
+
+            cancelled_cheque = bank_form.cleaned_data.get("cancelled_cheque")
+            if cancelled_cheque:
+                bank_account.cancelled_cheque = cancelled_cheque
+
+            bank_account.status = "PENDING"
+            bank_account.rejection_reason = ""
+            bank_account.verified_at = None
+            bank_account.verified_by = None
+            bank_account.save()
+
+            messages.success(request, "Payment details updated. Verification pending.")
+            return redirect("shopkeeper_profile")
+
+    shop_front_document = profile.documents.filter(document_type="SHOP_FRONT").first()
 
     return render(
         request,
         "customer/shopkeeper_profile.html",
         {
             "profile": profile,
-            "shop": profile.shop,
-            "form": form,
+            "shop": shop,
+            "form": shop_form,
+            "shop_photo_form": shop_photo_form,
+            "shop_front_document": shop_front_document,
             "documents": profile.documents.all(),
-            "bank_account": ShopkeeperBankAccount.objects.filter(
-                profile=profile
-            ).first(),
+            "bank_account": bank_account,
+            "bank_form": bank_form,
             "active_tab": "profile",
         },
     )
@@ -7768,10 +7838,3 @@ def delivery_assignment_action_view(request, assignment_id):
             messages.error(request, "Invalid delivery action.")
 
     return redirect("delivery_dashboard")
-
-
-
-
-
-
-

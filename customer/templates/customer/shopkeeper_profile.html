@@ -3,388 +3,684 @@
 {% block title %}Profile | AMEXA Partner{% endblock %}
 
 {% block extra_head %}
+
 <style>
+
 .profile-page{
+
     max-width:1000px;
+
     margin:0 auto;
+
     padding:4px 0 90px;
+
 }
 
 .profile-hero{
+
     position:relative;
+
     overflow:hidden;
+
     padding:22px;
+
     border:1px solid rgba(105,231,255,.16);
+
     border-radius:22px;
+
     background:
+
         radial-gradient(circle at top right,rgba(105,231,255,.16),transparent 34%),
+
         linear-gradient(135deg,#0a1726,#0e2438);
+
     box-shadow:0 14px 34px rgba(0,0,0,.18);
+
 }
 
 .profile-hero::after{
+
     content:"";
+
     position:absolute;
+
     width:150px;
+
     height:150px;
+
     right:-55px;
+
     bottom:-80px;
+
     border-radius:50%;
+
     background:rgba(50,226,154,.10);
+
 }
 
 .hero-row{
+
     position:relative;
+
     z-index:2;
+
     display:flex;
+
     align-items:center;
+
     justify-content:space-between;
+
     gap:16px;
+
 }
 
 .identity{
+
     display:flex;
+
     align-items:center;
+
     gap:15px;
+
     min-width:0;
+
 }
 
 .avatar-box{
+
     width:84px;
+
     height:84px;
+
     flex:0 0 84px;
+
     border-radius:22px;
+
     overflow:hidden;
+
     border:2px solid rgba(105,231,255,.28);
+
     background:#10273c;
+
     box-shadow:0 8px 20px rgba(0,0,0,.22);
+
 }
 
 .avatar-box img{
+
     width:100%;
+
     height:100%;
+
     object-fit:cover;
+
     display:block;
+
 }
 
 .avatar-empty{
+
     width:100%;
+
     height:100%;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     font-size:28px;
+
     font-weight:950;
+
     color:#69e7ff;
+
 }
 
 .identity h1{
+
     margin:0;
+
     font-size:22px;
+
     color:#fff;
+
 }
 
 .identity p{
+
     margin:5px 0 0;
+
     color:#9fb6ca;
+
     font-size:11px;
+
 }
 
 .verify{
+
     display:inline-flex;
+
     align-items:center;
+
     gap:5px;
+
     margin-top:9px;
+
     padding:6px 10px;
+
     border-radius:999px;
+
     background:rgba(50,226,154,.10);
+
     border:1px solid rgba(50,226,154,.18);
+
     color:#62f0b2;
+
     font-size:9px;
+
     font-weight:950;
+
 }
 
 .shop-state{
+
     flex:0 0 auto;
+
     padding:8px 12px;
+
     border-radius:999px;
+
     font-size:9px;
+
     font-weight:950;
+
 }
 
 .shop-state.online{
+
     background:rgba(50,226,154,.11);
+
     color:#62f0b2;
+
     border:1px solid rgba(50,226,154,.20);
+
 }
 
 .shop-state.offline{
+
     background:rgba(255,90,90,.10);
+
     color:#ff8585;
+
     border:1px solid rgba(255,90,90,.18);
+
 }
 
 .profile-grid{
+
     display:grid;
+
     grid-template-columns:1.1fr .9fr;
+
     gap:14px;
+
     margin-top:14px;
+
 }
 
 .stack{
+
     display:grid;
+
     gap:14px;
+
 }
 
 .profile-card{
+
     padding:18px;
+
     border-radius:18px;
+
     border:1px solid rgba(255,255,255,.07);
+
     background:linear-gradient(145deg,#0a1726,#0c1d2e);
+
     box-shadow:0 8px 24px rgba(0,0,0,.12);
+
 }
 
 .card-head{
+
     display:flex;
+
     justify-content:space-between;
+
     align-items:flex-start;
+
     gap:12px;
+
     margin-bottom:14px;
+
 }
 
 .card-head h2{
+
     margin:0;
+
     color:#fff;
+
     font-size:15px;
+
 }
 
 .card-head p{
+
     margin:4px 0 0;
+
     color:#8099af;
+
     font-size:9px;
+
 }
 
 .settings{
+
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:11px;
+
 }
 
 .settings .field{
+
     margin:0;
+
 }
 
 .settings .wide{
+
     grid-column:1/-1;
+
 }
 
 .settings label{
+
     display:block;
+
     margin-bottom:5px;
+
     color:#9fb6ca;
+
     font-size:9px;
+
     font-weight:850;
+
 }
 
 .settings input,
+
 .settings textarea,
+
 .settings select{
+
     width:100%;
+
     box-sizing:border-box;
+
     min-height:42px;
+
     padding:9px 11px;
+
     border:1px solid rgba(255,255,255,.09);
+
     border-radius:11px;
+
     outline:none;
+
     background:#071320;
+
     color:#fff;
+
     font-size:10px;
+
 }
 
 .settings textarea{
+
     min-height:76px;
+
     resize:vertical;
+
 }
 
 .save-btn{
+
     grid-column:1/-1;
+
     min-height:44px;
+
     border:0;
+
     border-radius:12px;
+
     cursor:pointer;
+
     font-size:10px;
+
     font-weight:950;
+
     color:#03150f;
+
     background:linear-gradient(135deg,#32e29a,#69e7ff);
+
 }
 
 .doc-row{
+
     display:flex;
+
     justify-content:space-between;
+
     align-items:center;
+
     gap:12px;
+
     padding:11px 0;
+
     border-top:1px solid rgba(255,255,255,.06);
+
 }
 
 .doc-row:first-of-type{
+
     border-top:0;
+
 }
 
 .doc-row b{
+
     display:block;
+
     color:#dce9f3;
+
     font-size:10px;
+
 }
 
 .doc-row small{
+
     display:block;
+
     margin-top:4px;
+
     color:#748da3;
+
     font-size:8px;
+
 }
 
 .status-badge{
+
     padding:5px 8px;
+
     border-radius:999px;
+
     background:#10263a;
+
     color:#69e7ff;
+
     font-size:8px;
+
     font-weight:950;
+
 }
 
 .status-badge.good{
+
     background:rgba(50,226,154,.10);
+
     color:#61efb1;
+
 }
 
 .status-badge.bad{
+
     background:rgba(255,89,89,.10);
+
     color:#ff8585;
+
 }
 
 .bank-row{
+
     display:flex;
+
     justify-content:space-between;
+
     gap:12px;
+
     padding:12px;
+
     border-radius:12px;
+
     background:#07131f;
+
     border:1px solid rgba(255,255,255,.055);
+
 }
 
 .bank-row b{
+
     display:block;
+
     color:#fff;
+
     font-size:10px;
+
 }
 
 .bank-row small{
+
     display:block;
+
     margin-top:4px;
+
     color:#7f98ad;
+
     font-size:8px;
+
 }
 
 .quick-links{
+
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:8px;
+
 }
 
 .quick-link{
+
     text-decoration:none;
+
     padding:11px;
+
     border-radius:11px;
+
     border:1px solid rgba(255,255,255,.065);
+
     background:#091827;
+
     color:#c7d7e4;
+
     font-size:9px;
+
     font-weight:850;
+
 }
 
 .quick-link span{
+
     float:right;
+
     color:#69e7ff;
+
 }
 
 .full-btn{
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     width:100%;
+
     min-height:42px;
+
     box-sizing:border-box;
+
     margin-top:10px;
+
     border-radius:11px;
+
     text-decoration:none;
+
     font-size:9px;
+
     font-weight:950;
+
 }
 
 .payment-btn{
+
     color:#07140f;
+
     background:linear-gradient(135deg,#32e29a,#69e7ff);
+
 }
 
 .logout-btn{
+
     color:#ffdede;
+
     background:rgba(255,72,72,.11);
+
     border:1px solid rgba(255,91,91,.18);
+
 }
 
 .empty-state{
+
     padding:13px;
+
     border-radius:11px;
+
     background:#07131f;
+
     color:#8199ae;
+
     font-size:9px;
+
 }
 
+
+.shop-photo{width:100%;aspect-ratio:16/7;border-radius:14px;overflow:hidden;background:#07131f;border:1px solid rgba(255,255,255,.07);margin-bottom:12px;}
+.shop-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.shop-photo-empty{height:100%;min-height:150px;display:flex;align-items:center;justify-content:center;color:#7f98ad;font-size:10px;font-weight:800;}
+.inline-form{display:grid;gap:10px;}
+.inline-form label,.bank-edit-grid label{display:block;margin-bottom:5px;color:#9fb6ca;font-size:9px;font-weight:850;}
+.inline-form input,.bank-edit-grid input{width:100%;box-sizing:border-box;min-height:42px;padding:9px 11px;border:1px solid rgba(255,255,255,.09);border-radius:11px;outline:none;background:#071320;color:#fff;font-size:10px;}
+.location-tools{grid-column:1/-1;display:flex;gap:8px;align-items:center;}
+.small-btn{min-height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(105,231,255,.18);background:#0b2236;color:#69e7ff;cursor:pointer;font-size:9px;font-weight:900;}
+.location-note{color:#8099af;font-size:8px;}
+details.edit-box{margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px;}
+details.edit-box summary{cursor:pointer;color:#69e7ff;font-size:9px;font-weight:950;list-style:none;}
+details.edit-box summary::-webkit-details-marker{display:none;}
+.bank-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.bank-edit-grid .wide{grid-column:1/-1;}
+.form-error{display:block;margin-top:4px;color:#ff8585;font-size:8px;}
+
 @media(max-width:720px){
+
     .profile-grid{
+
         grid-template-columns:1fr;
+
     }
 
     .hero-row{
+
         align-items:flex-start;
+
     }
 
     .shop-state{
+
         position:absolute;
+
         right:0;
+
         top:0;
+
     }
 
     .identity{
+
         padding-right:45px;
+
     }
 
     .settings,
+
     .quick-links{
+
         grid-template-columns:1fr;
+
     }
 
     .settings .wide{
+
         grid-column:auto;
+
     }
 
     .save-btn{
+
         grid-column:auto;
+
     }
 
     .avatar-box{
+
         width:72px;
+
         height:72px;
+
         flex-basis:72px;
+
     }
 
     .identity h1{
+
         font-size:18px;
+
     }
+
 }
+
 </style>
+
 {% endblock %}
+
 
 
 {% block content %}
@@ -392,47 +688,73 @@
 <div class="profile-page">
 
     <section class="profile-hero">
+
         <div class="hero-row">
 
             <div class="identity">
 
                 <div class="avatar-box">
+
                     {% if profile.owner_photo %}
+
                         <img src="{{ profile.owner_photo.url }}" alt="Shopkeeper Photo">
+
                     {% else %}
+
                         <div class="avatar-empty">
+
                             {{ request.user.name|first|upper }}
+
                         </div>
+
                     {% endif %}
+
                 </div>
 
                 <div>
+
                     <h1>{{ request.user.name|default:"AMEXA Partner" }}</h1>
 
                     <p>
+
                         {{ request.user.phone }}
+
                         {% if shop.name %}
+
                             • {{ shop.name }}
+
                         {% endif %}
+
                     </p>
 
                     <div class="verify">
+
                         ✓ AMEXA VERIFIED SHOPKEEPER
+
                     </div>
+
                 </div>
 
             </div>
 
             <div class="shop-state {% if shop.is_online %}online{% else %}offline{% endif %}">
+
                 {% if shop.is_online %}
+
                     ● ONLINE
+
                 {% else %}
+
                     ● OFFLINE
+
                 {% endif %}
+
             </div>
 
         </div>
+
     </section>
+
 
 
     <section class="profile-grid">
@@ -442,16 +764,24 @@
             <article class="profile-card">
 
                 <div class="card-head">
+
                     <div>
+
                         <h2>Shop Settings</h2>
+
                         <p>Customer ko dikhne wali shop information</p>
+
                     </div>
+
                 </div>
 
                 <form class="settings" method="post">
+
                     {% csrf_token %}
+                    <input type="hidden" name="action" value="shop_settings">
 
                     {% for field in form %}
+
                         <div class="field {% if field.name == 'address' %}wide{% endif %}">
 
                             <label>{{ field.label }}</label>
@@ -459,13 +789,23 @@
                             {{ field }}
 
                             {% if field.errors %}
+
                                 <small style="color:#ff8585">
+
                                     {{ field.errors }}
+
                                 </small>
+
                             {% endif %}
 
                         </div>
+
                     {% endfor %}
+
+                    <div class="location-tools">
+                        <button class="small-btn" type="button" id="useCurrentLocation">Use Current Location</button>
+                        <span class="location-note" id="locationStatus">Exact map location bhi update kar sakte hain.</span>
+                    </div>
 
                     <button class="save-btn" type="submit">
                         Save Shop Settings
@@ -476,26 +816,68 @@
             </article>
 
 
+
+            <article class="profile-card">
+                <div class="card-head">
+                    <div>
+                        <h2>Shop Photo</h2>
+                        <p>Customer ko dikhne wali shop front image</p>
+                    </div>
+                    {% if shop_front_document %}
+                        <span class="status-badge {% if shop_front_document.status == 'VERIFIED' %}good{% elif shop_front_document.status == 'REJECTED' %}bad{% endif %}">{{ shop_front_document.status }}</span>
+                    {% endif %}
+                </div>
+                <div class="shop-photo">
+                    {% if shop_front_document and shop_front_document.document_file %}
+                        <img src="{{ shop_front_document.document_file.url }}" alt="{{ shop.name }} front photo">
+                    {% else %}
+                        <div class="shop-photo-empty">Shop photo abhi available nahi hai.</div>
+                    {% endif %}
+                </div>
+                <form class="inline-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="shop_photo">
+                    <div>
+                        <label>{{ shop_photo_form.shop_front.label }}</label>
+                        {{ shop_photo_form.shop_front }}
+                        {% if shop_photo_form.shop_front.errors %}<span class="form-error">{{ shop_photo_form.shop_front.errors }}</span>{% endif %}
+                    </div>
+                    <button class="save-btn" type="submit">Change Shop Photo</button>
+                </form>
+            </article>
+
             <article class="profile-card">
 
                 <div class="card-head">
+
                     <div>
+
                         <h2>KYC & Licences</h2>
 
                         <p>
+
                             {% if shop.gstin %}
+
                                 GSTIN {{ shop.gstin }}
+
                             {% endif %}
 
                             {% if shop.fssai_number %}
+
                                 • FSSAI {{ shop.fssai_number }}
+
                             {% endif %}
+
                         </p>
+
                     </div>
 
                     <span class="status-badge good">
+
                         APPROVED
+
                     </span>
+
                 </div>
 
                 {% for document in documents %}
@@ -503,18 +885,29 @@
                     <div class="doc-row">
 
                         <div>
+
                             <b>{{ document.get_document_type_display }}</b>
+
                             <small>{{ document.masked_document_number }}</small>
+
                         </div>
 
                         <span class="status-badge
+
                             {% if document.status == 'VERIFIED' %}
+
                                 good
+
                             {% elif document.status == 'REJECTED' %}
+
                                 bad
+
                             {% endif %}
+
                         ">
+
                             {{ document.status }}
+
                         </span>
 
                     </div>
@@ -522,7 +915,9 @@
                 {% empty %}
 
                     <div class="empty-state">
+
                         Koi document available nahi hai.
+
                     </div>
 
                 {% endfor %}
@@ -532,25 +927,39 @@
         </div>
 
 
+
         <div class="stack">
 
             <article class="profile-card">
 
                 <div class="card-head">
+
                     <div>
+
                         <h2>Payout Bank</h2>
+
                         <p>Secure payout account details</p>
+
                     </div>
 
                     {% if bank_account %}
+
                         <span class="status-badge
+
                             {% if bank_account.status == 'VERIFIED' %}
+
                                 good
+
                             {% endif %}
+
                         ">
+
                             {{ bank_account.status }}
+
                         </span>
+
                     {% endif %}
+
                 </div>
 
                 {% if bank_account %}
@@ -558,13 +967,19 @@
                     <div class="bank-row">
 
                         <div>
+
                             <b>{{ bank_account.bank_name }}</b>
+
                             <small>{{ bank_account.account_holder_name }}</small>
+
                         </div>
 
                         <div style="text-align:right">
+
                             <b>{{ bank_account.masked_account_number }}</b>
+
                             <small>{{ bank_account.ifsc_code }}</small>
+
                         </div>
 
                     </div>
@@ -572,59 +987,108 @@
                 {% else %}
 
                     <div class="empty-state">
+
                         Bank account details nahi mili.
+
                     </div>
 
                 {% endif %}
 
+                <details class="edit-box" {% if bank_form.errors %}open{% endif %}>
+                    <summary>Edit Payment Details</summary>
+                    <form class="bank-edit-grid" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="bank_details">
+                        {% for field in bank_form %}
+                            <div class="{% if field.name == 'cancelled_cheque' %}wide{% endif %}">
+                                <label>{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}<span class="form-error">{{ field.errors }}</span>{% endif %}
+                            </div>
+                        {% endfor %}
+                        {% if bank_account %}
+                            <div class="wide location-note">Account number blank chhodne par existing {{ bank_account.masked_account_number }} same rahega.</div>
+                        {% endif %}
+                        <button class="save-btn wide" type="submit">Save Payment Details</button>
+                    </form>
+                </details>
+
                 <a class="full-btn payment-btn"
+
                    href="{% url 'shopkeeper_payments' %}">
+
                     Payments & Profit
+
                 </a>
 
             </article>
 
 
+
             <article class="profile-card">
 
                 <div class="card-head">
+
                     <div>
+
                         <h2>Support & Account</h2>
+
                         <p>AMEXA partner help aur account controls</p>
+
                     </div>
+
                 </div>
 
                 <div class="quick-links">
 
                     <a class="quick-link"
+
                        href="{% url 'help_support' %}">
+
                         Help & Support
+
                         <span>›</span>
+
                     </a>
 
                     <a class="quick-link"
+
                        href="{% url 'about' %}">
+
                         About AMEXA
+
                         <span>›</span>
+
                     </a>
 
                     <a class="quick-link"
+
                        href="{% url 'privacy_policy' %}">
+
                         Privacy Policy
+
                         <span>›</span>
+
                     </a>
 
                     <a class="quick-link"
+
                        href="{% url 'terms_conditions' %}">
+
                         Terms
+
                         <span>›</span>
+
                     </a>
 
                 </div>
 
                 <a class="full-btn logout-btn"
+
                    href="{% url 'logout' %}">
+
                     Logout Shopkeeper
+
                 </a>
 
             </article>
@@ -634,5 +1098,28 @@
     </section>
 
 </div>
+
+<script>
+(function(){
+    const button=document.getElementById("useCurrentLocation");
+    const status=document.getElementById("locationStatus");
+    const latitude=document.getElementById("id_shop_latitude");
+    const longitude=document.getElementById("id_shop_longitude");
+    if(!button) return;
+    button.addEventListener("click",function(){
+        if(!navigator.geolocation){status.textContent="Location support available nahi hai.";return;}
+        button.disabled=true; status.textContent="Current location mil rahi hai...";
+        navigator.geolocation.getCurrentPosition(function(position){
+            if(latitude) latitude.value=position.coords.latitude.toFixed(6);
+            if(longitude) longitude.value=position.coords.longitude.toFixed(6);
+            status.textContent="Location set ho gayi. Ab Save Shop Settings dabayein.";
+            button.disabled=false;
+        },function(){
+            status.textContent="Location permission allow karke dobara try karein.";
+            button.disabled=false;
+        },{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+    });
+})();
+</script>
 
 {% endblock %}

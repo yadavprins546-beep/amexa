@@ -1048,3 +1048,122 @@ class ShopkeeperProfileSettingsForm(forms.ModelForm):
 
     def clean_phone(self):
         return normalize_indian_phone(self.cleaned_data["phone"])
+
+
+class ShopkeeperShopPhotoForm(forms.Form):
+    shop_front = forms.FileField(
+        label="Shop Front Photo",
+        validators=[validate_onboarding_image],
+        widget=forms.FileInput(
+            attrs={
+                "accept": "image/jpeg,image/png",
+                "capture": "environment",
+            }
+        ),
+    )
+
+
+class ShopkeeperBankUpdateForm(forms.Form):
+    account_holder_name = forms.CharField(max_length=150)
+    bank_name = forms.CharField(max_length=150)
+
+    account_number = forms.CharField(
+        required=False,
+        min_length=9,
+        max_length=18,
+        widget=forms.PasswordInput(
+            render_value=True,
+            attrs={
+                "inputmode": "numeric",
+                "autocomplete": "off",
+                "placeholder": "Leave blank to keep existing account",
+            },
+        ),
+    )
+
+    confirm_account_number = forms.CharField(
+        required=False,
+        min_length=9,
+        max_length=18,
+        widget=forms.PasswordInput(
+            render_value=True,
+            attrs={
+                "inputmode": "numeric",
+                "autocomplete": "off",
+                "placeholder": "Confirm new account number",
+            },
+        ),
+    )
+
+    ifsc_code = forms.CharField(min_length=11, max_length=11)
+    upi_id = forms.CharField(max_length=100, required=False)
+
+    cancelled_cheque = forms.FileField(
+        required=False,
+        validators=[validate_onboarding_file],
+        widget=forms.FileInput(
+            attrs={"accept": ".jpg,.jpeg,.png,.pdf"}
+        ),
+    )
+
+    def clean_account_number(self):
+        value = re.sub(
+            r"\D",
+            "",
+            self.cleaned_data.get("account_number", ""),
+        )
+
+        if value and not re.fullmatch(r"[0-9]{9,18}", value):
+            raise forms.ValidationError(
+                "Account number must be 9 to 18 digits."
+            )
+
+        return value
+
+    def clean_confirm_account_number(self):
+        return re.sub(
+            r"\D",
+            "",
+            self.cleaned_data.get("confirm_account_number", ""),
+        )
+
+    def clean_ifsc_code(self):
+        value = self.cleaned_data["ifsc_code"].strip().upper()
+
+        if not re.fullmatch(r"[A-Z]{4}0[A-Z0-9]{6}", value):
+            raise forms.ValidationError(
+                "Please enter a valid IFSC code."
+            )
+
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+
+        account_number = cleaned.get("account_number")
+        confirm_account_number = cleaned.get("confirm_account_number")
+
+        if account_number or confirm_account_number:
+            if not account_number:
+                self.add_error(
+                    "account_number",
+                    "Please enter new account number.",
+                )
+
+            if not confirm_account_number:
+                self.add_error(
+                    "confirm_account_number",
+                    "Please confirm new account number.",
+                )
+
+            if (
+                account_number
+                and confirm_account_number
+                and account_number != confirm_account_number
+            ):
+                self.add_error(
+                    "confirm_account_number",
+                    "Account numbers do not match.",
+                )
+
+        return cleaned
