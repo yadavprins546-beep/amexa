@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 
 <!DOCTYPE html>
 
@@ -64,7 +64,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;ba
 </style>
 
 <style>
-/* AMEXA DIGITAL DASHBOARD — polished layout */
+/* AMEXA DIGITAL DASHBOARD â€” polished layout */
 html{scroll-behavior:smooth}
 body{font-size:14px;line-height:1.5}
 .layout{grid-template-columns:260px minmax(0,1fr)}
@@ -126,17 +126,17 @@ body{font-size:14px;line-height:1.5}
 
  <nav class="nav">
 
-  <a href="#dashboard" class="active">🏠 Dashboard</a>
+  <a href="#dashboard" class="active">ðŸ  Dashboard</a>
 
-  <a href="#deliveries">📦 My Deliveries</a>
+  <a href="#deliveries">ðŸ“¦ My Deliveries</a>
 
-  <a href="#earnings">₹ Earnings</a>
+  <a href="#earnings">â‚¹ Earnings</a>
 
-  <a href="#offers">🎁 Incentives & Offers</a>
+  <a href="#offers">ðŸŽ Incentives & Offers</a>
 
-  <a href="#support">🎧 Help & Support</a>
+  <a href="#support">ðŸŽ§ Help & Support</a>
 
-  <a href="#claims">📄 Claims & Issues</a>
+  <a href="#claims">ðŸ“„ Claims & Issues</a>
 
  </nav>
 
@@ -144,7 +144,7 @@ body{font-size:14px;line-height:1.5}
 
   You are
 
-  <div class="big-online">{% if request.user.is_active_delivery %}● ONLINE{% else %}● OFFLINE{% endif %}</div>
+  <div class="big-online">{% if request.user.is_active_delivery %}â— ONLINE{% else %}â— OFFLINE{% endif %}</div>
 
   <span class="muted">Control availability anytime.</span>
 
@@ -156,19 +156,25 @@ body{font-size:14px;line-height:1.5}
 
   <a href="#support" class="btn btn-dark btn-wide">Contact Support</a>
 
+  <a href="{% url 'logout' %}"
+     class="btn btn-dark btn-wide"
+     style="margin-top:10px;color:#ffb3b3;border-color:rgba(255,90,90,.35);">
+     🚪 Logout
+  </a>
+
  </div>
 
 </aside>
 
 <main class="main" id="dashboard">
 
- <div class="digital-head"><span>AMEXA · DELIVERY CONTROL CENTER</span><span class="system-live">SYSTEM LIVE</span></div>
+ <div class="digital-head"><span>AMEXA Â· DELIVERY CONTROL CENTER</span><span class="system-live">SYSTEM LIVE</span></div>
 
  <div class="top">
 
-  <div class="hello"><h1>Good {% now "A" %}, {{ request.user.name|default:"Partner" }} 👋</h1><p>Ride safe, stay active and deliver smiles today.</p></div>
+  <div class="hello"><h1>Good {% now "A" %}, {{ request.user.name|default:"Partner" }} ðŸ‘‹</h1><p>Ride safe, stay active and deliver smiles today.</p></div>
 
-  <button class="btn btn-dark" id="enableAlerts" type="button">🔔 Enable Alerts</button>
+  <button class="btn btn-dark" id="enableAlerts" type="button">ðŸ”” Enable Alerts</button>
 
  </div>
 
@@ -182,17 +188,17 @@ body{font-size:14px;line-height:1.5}
 
    <div class="online-row">
 
-    <div><div class="online-label">You are</div><div class="online-value">{% if request.user.is_active_delivery %}● ONLINE{% else %}<span style="color:#ff6a7f">● OFFLINE</span>{% endif %}</div><div class="muted" style="font-size:9px">Online partners can receive new assignments.</div></div>
+    <div><div class="online-label">You are</div><div class="online-value">{% if request.user.is_active_delivery %}â— ONLINE{% else %}<span style="color:#ff6a7f">â— OFFLINE</span>{% endif %}</div><div class="muted" style="font-size:9px">Online partners can receive new assignments.</div></div>
 
    </div>
 
    <div class="stats">
 
-    <div class="stat"><small>Today's Earnings</small><b>₹{{ today_earnings }}</b></div>
+    <div class="stat"><small>Today's Earnings</small><b>â‚¹{{ today_earnings }}</b></div>
 
     <div class="stat"><small>Today's Orders</small><b>{{ today_deliveries }}</b></div>
 
-    <div class="stat"><small>This Week</small><b>₹{{ week_earnings }}</b></div>
+    <div class="stat"><small>This Week</small><b>â‚¹{{ week_earnings }}</b></div>
 
     <div class="stat"><small>Total Deliveries</small><b>{{ all_deliveries }}</b></div>
 
@@ -208,11 +214,11 @@ body{font-size:14px;line-height:1.5}
 
     {% if request.user.is_active_delivery %}
 
-     <input type="hidden" name="is_active_delivery" value="0"><button class="btn btn-red btn-wide" type="submit">⏻ Go Offline</button>
+     <input type="hidden" name="is_active_delivery" value="0"><button class="btn btn-red btn-wide" type="submit">â» Go Offline</button>
 
     {% else %}
 
-     <input type="hidden" name="is_active_delivery" value="1"><button class="btn btn-green btn-wide" type="submit">⚡ Go Online</button>
+     <input type="hidden" name="is_active_delivery" value="1"><button class="btn btn-green btn-wide" type="submit">âš¡ Go Online</button>
 
     {% endif %}
 
@@ -224,13 +230,13 @@ body{font-size:14px;line-height:1.5}
 
  <section class="banners" id="offers">
 
-  <div class="banner festival"><h3>🎉 Festival Dhamaka</h3><p>Complete more deliveries during festival rush and unlock extra AMEXA earning opportunities.</p><strong>Extra Rewards</strong><span class="orb">🎁</span></div>
+  <div class="banner festival"><h3>ðŸŽ‰ Festival Dhamaka</h3><p>Complete more deliveries during festival rush and unlock extra AMEXA earning opportunities.</p><strong>Extra Rewards</strong><span class="orb">ðŸŽ</span></div>
 
-  <div class="banner weekend"><h3>⚡ Weekend Booster</h3><p>Stay online during peak hours, accept quickly and improve your delivery performance.</p><strong>Earn More</strong><span class="orb">🪙</span></div>
+  <div class="banner weekend"><h3>âš¡ Weekend Booster</h3><p>Stay online during peak hours, accept quickly and improve your delivery performance.</p><strong>Earn More</strong><span class="orb">ðŸª™</span></div>
 
  </section>
 
- <div class="section-head" id="deliveries"><div><h2>Active Deliveries</h2><small>Real-time stage timer · swipe actions · customer call</small></div><span class="count">{{ active_assignments|length }} active</span></div>
+ <div class="section-head" id="deliveries"><div><h2>Active Deliveries</h2><small>Real-time stage timer Â· swipe actions Â· customer call</small></div><span class="count">{{ active_assignments|length }} active</span></div>
 
  {% for assignment in active_assignments %}
 
@@ -252,7 +258,7 @@ body{font-size:14px;line-height:1.5}
 
    <div class="box"><span>Address</span><b>{{ assignment.order.address.address_line }}, {{ assignment.order.address.city }} - {{ assignment.order.address.pincode }}</b></div>
 
-   <div class="box"><span>Amount</span><b>₹{{ assignment.order.total_amount }}</b></div>
+   <div class="box"><span>Amount</span><b>â‚¹{{ assignment.order.total_amount }}</b></div>
 
    <div class="box"><span>Payment</span><b>{{ assignment.order.payment_method }}</b></div>
 
@@ -260,7 +266,7 @@ body{font-size:14px;line-height:1.5}
 
   <div class="actionbar"><div class="timer"><span class="action-copy">Keep status updated</span><br><strong class="js-timer">00:00</strong></div>
 
-   <a class="btn call-btn" href="tel:{{ assignment.order.address.mobile }}">📞 Call Customer</a>
+   <a class="btn call-btn" href="tel:{{ assignment.order.address.mobile }}">ðŸ“ž Call Customer</a>
 
   </div>
 
@@ -268,29 +274,29 @@ body{font-size:14px;line-height:1.5}
 
    {% if assignment.status == "Assigned" %}
 
-    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="accept"><div class="swipe green js-swipe"><div class="swipe-label">Swipe to Accept Order →</div><div class="thumb">›</div></div></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="accept"><div class="swipe green js-swipe"><div class="swipe-label">Swipe to Accept Order â†’</div><div class="thumb">â€º</div></div></form>
 
-    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" onsubmit="return confirm('Reject this delivery assignment?');" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="reject"><button class="btn btn-red btn-wide" type="submit">✕ Reject Assignment</button></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" onsubmit="return confirm('Reject this delivery assignment?');" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="reject"><button class="btn btn-red btn-wide" type="submit">âœ• Reject Assignment</button></form>
 
    {% endif %}
 
    {% if assignment.status == "Accepted" %}
 
-    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="picked"><div class="swipe orange js-swipe"><div class="swipe-label">Swipe after collecting order →</div><div class="thumb">›</div></div></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="picked"><div class="swipe orange js-swipe"><div class="swipe-label">Swipe after collecting order â†’</div><div class="thumb">â€º</div></div></form>
 
    {% endif %}
 
    {% if assignment.status == "Picked" and assignment.order.status != "Out for Delivery" %}
 
-    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="out_for_delivery"><div class="swipe js-swipe"><div class="swipe-label">Swipe to Start Delivery →</div><div class="thumb">›</div></div></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="swipe-form" style="width:100%">{% csrf_token %}<input type="hidden" name="action" value="out_for_delivery"><div class="swipe js-swipe"><div class="swipe-label">Swipe to Start Delivery â†’</div><div class="thumb">â€º</div></div></form>
 
    {% endif %}
 
    {% if assignment.status == "Picked" and assignment.order.status == "Out for Delivery" %}
 
-    <a class="btn btn-blue" href="{% url 'delivery_live_tracking' assignment.order.order_number %}">📍 Live GPS</a>
+    <a class="btn btn-blue" href="{% url 'delivery_live_tracking' assignment.order.order_number %}">ðŸ“ Live GPS</a>
 
-    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="otp">{% csrf_token %}<input type="hidden" name="action" value="complete"><input name="delivery_otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="Customer 6-digit OTP" required><button class="btn btn-green" type="submit">✓ Verify & Deliver</button></form>
+    <form method="post" action="{% url 'delivery_assignment_action' assignment.id %}" class="otp">{% csrf_token %}<input type="hidden" name="action" value="complete"><input name="delivery_otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="Customer 6-digit OTP" required><button class="btn btn-green" type="submit">âœ“ Verify & Deliver</button></form>
 
    {% endif %}
 
@@ -304,17 +310,17 @@ body{font-size:14px;line-height:1.5}
 
  <section class="quickgrid">
 
-  <a class="quick" href="#support"><div class="ico">🎧</div><b>24/7 Support</b><small>Get help</small></a>
+  <a class="quick" href="#support"><div class="ico">ðŸŽ§</div><b>24/7 Support</b><small>Get help</small></a>
 
-  <a class="quick" href="#support"><div class="ico">🆘</div><b>Help Request</b><small>Submit ticket</small></a>
+  <a class="quick" href="#support"><div class="ico">ðŸ†˜</div><b>Help Request</b><small>Submit ticket</small></a>
 
-  <a class="quick" href="#claims"><div class="ico">📄</div><b>Raise Claim</b><small>Report issue</small></a>
+  <a class="quick" href="#claims"><div class="ico">ðŸ“„</div><b>Raise Claim</b><small>Report issue</small></a>
 
-  <a class="quick" href="#earnings"><div class="ico">💰</div><b>My Earnings</b><small>View details</small></a>
+  <a class="quick" href="#earnings"><div class="ico">ðŸ’°</div><b>My Earnings</b><small>View details</small></a>
 
-  <a class="quick" href="#offers"><div class="ico">🎁</div><b>Incentives</b><small>View offers</small></a>
+  <a class="quick" href="#offers"><div class="ico">ðŸŽ</div><b>Incentives</b><small>View offers</small></a>
 
-  <button class="quick" id="enableAlerts2" type="button"><div class="ico">🔔</div><b>Alerts</b><small>Sound on</small></button>
+  <button class="quick" id="enableAlerts2" type="button"><div class="ico">ðŸ””</div><b>Alerts</b><small>Sound on</small></button>
 
  </section>
 
@@ -322,9 +328,9 @@ body{font-size:14px;line-height:1.5}
 
  <section class="earnings">
 
-  <div class="earnbox"><small class="muted">Total Earnings</small><div class="money">₹{{ total_earnings }}</div><div class="earnrow"><div class="mini"><small>Today</small><b>₹{{ today_earnings }}</b></div><div class="mini"><small>This Week</small><b>₹{{ week_earnings }}</b></div><div class="mini"><small>This Month</small><b>₹{{ month_earnings }}</b></div></div></div>
+  <div class="earnbox"><small class="muted">Total Earnings</small><div class="money">â‚¹{{ total_earnings }}</div><div class="earnrow"><div class="mini"><small>Today</small><b>â‚¹{{ today_earnings }}</b></div><div class="mini"><small>This Week</small><b>â‚¹{{ week_earnings }}</b></div><div class="mini"><small>This Month</small><b>â‚¹{{ month_earnings }}</b></div></div></div>
 
-  <div class="earnbox"><small class="muted">Delivery Payout</small><div class="money">₹{{ payout_per_delivery }}</div><div class="muted" style="font-size:9px">Current base payout per completed shop delivery.</div><div class="earnrow"><div class="mini"><small>Month Orders</small><b>{{ month_deliveries }}</b></div><div class="mini"><small>All Orders</small><b>{{ all_deliveries }}</b></div></div></div>
+  <div class="earnbox"><small class="muted">Delivery Payout</small><div class="money">â‚¹{{ payout_per_delivery }}</div><div class="muted" style="font-size:9px">Current base payout per completed shop delivery.</div><div class="earnrow"><div class="mini"><small>Month Orders</small><b>{{ month_deliveries }}</b></div><div class="mini"><small>All Orders</small><b>{{ all_deliveries }}</b></div></div></div>
 
  </section>
 
@@ -334,7 +340,7 @@ body{font-size:14px;line-height:1.5}
 
   <div class="support">
 
-   <h3 style="margin-top:0">🆘 Help Request</h3>
+   <h3 style="margin-top:0">ðŸ†˜ Help Request</h3>
 
    <form method="post" class="form">{% csrf_token %}<input type="hidden" name="form_type" value="help_request">
 
@@ -352,7 +358,7 @@ body{font-size:14px;line-height:1.5}
 
   <div class="support" id="claims">
 
-   <h3 style="margin-top:0">📄 Claim / Issue</h3>
+   <h3 style="margin-top:0">ðŸ“„ Claim / Issue</h3>
 
    <form method="post" class="form">{% csrf_token %}<input type="hidden" name="form_type" value="claim">
 
@@ -360,7 +366,7 @@ body{font-size:14px;line-height:1.5}
 
     <input name="subject" maxlength="160" placeholder="Claim subject" required>
 
-    <input name="amount_claimed" type="number" min="0" step="0.01" placeholder="Claim amount ₹ (optional)">
+    <input name="amount_claimed" type="number" min="0" step="0.01" placeholder="Claim amount â‚¹ (optional)">
 
     <textarea name="description" placeholder="Explain your claim or payment issue..." required></textarea>
 
@@ -378,7 +384,7 @@ body{font-size:14px;line-height:1.5}
 
   {% for ticket in support_requests %}
 
-   <div class="ticket"><b>{{ ticket.get_request_type_display }} · {{ ticket.subject }}</b><br><span class="muted">{{ ticket.status }} · {{ ticket.created_at|date:"d M Y, h:i A" }}{% if ticket.order %} · #{{ ticket.order.order_number }}{% endif %}</span></div>
+   <div class="ticket"><b>{{ ticket.get_request_type_display }} Â· {{ ticket.subject }}</b><br><span class="muted">{{ ticket.status }} Â· {{ ticket.created_at|date:"d M Y, h:i A" }}{% if ticket.order %} Â· #{{ ticket.order.order_number }}{% endif %}</span></div>
 
   {% empty %}<div class="muted" style="font-size:10px">No help requests or claims submitted yet.</div>{% endfor %}
 
@@ -388,7 +394,7 @@ body{font-size:14px;line-height:1.5}
 
  {% for assignment in completed_assignments %}
 
- <div class="card"><div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">Delivered ✓</span></div></div>
+ <div class="card"><div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">Delivered âœ“</span></div></div>
 
  {% empty %}<div class="panel">No completed deliveries yet.</div>{% endfor %}
 
@@ -396,7 +402,7 @@ body{font-size:14px;line-height:1.5}
 <div class="new-order-overlay" id="newOrderOverlay" aria-hidden="true">
   <div class="new-order-modal" role="dialog" aria-modal="true" aria-labelledby="newOrderTitle">
     <div class="new-order-head">
-      <div class="new-order-pulse">🛵</div>
+      <div class="new-order-pulse">ðŸ›µ</div>
       <h2 id="newOrderTitle">NEW DELIVERY</h2>
       <p>Naya parcel assign hua hai. Pickup details check karke action lein.</p>
     </div>
@@ -404,12 +410,12 @@ body{font-size:14px;line-height:1.5}
       <div class="new-order-grid">
         <div class="new-order-info"><span>Order</span><b id="newOrderNumber">--</b></div>
         <div class="new-order-info"><span>Amount</span><b id="newOrderAmount">--</b></div>
-        <div class="new-order-info full"><span>🏪 Pickup Shop</span><b id="newOrderShop">--</b></div>
+        <div class="new-order-info full"><span>ðŸª Pickup Shop</span><b id="newOrderShop">--</b></div>
         <div class="new-order-info full"><span>Pickup Address</span><b id="newOrderPickup">Shop location will open after accept.</b></div>
       </div>
       <div class="new-order-actions">
-        <button class="new-order-accept" id="newOrderAccept" type="button">✓ ACCEPT DELIVERY</button>
-        <button class="new-order-reject" id="newOrderReject" type="button">✕ REJECT</button>
+        <button class="new-order-accept" id="newOrderAccept" type="button">âœ“ ACCEPT DELIVERY</button>
+        <button class="new-order-reject" id="newOrderReject" type="button">âœ• REJECT</button>
       </div>
       <div class="new-order-hint">Accept karte hi existing AMEXA pickup/navigation flow continue hoga.</div>
     </div>
@@ -454,7 +460,7 @@ body{font-size:14px;line-height:1.5}
    overlayNo.textContent="#"+(card.dataset.order||"--");
    overlayShop.textContent=card.dataset.shop||"AMEXA Store";
    overlayPickup.textContent=card.dataset.pickup||"Shop live location will open after accept.";
-   overlayAmount.textContent="₹"+(card.dataset.amount||"0")+" · "+(card.dataset.payment||"");
+   overlayAmount.textContent="â‚¹"+(card.dataset.amount||"0")+" Â· "+(card.dataset.payment||"");
    overlay.classList.add("show");
    overlay.setAttribute("aria-hidden","false");
    newOrderAlarm();
@@ -463,7 +469,7 @@ body{font-size:14px;line-height:1.5}
  if(overlayAccept)overlayAccept.addEventListener("click",()=>{const f=actionForm(activeAlertCard,"accept");if(!f)return;interacting=true;hideNewOrder();f.submit()});
  if(overlayReject)overlayReject.addEventListener("click",()=>{const f=actionForm(activeAlertCard,"reject");if(!f)return;if(!confirm("Reject this delivery assignment?"))return;interacting=true;hideNewOrder();f.submit()});
 
- function setLabels(){buttons.forEach(b=>{b.innerHTML=enabled?"🔔 Alerts Enabled":"🔔 Enable Alerts"})}
+ function setLabels(){buttons.forEach(b=>{b.innerHTML=enabled?"ðŸ”” Alerts Enabled":"ðŸ”” Enable Alerts"})}
 
  buttons.forEach(b=>b.onclick=function(){enabled=true;localStorage.setItem("amexaAlerts","1");audio();setLabels();chime();alertBox("Alerts enabled","AMEXA delivery alerts and assignment chime are active.",false)});
 
@@ -475,7 +481,7 @@ body{font-size:14px;line-height:1.5}
 
  const unseen=assigned.filter(c=>localStorage.getItem("amexaSeen_"+c.dataset.order)!=="1");
 
- if(enabled&&unseen.length){setTimeout(()=>{alertBox("🛵 New delivery assigned","#"+unseen[0].dataset.order+" · Accept or reject now.",false);showNewOrder(unseen[0])},400);unseen.forEach(c=>localStorage.setItem("amexaSeen_"+c.dataset.order,"1"))}
+ if(enabled&&unseen.length){setTimeout(()=>{alertBox("ðŸ›µ New delivery assigned","#"+unseen[0].dataset.order+" Â· Accept or reject now.",false);showNewOrder(unseen[0])},400);unseen.forEach(c=>localStorage.setItem("amexaSeen_"+c.dataset.order,"1"))}
 
  document.querySelectorAll(".delivery-card").forEach(card=>{
 
@@ -485,7 +491,7 @@ body{font-size:14px;line-height:1.5}
 
   copy.textContent=rule.label;const backendStart=Number(card.dataset.startedMs||0);const started=backendStart>0?backendStart:Date.now();
 
-  const tick=()=>{const e=Math.max(0,Math.floor((Date.now()-started)/1000)),m=String(Math.floor(e/60)).padStart(2,"0"),sec=String(e%60).padStart(2,"0");timer.textContent=m+":"+sec;if(e>=rule.late)alertBox("🚨 Action overdue","#"+no+" · "+rule.label+". Update now.",true);else if(e>=rule.warn)alertBox("⚠ Action due soon","#"+no+" · "+rule.label+".",false)};tick();setInterval(tick,1000)
+  const tick=()=>{const e=Math.max(0,Math.floor((Date.now()-started)/1000)),m=String(Math.floor(e/60)).padStart(2,"0"),sec=String(e%60).padStart(2,"0");timer.textContent=m+":"+sec;if(e>=rule.late)alertBox("ðŸš¨ Action overdue","#"+no+" Â· "+rule.label+". Update now.",true);else if(e>=rule.warn)alertBox("âš  Action due soon","#"+no+" Â· "+rule.label+".",false)};tick();setInterval(tick,1000)
 
  });
 
