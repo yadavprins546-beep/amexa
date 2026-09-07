@@ -5558,7 +5558,6 @@ def shopkeeper_order_accept_view(request, order_number):
             order = get_object_or_404(
                 Order.objects
                 .select_for_update()
-                .select_related("master_order", "shop")
                 .prefetch_related("items"),
                 order_number=order_number,
                 shop=profile.shop,
@@ -7761,5 +7760,6 @@ def delivery_assignment_action_view(request, assignment_id):
             messages.error(request, "Invalid delivery action.")
 
     return redirect("delivery_dashboard")
+
 
 
