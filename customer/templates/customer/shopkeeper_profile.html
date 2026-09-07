@@ -1,324 +1,637 @@
 {% extends "customer/shopkeeper_base.html" %}
 
-{% block title %}Shopkeeper Profile | AMEXA{% endblock %}
+{% block title %}Profile | AMEXA Partner{% endblock %}
+
+{% block extra_head %}
+<style>
+.profile-page{
+    max-width:1000px;
+    margin:0 auto;
+    padding:4px 0 90px;
+}
+
+.profile-hero{
+    position:relative;
+    overflow:hidden;
+    padding:22px;
+    border:1px solid rgba(105,231,255,.16);
+    border-radius:22px;
+    background:
+        radial-gradient(circle at top right,rgba(105,231,255,.16),transparent 34%),
+        linear-gradient(135deg,#0a1726,#0e2438);
+    box-shadow:0 14px 34px rgba(0,0,0,.18);
+}
+
+.profile-hero::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    right:-55px;
+    bottom:-80px;
+    border-radius:50%;
+    background:rgba(50,226,154,.10);
+}
+
+.hero-row{
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+}
+
+.identity{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+}
+
+.avatar-box{
+    width:84px;
+    height:84px;
+    flex:0 0 84px;
+    border-radius:22px;
+    overflow:hidden;
+    border:2px solid rgba(105,231,255,.28);
+    background:#10273c;
+    box-shadow:0 8px 20px rgba(0,0,0,.22);
+}
+
+.avatar-box img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.avatar-empty{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    font-weight:950;
+    color:#69e7ff;
+}
+
+.identity h1{
+    margin:0;
+    font-size:22px;
+    color:#fff;
+}
+
+.identity p{
+    margin:5px 0 0;
+    color:#9fb6ca;
+    font-size:11px;
+}
+
+.verify{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:9px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(50,226,154,.10);
+    border:1px solid rgba(50,226,154,.18);
+    color:#62f0b2;
+    font-size:9px;
+    font-weight:950;
+}
+
+.shop-state{
+    flex:0 0 auto;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:9px;
+    font-weight:950;
+}
+
+.shop-state.online{
+    background:rgba(50,226,154,.11);
+    color:#62f0b2;
+    border:1px solid rgba(50,226,154,.20);
+}
+
+.shop-state.offline{
+    background:rgba(255,90,90,.10);
+    color:#ff8585;
+    border:1px solid rgba(255,90,90,.18);
+}
+
+.profile-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:14px;
+    margin-top:14px;
+}
+
+.stack{
+    display:grid;
+    gap:14px;
+}
+
+.profile-card{
+    padding:18px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.07);
+    background:linear-gradient(145deg,#0a1726,#0c1d2e);
+    box-shadow:0 8px 24px rgba(0,0,0,.12);
+}
+
+.card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.card-head h2{
+    margin:0;
+    color:#fff;
+    font-size:15px;
+}
+
+.card-head p{
+    margin:4px 0 0;
+    color:#8099af;
+    font-size:9px;
+}
+
+.settings{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:11px;
+}
+
+.settings .field{
+    margin:0;
+}
+
+.settings .wide{
+    grid-column:1/-1;
+}
+
+.settings label{
+    display:block;
+    margin-bottom:5px;
+    color:#9fb6ca;
+    font-size:9px;
+    font-weight:850;
+}
+
+.settings input,
+.settings textarea,
+.settings select{
+    width:100%;
+    box-sizing:border-box;
+    min-height:42px;
+    padding:9px 11px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:11px;
+    outline:none;
+    background:#071320;
+    color:#fff;
+    font-size:10px;
+}
+
+.settings textarea{
+    min-height:76px;
+    resize:vertical;
+}
+
+.save-btn{
+    grid-column:1/-1;
+    min-height:44px;
+    border:0;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:10px;
+    font-weight:950;
+    color:#03150f;
+    background:linear-gradient(135deg,#32e29a,#69e7ff);
+}
+
+.doc-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:11px 0;
+    border-top:1px solid rgba(255,255,255,.06);
+}
+
+.doc-row:first-of-type{
+    border-top:0;
+}
+
+.doc-row b{
+    display:block;
+    color:#dce9f3;
+    font-size:10px;
+}
+
+.doc-row small{
+    display:block;
+    margin-top:4px;
+    color:#748da3;
+    font-size:8px;
+}
+
+.status-badge{
+    padding:5px 8px;
+    border-radius:999px;
+    background:#10263a;
+    color:#69e7ff;
+    font-size:8px;
+    font-weight:950;
+}
+
+.status-badge.good{
+    background:rgba(50,226,154,.10);
+    color:#61efb1;
+}
+
+.status-badge.bad{
+    background:rgba(255,89,89,.10);
+    color:#ff8585;
+}
+
+.bank-row{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px;
+    border-radius:12px;
+    background:#07131f;
+    border:1px solid rgba(255,255,255,.055);
+}
+
+.bank-row b{
+    display:block;
+    color:#fff;
+    font-size:10px;
+}
+
+.bank-row small{
+    display:block;
+    margin-top:4px;
+    color:#7f98ad;
+    font-size:8px;
+}
+
+.quick-links{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.quick-link{
+    text-decoration:none;
+    padding:11px;
+    border-radius:11px;
+    border:1px solid rgba(255,255,255,.065);
+    background:#091827;
+    color:#c7d7e4;
+    font-size:9px;
+    font-weight:850;
+}
+
+.quick-link span{
+    float:right;
+    color:#69e7ff;
+}
+
+.full-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    min-height:42px;
+    box-sizing:border-box;
+    margin-top:10px;
+    border-radius:11px;
+    text-decoration:none;
+    font-size:9px;
+    font-weight:950;
+}
+
+.payment-btn{
+    color:#07140f;
+    background:linear-gradient(135deg,#32e29a,#69e7ff);
+}
+
+.logout-btn{
+    color:#ffdede;
+    background:rgba(255,72,72,.11);
+    border:1px solid rgba(255,91,91,.18);
+}
+
+.empty-state{
+    padding:13px;
+    border-radius:11px;
+    background:#07131f;
+    color:#8199ae;
+    font-size:9px;
+}
+
+@media(max-width:720px){
+    .profile-grid{
+        grid-template-columns:1fr;
+    }
+
+    .hero-row{
+        align-items:flex-start;
+    }
+
+    .shop-state{
+        position:absolute;
+        right:0;
+        top:0;
+    }
+
+    .identity{
+        padding-right:45px;
+    }
+
+    .settings,
+    .quick-links{
+        grid-template-columns:1fr;
+    }
+
+    .settings .wide{
+        grid-column:auto;
+    }
+
+    .save-btn{
+        grid-column:auto;
+    }
+
+    .avatar-box{
+        width:72px;
+        height:72px;
+        flex-basis:72px;
+    }
+
+    .identity h1{
+        font-size:18px;
+    }
+}
+</style>
+{% endblock %}
+
 
 {% block content %}
 
-<style>
-    .sp-wrap {
-        width: min(900px, 94%);
-        margin: 25px auto 100px;
-    }
+<div class="profile-page">
 
-    .sp-header {
-        background: linear-gradient(135deg, #081625, #112941);
-        color: white;
-        border-radius: 22px;
-        padding: 24px;
-        margin-bottom: 18px;
-    }
+    <section class="profile-hero">
+        <div class="hero-row">
 
-    .sp-header h1 {
-        margin: 0;
-        font-size: 26px;
-    }
+            <div class="identity">
 
-    .sp-header p {
-        margin: 7px 0 0;
-        color: #a8bed1;
-        font-size: 13px;
-    }
+                <div class="avatar-box">
+                    {% if profile.owner_photo %}
+                        <img src="{{ profile.owner_photo.url }}" alt="Shopkeeper Photo">
+                    {% else %}
+                        <div class="avatar-empty">
+                            {{ request.user.name|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
 
-    .status {
-        display: inline-block;
-        margin-top: 14px;
-        padding: 7px 13px;
-        border-radius: 20px;
-        background: #173d34;
-        color: #65f3b5;
-        font-size: 12px;
-        font-weight: 800;
-    }
+                <div>
+                    <h1>{{ request.user.name|default:"AMEXA Partner" }}</h1>
 
-    .card {
-        background: white;
-        border-radius: 18px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 5px 20px rgba(0,0,0,.07);
-    }
+                    <p>
+                        {{ request.user.phone }}
+                        {% if shop.name %}
+                            • {{ shop.name }}
+                        {% endif %}
+                    </p>
 
-    .card h2 {
-        margin: 0 0 16px;
-        font-size: 19px;
-        color: #111827;
-    }
+                    <div class="verify">
+                        ✓ AMEXA VERIFIED SHOPKEEPER
+                    </div>
+                </div>
 
-    .info-row {
-        display: grid;
-        grid-template-columns: 170px 1fr;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid #eeeeee;
-        font-size: 14px;
-    }
-
-    .info-row:last-child {
-        border-bottom: 0;
-    }
-
-    .label {
-        color: #6b7280;
-        font-weight: 700;
-    }
-
-    .value {
-        color: #111827;
-        font-weight: 700;
-        word-break: break-word;
-    }
-
-    form p {
-        margin-bottom: 15px;
-    }
-
-    form label {
-        display: block;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 6px;
-        color: #374151;
-    }
-
-    form input,
-    form select,
-    form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        min-height: 46px;
-        padding: 10px 12px;
-        border: 1px solid #d7dee5;
-        border-radius: 11px;
-        background: #fafafa;
-    }
-
-    form textarea {
-        min-height: 90px;
-    }
-
-    .save-btn {
-        width: 100%;
-        min-height: 48px;
-        margin-top: 8px;
-        border: 0;
-        border-radius: 12px;
-        background: #111827;
-        color: white;
-        font-size: 14px;
-        font-weight: 900;
-        cursor: pointer;
-    }
-
-    .doc {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 12px 0;
-        border-bottom: 1px solid #eeeeee;
-    }
-
-    .doc:last-child {
-        border-bottom: 0;
-    }
-
-    .doc-name {
-        font-size: 13px;
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .doc-status {
-        font-size: 11px;
-        font-weight: 800;
-        color: #2563eb;
-    }
-
-    .bank-ok {
-        padding: 13px;
-        border-radius: 12px;
-        background: #ecfdf5;
-        color: #065f46;
-        font-weight: 800;
-        font-size: 13px;
-    }
-
-    .bank-no {
-        padding: 13px;
-        border-radius: 12px;
-        background: #fff7ed;
-        color: #9a3412;
-        font-weight: 800;
-        font-size: 13px;
-    }
-
-    .back-btn {
-        display: inline-block;
-        text-decoration: none;
-        background: #eef2f7;
-        color: #111827;
-        padding: 11px 16px;
-        border-radius: 11px;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 15px;
-    }
-
-    @media (max-width: 600px) {
-        .sp-wrap {
-            width: 94%;
-            margin-top: 15px;
-        }
-
-        .info-row {
-            grid-template-columns: 1fr;
-            gap: 3px;
-        }
-
-        .sp-header h1 {
-            font-size: 22px;
-        }
-    }
-</style>
-
-<div class="sp-wrap">
-
-    <a href="{% url 'shopkeeper_dashboard' %}" class="back-btn">
-        ← Back to Dashboard
-    </a>
-
-    <div class="sp-header">
-
-        <h1>AMEXA Partner Profile</h1>
-
-        <p>
-            Shop aur account ki details manage karein
-        </p>
-
-        <div class="status">
-            Verification: {{ profile.verification_status|default:"Pending" }}
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Account Details</h2>
-
-        <div class="info-row">
-            <div class="label">Owner Name</div>
-            <div class="value">
-                {{ request.user.name|default:request.user.username|default:"-" }}
             </div>
-        </div>
 
-        <div class="info-row">
-            <div class="label">Mobile Number</div>
-            <div class="value">
-                {{ request.user.phone|default:"-" }}
+            <div class="shop-state {% if shop.is_online %}online{% else %}offline{% endif %}">
+                {% if shop.is_online %}
+                    ● ONLINE
+                {% else %}
+                    ● OFFLINE
+                {% endif %}
             </div>
+
         </div>
-
-        <div class="info-row">
-            <div class="label">Email</div>
-            <div class="value">
-                {{ request.user.email|default:"-" }}
-            </div>
-        </div>
-
-        <div class="info-row">
-            <div class="label">Account Role</div>
-            <div class="value">
-                {{ request.user.role|default:"SHOPKEEPER" }}
-            </div>
-        </div>
-
-    </div>
+    </section>
 
 
-    <div class="card">
+    <section class="profile-grid">
 
-        <h2>Shop Profile</h2>
+        <div class="stack">
 
-        <form method="post">
+            <article class="profile-card">
 
-            {% csrf_token %}
+                <div class="card-head">
+                    <div>
+                        <h2>Shop Settings</h2>
+                        <p>Customer ko dikhne wali shop information</p>
+                    </div>
+                </div>
 
-            {{ form.as_p }}
+                <form class="settings" method="post">
+                    {% csrf_token %}
 
-            <button type="submit" class="save-btn">
-                Save Shop Profile
-            </button>
+                    {% for field in form %}
+                        <div class="field {% if field.name == 'address' %}wide{% endif %}">
 
-        </form>
+                            <label>{{ field.label }}</label>
 
-    </div>
+                            {{ field }}
+
+                            {% if field.errors %}
+                                <small style="color:#ff8585">
+                                    {{ field.errors }}
+                                </small>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+
+                    <button class="save-btn" type="submit">
+                        Save Shop Settings
+                    </button>
+
+                </form>
+
+            </article>
 
 
-    <div class="card">
+            <article class="profile-card">
 
-        <h2>Verification Documents</h2>
+                <div class="card-head">
+                    <div>
+                        <h2>KYC & Licences</h2>
 
-        {% if documents %}
+                        <p>
+                            {% if shop.gstin %}
+                                GSTIN {{ shop.gstin }}
+                            {% endif %}
 
-            {% for document in documents %}
-
-                <div class="doc">
-
-                    <div class="doc-name">
-                        {{ document.get_document_type_display|default:document.document_type }}
+                            {% if shop.fssai_number %}
+                                • FSSAI {{ shop.fssai_number }}
+                            {% endif %}
+                        </p>
                     </div>
 
-                    <div class="doc-status">
-                        {{ document.status|default:"Pending" }}
+                    <span class="status-badge good">
+                        APPROVED
+                    </span>
+                </div>
+
+                {% for document in documents %}
+
+                    <div class="doc-row">
+
+                        <div>
+                            <b>{{ document.get_document_type_display }}</b>
+                            <small>{{ document.masked_document_number }}</small>
+                        </div>
+
+                        <span class="status-badge
+                            {% if document.status == 'VERIFIED' %}
+                                good
+                            {% elif document.status == 'REJECTED' %}
+                                bad
+                            {% endif %}
+                        ">
+                            {{ document.status }}
+                        </span>
+
                     </div>
+
+                {% empty %}
+
+                    <div class="empty-state">
+                        Koi document available nahi hai.
+                    </div>
+
+                {% endfor %}
+
+            </article>
+
+        </div>
+
+
+        <div class="stack">
+
+            <article class="profile-card">
+
+                <div class="card-head">
+                    <div>
+                        <h2>Payout Bank</h2>
+                        <p>Secure payout account details</p>
+                    </div>
+
+                    {% if bank_account %}
+                        <span class="status-badge
+                            {% if bank_account.status == 'VERIFIED' %}
+                                good
+                            {% endif %}
+                        ">
+                            {{ bank_account.status }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if bank_account %}
+
+                    <div class="bank-row">
+
+                        <div>
+                            <b>{{ bank_account.bank_name }}</b>
+                            <small>{{ bank_account.account_holder_name }}</small>
+                        </div>
+
+                        <div style="text-align:right">
+                            <b>{{ bank_account.masked_account_number }}</b>
+                            <small>{{ bank_account.ifsc_code }}</small>
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        Bank account details nahi mili.
+                    </div>
+
+                {% endif %}
+
+                <a class="full-btn payment-btn"
+                   href="{% url 'shopkeeper_payments' %}">
+                    Payments & Profit
+                </a>
+
+            </article>
+
+
+            <article class="profile-card">
+
+                <div class="card-head">
+                    <div>
+                        <h2>Support & Account</h2>
+                        <p>AMEXA partner help aur account controls</p>
+                    </div>
+                </div>
+
+                <div class="quick-links">
+
+                    <a class="quick-link"
+                       href="{% url 'help_support' %}">
+                        Help & Support
+                        <span>›</span>
+                    </a>
+
+                    <a class="quick-link"
+                       href="{% url 'about' %}">
+                        About AMEXA
+                        <span>›</span>
+                    </a>
+
+                    <a class="quick-link"
+                       href="{% url 'privacy_policy' %}">
+                        Privacy Policy
+                        <span>›</span>
+                    </a>
+
+                    <a class="quick-link"
+                       href="{% url 'terms_conditions' %}">
+                        Terms
+                        <span>›</span>
+                    </a>
 
                 </div>
 
-            {% empty %}
+                <a class="full-btn logout-btn"
+                   href="{% url 'logout' %}">
+                    Logout Shopkeeper
+                </a>
 
-                <p>No documents uploaded.</p>
+            </article>
 
-            {% endfor %}
+        </div>
 
-        {% else %}
-
-            <p>No documents uploaded.</p>
-
-        {% endif %}
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Bank Account</h2>
-
-        {% if bank_account %}
-
-            <div class="bank-ok">
-                Bank details submitted successfully.
-            </div>
-
-        {% else %}
-
-            <div class="bank-no">
-                Bank details are not available.
-            </div>
-
-        {% endif %}
-
-    </div>
+    </section>
 
 </div>
 
