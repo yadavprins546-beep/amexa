@@ -6005,7 +6005,7 @@ def shopkeeper_pick_scan_view(request, order_number):
         picking_items = list(
             task.picking_items
             .select_for_update()
-            .select_related("order_item", "order_item__product")
+            .select_related("order_item")
             .prefetch_related("order_item__product__barcodes")
         )
 
@@ -6112,7 +6112,7 @@ def shopkeeper_complete_picking_view(request, order_number):
         items = list(
             task.picking_items
             .select_for_update()
-            .select_related("order_item", "order_item__product")
+            .select_related("order_item")
         )
 
         if not items:
@@ -6980,7 +6980,7 @@ def picker_scan_item_view(request, order_number):
         candidates = list(
             task.picking_items
             .select_for_update()
-            .select_related("order_item", "order_item__product")
+            .select_related("order_item")
             .prefetch_related("order_item__product__barcodes")
         )
         picking_item = None
@@ -7768,6 +7768,7 @@ def delivery_assignment_action_view(request, assignment_id):
             messages.error(request, "Invalid delivery action.")
 
     return redirect("delivery_dashboard")
+
 
 
 
