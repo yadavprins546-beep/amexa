@@ -5803,19 +5803,11 @@ def shopkeeper_order_reject_view(request, order_number):
 
                 master_order_id = locked_order.master_order_id
 
-        except Exception as error:
-            print(
-                f"SHOPKEEPER REJECT ERROR | "
-                f"ORDER={order.order_number} | "
-                f"{type(error).__name__}: {error}",
-                flush=True,
-            )
-
+        except Exception:
             messages.error(
                 request,
-                f"REJECT ERROR: {type(error).__name__}: {error}",
+                "Order reject nahi ho saka. Server log me exact error check karein.",
             )
-
             return redirect(
                 "shopkeeper_order_reject",
                 order_number=order.order_number,
