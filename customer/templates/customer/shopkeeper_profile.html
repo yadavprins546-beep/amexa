@@ -5,276 +5,306 @@
 {% block content %}
 
 <style>
-    .sp-wrap {
-        width: min(900px, 94%);
-        margin: 25px auto 100px;
+    .profile-wrap{
+        width:min(950px,94%);
+        margin:24px auto 100px;
     }
 
-    .sp-header {
-        background: linear-gradient(135deg, #081625, #112941);
-        color: white;
-        border-radius: 22px;
-        padding: 24px;
-        margin-bottom: 18px;
+    .profile-top{
+        background:linear-gradient(135deg,#071522,#0d2940);
+        color:#fff;
+        padding:24px;
+        border-radius:22px;
+        box-shadow:0 10px 30px rgba(0,0,0,.10);
     }
 
-    .sp-header h1 {
-        margin: 0;
-        font-size: 26px;
+    .profile-top h1{
+        margin:0;
+        font-size:26px;
+        font-weight:900;
     }
 
-    .sp-header p {
-        margin: 7px 0 0;
-        color: #a8bed1;
-        font-size: 13px;
+    .profile-top p{
+        margin:6px 0 0;
+        color:#a9bfd2;
+        font-size:13px;
     }
 
-    .status {
-        display: inline-block;
-        margin-top: 14px;
-        padding: 7px 13px;
-        border-radius: 20px;
-        background: #173d34;
-        color: #65f3b5;
-        font-size: 12px;
-        font-weight: 800;
+    .badge{
+        display:inline-block;
+        margin-top:14px;
+        padding:7px 13px;
+        border-radius:999px;
+        background:rgba(50,226,154,.12);
+        color:#65f3b5;
+        font-size:11px;
+        font-weight:900;
+        border:1px solid rgba(101,243,181,.18);
     }
 
-    .card {
-        background: white;
-        border-radius: 18px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 5px 20px rgba(0,0,0,.07);
+    .grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:16px;
+        margin-top:18px;
     }
 
-    .card h2 {
-        margin: 0 0 16px;
-        font-size: 19px;
-        color: #111827;
+    .card{
+        background:#fff;
+        border-radius:18px;
+        padding:20px;
+        box-shadow:0 6px 22px rgba(0,0,0,.06);
+        border:1px solid #edf1f5;
     }
 
-    .info-row {
-        display: grid;
-        grid-template-columns: 170px 1fr;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid #eeeeee;
-        font-size: 14px;
+    .card-full{
+        grid-column:1 / -1;
     }
 
-    .info-row:last-child {
-        border-bottom: 0;
+    .card h2{
+        margin:0 0 16px;
+        font-size:18px;
+        color:#111827;
     }
 
-    .label {
-        color: #6b7280;
-        font-weight: 700;
+    .row{
+        display:flex;
+        justify-content:space-between;
+        gap:15px;
+        padding:11px 0;
+        border-bottom:1px solid #eef1f4;
     }
 
-    .value {
-        color: #111827;
-        font-weight: 700;
-        word-break: break-word;
+    .row:last-child{
+        border-bottom:0;
     }
 
-    form p {
-        margin-bottom: 15px;
+    .label{
+        color:#6b7280;
+        font-size:13px;
+        font-weight:700;
     }
 
-    form label {
-        display: block;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 6px;
-        color: #374151;
+    .value{
+        color:#111827;
+        font-size:13px;
+        font-weight:800;
+        text-align:right;
+        word-break:break-word;
+    }
+
+    form p{
+        margin:0 0 14px;
+    }
+
+    form label{
+        display:block;
+        margin-bottom:6px;
+        font-size:12px;
+        font-weight:800;
+        color:#374151;
     }
 
     form input,
-    form select,
-    form textarea {
-        width: 100%;
-        box-sizing: border-box;
-        min-height: 46px;
-        padding: 10px 12px;
-        border: 1px solid #d7dee5;
-        border-radius: 11px;
-        background: #fafafa;
+    form textarea,
+    form select{
+        width:100%;
+        box-sizing:border-box;
+        min-height:45px;
+        border:1px solid #d9e0e7;
+        border-radius:11px;
+        padding:10px 12px;
+        background:#fafafa;
+        font-size:13px;
     }
 
-    form textarea {
-        min-height: 90px;
+    form textarea{
+        min-height:90px;
     }
 
-    .save-btn {
-        width: 100%;
-        min-height: 48px;
-        margin-top: 8px;
-        border: 0;
-        border-radius: 12px;
-        background: #111827;
-        color: white;
-        font-size: 14px;
-        font-weight: 900;
-        cursor: pointer;
+    .save-btn{
+        width:100%;
+        min-height:48px;
+        border:0;
+        border-radius:12px;
+        background:linear-gradient(135deg,#111827,#1f3c56);
+        color:#fff;
+        font-size:13px;
+        font-weight:900;
+        cursor:pointer;
+        margin-top:4px;
     }
 
-    .doc {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 12px 0;
-        border-bottom: 1px solid #eeeeee;
+    .doc-item{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        padding:11px 0;
+        border-bottom:1px solid #eef1f4;
     }
 
-    .doc:last-child {
-        border-bottom: 0;
+    .doc-item:last-child{
+        border-bottom:0;
     }
 
-    .doc-name {
-        font-size: 13px;
-        font-weight: 800;
-        color: #111827;
+    .doc-name{
+        font-size:13px;
+        font-weight:800;
+        color:#111827;
     }
 
-    .doc-status {
-        font-size: 11px;
-        font-weight: 800;
-        color: #2563eb;
+    .doc-status{
+        font-size:11px;
+        font-weight:900;
+        color:#2563eb;
     }
 
-    .bank-ok {
-        padding: 13px;
-        border-radius: 12px;
-        background: #ecfdf5;
-        color: #065f46;
-        font-weight: 800;
-        font-size: 13px;
+    .bank-box{
+        padding:14px;
+        border-radius:12px;
+        background:#f0fdf4;
+        color:#166534;
+        font-size:13px;
+        font-weight:800;
     }
 
-    .bank-no {
-        padding: 13px;
-        border-radius: 12px;
-        background: #fff7ed;
-        color: #9a3412;
-        font-weight: 800;
-        font-size: 13px;
+    .bank-box.warn{
+        background:#fff7ed;
+        color:#9a3412;
     }
 
-    .back-btn {
-        display: inline-block;
-        text-decoration: none;
-        background: #eef2f7;
-        color: #111827;
-        padding: 11px 16px;
-        border-radius: 11px;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 15px;
+    .back-btn{
+        display:inline-block;
+        margin-bottom:14px;
+        padding:10px 14px;
+        border-radius:11px;
+        text-decoration:none;
+        background:#eef2f7;
+        color:#111827;
+        font-size:12px;
+        font-weight:900;
     }
 
-    @media (max-width: 600px) {
-        .sp-wrap {
-            width: 94%;
-            margin-top: 15px;
+    @media(max-width:700px){
+        .grid{
+            grid-template-columns:1fr;
         }
 
-        .info-row {
-            grid-template-columns: 1fr;
-            gap: 3px;
+        .card-full{
+            grid-column:auto;
         }
 
-        .sp-header h1 {
-            font-size: 22px;
+        .profile-top h1{
+            font-size:22px;
+        }
+
+        .row{
+            flex-direction:column;
+            gap:4px;
+        }
+
+        .value{
+            text-align:left;
         }
     }
 </style>
 
-<div class="sp-wrap">
+<div class="profile-wrap">
 
     <a href="{% url 'shopkeeper_dashboard' %}" class="back-btn">
         ← Back to Dashboard
     </a>
 
-    <div class="sp-header">
-
+    <div class="profile-top">
         <h1>AMEXA Partner Profile</h1>
+        <p>Shopkeeper account aur shop details</p>
 
-        <p>
-            Shop aur account ki details manage karein
-        </p>
-
-        <div class="status">
-            Verification: {{ profile.verification_status|default:"Pending" }}
-        </div>
-
+        <span class="badge">
+            {{ profile.verification_status|default:"PENDING" }}
+        </span>
     </div>
 
+    <div class="grid">
 
-    <div class="card">
+        <div class="card">
+            <h2>Owner Details</h2>
 
-        <h2>Account Details</h2>
+            <div class="row">
+                <div class="label">Owner Name</div>
+                <div class="value">
+                    {{ request.user.name|default:request.user.username|default:"-" }}
+                </div>
+            </div>
 
-        <div class="info-row">
-            <div class="label">Owner Name</div>
-            <div class="value">
-                {{ request.user.name|default:request.user.username|default:"-" }}
+            <div class="row">
+                <div class="label">Mobile</div>
+                <div class="value">
+                    {{ request.user.phone|default:"-" }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="label">Email</div>
+                <div class="value">
+                    {{ request.user.email|default:"-" }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="label">Role</div>
+                <div class="value">
+                    SHOPKEEPER
+                </div>
             </div>
         </div>
 
-        <div class="info-row">
-            <div class="label">Mobile Number</div>
-            <div class="value">
-                {{ request.user.phone|default:"-" }}
+        <div class="card">
+            <h2>Shop Details</h2>
+
+            <div class="row">
+                <div class="label">Shop Name</div>
+                <div class="value">
+                    {{ shop.name|default:"-" }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="label">Online Status</div>
+                <div class="value">
+                    {% if shop.is_online %}
+                        Online
+                    {% else %}
+                        Offline
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="label">Verification</div>
+                <div class="value">
+                    {{ profile.verification_status|default:"-" }}
+                </div>
             </div>
         </div>
 
-        <div class="info-row">
-            <div class="label">Email</div>
-            <div class="value">
-                {{ request.user.email|default:"-" }}
-            </div>
+        <div class="card card-full">
+            <h2>Edit Shop Profile</h2>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button type="submit" class="save-btn">
+                    Save Changes
+                </button>
+            </form>
         </div>
 
-        <div class="info-row">
-            <div class="label">Account Role</div>
-            <div class="value">
-                {{ request.user.role|default:"SHOPKEEPER" }}
-            </div>
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Shop Profile</h2>
-
-        <form method="post">
-
-            {% csrf_token %}
-
-            {{ form.as_p }}
-
-            <button type="submit" class="save-btn">
-                Save Shop Profile
-            </button>
-
-        </form>
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Verification Documents</h2>
-
-        {% if documents %}
+        <div class="card">
+            <h2>Documents</h2>
 
             {% for document in documents %}
-
-                <div class="doc">
-
+                <div class="doc-item">
                     <div class="doc-name">
                         {{ document.get_document_type_display|default:document.document_type }}
                     </div>
@@ -282,41 +312,25 @@
                     <div class="doc-status">
                         {{ document.status|default:"Pending" }}
                     </div>
-
                 </div>
-
             {% empty %}
-
-                <p>No documents uploaded.</p>
-
+                <p>No documents found.</p>
             {% endfor %}
+        </div>
 
-        {% else %}
+        <div class="card">
+            <h2>Bank Details</h2>
 
-            <p>No documents uploaded.</p>
-
-        {% endif %}
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Bank Account</h2>
-
-        {% if bank_account %}
-
-            <div class="bank-ok">
-                Bank details submitted successfully.
-            </div>
-
-        {% else %}
-
-            <div class="bank-no">
-                Bank details are not available.
-            </div>
-
-        {% endif %}
+            {% if bank_account %}
+                <div class="bank-box">
+                    Bank account details submitted.
+                </div>
+            {% else %}
+                <div class="bank-box warn">
+                    Bank details not submitted.
+                </div>
+            {% endif %}
+        </div>
 
     </div>
 
