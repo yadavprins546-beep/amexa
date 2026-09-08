@@ -7949,7 +7949,8 @@ def razorpay_start_view(request):
                 f"{timezone.now().strftime('%y%m%d%H%M%S')}"
             ),
         })
-    except Exception:
+    except Exception as error:
+        print("RAZORPAY ORDER CREATE ERROR =", repr(error))
         messages.error(
             request,
             "Unable to start online payment. Please try again."
