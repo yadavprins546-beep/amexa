@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 
 <!DOCTYPE html>
 
@@ -1069,7 +1069,7 @@
 
         <div class="title-wrap">
 
-            <h1>ðŸ’³ Checkout</h1>
+            <h1>💳 Checkout</h1>
 
             <p>Choose address, review shop-wise order and select payment.</p>
 
@@ -1077,7 +1077,7 @@
 
         <a href="{% url 'cart' %}" class="back-btn">
 
-            â† Back to Cart
+            ← Back to Cart
 
         </a>
 
@@ -1119,7 +1119,7 @@
 
                         <div>
 
-                            <h2>ðŸ“ Delivery Address</h2>
+                            <h2>📍 Delivery Address</h2>
 
                             <p>Select where this order should be delivered.</p>
 
@@ -1127,7 +1127,7 @@
 
                         <a href="{% url 'addresses' %}" class="small-link">
 
-                            Manage â†’
+                            Manage →
 
                         </a>
 
@@ -1163,15 +1163,15 @@
 
                                             {% if address.address_type == "Work" %}
 
-                                                ðŸ’¼
+                                                💼
 
                                             {% elif address.address_type == "Other" %}
 
-                                                ðŸ“Œ
+                                                📌
 
                                             {% else %}
 
-                                                ðŸ 
+                                                🏠
 
                                             {% endif %}
 
@@ -1215,22 +1215,22 @@
 
                                                 <br>
 
-                                                ðŸ“± {{ address.mobile }}
+                                                📱 {{ address.mobile }}
 
                                                 {% if address.latitude and address.longitude and address.latitude != 0 and address.longitude != 0 %}
                                                     <div class="gps-status ok">
-                                                        ðŸ“ Exact GPS location attached
+                                                        📍 Exact GPS location attached
                                                     </div>
                                                 {% else %}
                                                     <div class="gps-status missing">
-                                                        âš ï¸ Current location not attached
+                                                        ⚠️ Current location not attached
                                                     </div>
 
                                                     <a
                                                         href="{% url 'edit_address' address.pk %}"
                                                         class="gps-edit-link"
                                                     >
-                                                        Add Current Location â†’
+                                                        Add Current Location →
                                                     </a>
                                                 {% endif %}
 
@@ -1240,7 +1240,7 @@
 
                                         <div class="address-check">
 
-                                            âœ“
+                                            ✓
 
                                         </div>
 
@@ -1292,7 +1292,7 @@
 
                         <div>
 
-                            <h2>ðŸª Shop-wise Order</h2>
+                            <h2>🏪 Shop-wise Order</h2>
 
                             <p>Your checkout will be split automatically by shop.</p>
 
@@ -1326,7 +1326,7 @@
 
                                     <div class="shop-total">
 
-                                        â‚¹{{ group.total }}
+                                        ₹{{ group.total }}
 
                                     </div>
 
@@ -1342,13 +1342,13 @@
 
                                                 {{ item.product.name }}
 
-                                                Ã— {{ item.quantity }}
+                                                × {{ item.quantity }}
 
                                             </span>
 
                                             <strong>
 
-                                                â‚¹{{ item.line_total }}
+                                                ₹{{ item.line_total }}
 
                                             </strong>
 
@@ -1362,7 +1362,7 @@
 
                                         <strong>
 
-                                            â‚¹{{ group.delivery_fee|add:group.platform_fee }}
+                                            ₹{{ group.delivery_fee|add:group.platform_fee }}
 
                                         </strong>
 
@@ -1396,7 +1396,7 @@
 
                         <div>
 
-                            <h2>ðŸ’³ Payment Method</h2>
+                            <h2>💳 Payment Method</h2>
 
                             <p>Select how you want to pay.</p>
 
@@ -1424,7 +1424,7 @@
 
                             <div class="payment-box">
 
-                                <div class="payment-icon">ðŸ’µ</div>
+                                <div class="payment-icon">💵</div>
 
                                 <div class="payment-name">
 
@@ -1458,7 +1458,7 @@
 
                             <div class="payment-box">
 
-                                <div class="payment-icon">ðŸ“²</div>
+                                <div class="payment-icon">📲</div>
 
                                 <div class="payment-name">
 
@@ -1492,7 +1492,7 @@
 
                             <div class="payment-box">
 
-                                <div class="payment-icon">ðŸ’³</div>
+                                <div class="payment-icon">💳</div>
 
                                 <div class="payment-name">
 
@@ -1526,7 +1526,7 @@
 
                             <div class="payment-box">
 
-                                <div class="payment-icon">ðŸ¦</div>
+                                <div class="payment-icon">🏦</div>
 
                                 <div class="payment-name">
 
@@ -1560,7 +1560,7 @@
 
                             <div class="payment-box">
 
-                                <div class="payment-icon">ðŸ‘›</div>
+                                <div class="payment-icon">👛</div>
 
                                 <div class="payment-name">
 
@@ -1584,7 +1584,7 @@
 
                     <div class="gateway-note">
 
-                        âš ï¸ COD is fully usable with the current backend.
+                        ⚠️ COD is fully usable with the current backend.
 
                         Online payment options are prepared in the checkout flow,
 
@@ -1620,7 +1620,7 @@
 
                     <span>Products subtotal</span>
 
-                    <strong>â‚¹{{ subtotal }}</strong>
+                    <strong>₹{{ subtotal }}</strong>
 
                 </div>
 
@@ -1628,7 +1628,7 @@
 
                     <span>Delivery fee</span>
 
-                    <strong>â‚¹{{ delivery_fee }}</strong>
+                    <strong>₹{{ delivery_fee }}</strong>
 
                 </div>
 
@@ -1636,7 +1636,7 @@
 
                     <span>Platform fee</span>
 
-                    <strong>â‚¹{{ platform_fee }}</strong>
+                    <strong>₹{{ platform_fee }}</strong>
 
                 </div>
 
@@ -1646,7 +1646,7 @@
 
                         <span>Tax</span>
 
-                        <strong>â‚¹{{ tax_amount }}</strong>
+                        <strong>₹{{ tax_amount }}</strong>
 
                     </div>
 
@@ -1656,11 +1656,11 @@
                         <div class="checkout-coupon-top">
                             <div>
                                 <div class="checkout-coupon-code">
-                                    ðŸŽŸï¸ {{ applied_coupon.code }} APPLIED
+                                    🎟️ {{ applied_coupon.code }} APPLIED
                                 </div>
                                 <div class="checkout-coupon-save">
                                     {% if discount_amount %}
-                                        Coupon saving: â‚¹{{ discount_amount }}
+                                        Coupon saving: ₹{{ discount_amount }}
                                     {% else %}
                                         Coupon is attached to this checkout.
                                     {% endif %}
@@ -1677,17 +1677,17 @@
                 {% if discount_amount %}
                     <div class="bill-row discount-bill-row">
                         <span>Coupon discount</span>
-                        <strong>âˆ’ â‚¹{{ discount_amount }}</strong>
+                        <strong>− ₹{{ discount_amount }}</strong>
                     </div>
                 {% endif %}
 
                 <div class="coins-box">
                     <div class="coins-head">
-                        <div class="coins-title">ðŸª™ Use AMEXA Coins</div>
+                        <div class="coins-title">🪙 Use AMEXA Coins</div>
                         <div class="coins-balance">{{ available_coins|default:0 }} Coins</div>
                     </div>
                     <div class="coins-note">
-                        1 Coin = â‚¹1 Â· Coins apply to products only, not delivery/platform fees.
+                        1 Coin = ₹1 · Coins apply to products only, not delivery/platform fees.
                         Maximum usable now: {{ max_coin_usable|default:0 }} Coins.
                     </div>
                     <div class="coins-input-row">
@@ -1708,12 +1708,12 @@
 
                 <div class="bill-row coin-bill-row" id="coinDiscountRow" style="display:none;">
                     <span>AMEXA Coins</span>
-                    <strong id="coinDiscountText">âˆ’ â‚¹0</strong>
+                    <strong id="coinDiscountText">− ₹0</strong>
                 </div>
 
                 <div class="bill-total">
                     <span>Payable Total</span>
-                    <strong id="payableTotalValue">â‚¹{{ payable_total|default:total }}</strong>
+                    <strong id="payableTotalValue">₹{{ payable_total|default:total }}</strong>
                 </div>
 
 
@@ -1723,7 +1723,7 @@
 
                     <div class="split-note">
 
-                        ðŸª This checkout contains {{ shop_count }} shops.
+                        🏪 This checkout contains {{ shop_count }} shops.
 
                         AMEXA will create separate shop orders automatically,
 
@@ -1735,7 +1735,7 @@
 
                     <div class="split-note">
 
-                        âœ“ Your checkout currently contains one shop,
+                        ✓ Your checkout currently contains one shop,
 
                         which keeps pickup and delivery simple.
 
@@ -1753,7 +1753,7 @@
 
                     {% if not addresses %}disabled{% endif %}>
 
-                    Place Order â†’
+                    Place Order →
 
                 </button>
 
@@ -1761,7 +1761,7 @@
 
                 <div class="secure-note">
 
-                    ðŸ”’ Stock and prices are verified again before order creation.
+                    🔒 Stock and prices are verified again before order creation.
 
                 </div>
 
@@ -1795,13 +1795,13 @@
         input.value = coins;
 
         const finalTotal = Math.max(0, baseTotal - coins);
-        totalEl.textContent = "â‚¹" + finalTotal.toFixed(2);
+        totalEl.textContent = "₹" + finalTotal.toFixed(2);
 
         if(coins > 0){
             row.style.display = "flex";
-            text.textContent = "âˆ’ â‚¹" + coins;
+            text.textContent = "− ₹" + coins;
             saving.style.display = "block";
-            saving.textContent = "You will save â‚¹" + coins + " using " + coins + " AMEXA Coins.";
+            saving.textContent = "You will save ₹" + coins + " using " + coins + " AMEXA Coins.";
         }else{
             row.style.display = "none";
             saving.style.display = "none";
