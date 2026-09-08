@@ -1817,6 +1817,69 @@
 })();
 </script>
 
+
+<style>
+.payment-option.is-selected .payment-box{
+    border-color:#00b9ff !important;
+    box-shadow:0 0 0 3px rgba(0,185,255,.15) !important;
+    background:linear-gradient(
+        135deg,
+        rgba(0,229,255,.10),
+        rgba(118,44,255,.10)
+    ) !important;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const options = document.querySelectorAll(".payment-option");
+
+    function refreshPaymentSelection() {
+        options.forEach(function(option) {
+            const radio = option.querySelector(
+                'input[name="payment_method"]'
+            );
+
+            if (radio && radio.checked) {
+                option.classList.add("is-selected");
+            } else {
+                option.classList.remove("is-selected");
+            }
+        });
+    }
+
+    options.forEach(function(option) {
+
+        const radio = option.querySelector(
+            'input[name="payment_method"]'
+        );
+
+        if (!radio) return;
+
+        option.addEventListener("click", function(event) {
+
+            radio.checked = true;
+
+            radio.dispatchEvent(
+                new Event("change", {
+                    bubbles: true
+                })
+            );
+
+            refreshPaymentSelection();
+        });
+
+        radio.addEventListener(
+            "change",
+            refreshPaymentSelection
+        );
+    });
+
+    refreshPaymentSelection();
+});
+</script>
+
 </body>
 
 </html>
