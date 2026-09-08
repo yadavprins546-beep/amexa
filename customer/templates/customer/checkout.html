@@ -1406,189 +1406,40 @@
 
 
 
-                    <div class="payment-grid">
+                    
+<div class="payment-grid" style="display:block;">
+
+    <label style="display:block;margin-bottom:12px;font-weight:800;">
+        Payment Method
+    </label>
+
+    <select
+        name="payment_method"
+        id="paymentMethod"
+        required
+        style="
+            width:100%;
+            min-height:52px;
+            padding:12px 14px;
+            border-radius:14px;
+            border:1px solid rgba(255,255,255,.16);
+            background:#0b1025;
+            color:#ffffff;
+            font-size:15px;
+            cursor:pointer;
+        "
+    >
+        <option value="">Select payment method</option>
+        <option value="COD">Cash on Delivery</option>
+        <option value="UPI">Online Payment / UPI</option>
+    </select>
+
+</div>
+
+<div class="gateway-note">
+    ?? Online payments are securely processed through Razorpay.
+</div>
 
-                        <label class="payment-option">
-
-                            <input
-
-                                type="radio"
-
-                                name="payment_method"
-
-                                value="COD"
-
-                            >
-
-                            <div class="payment-box">
-
-                                <div class="payment-icon">💵</div>
-
-                                <div class="payment-name">
-
-                                    Cash on Delivery
-
-                                </div>
-
-                                <div class="payment-sub">
-
-                                    Pay when your order arrives.
-
-                                </div>
-
-                            </div>
-
-                        </label>
-
-
-
-                        <label class="payment-option">
-
-                            <input
-
-                                type="radio"
-
-                                name="payment_method"
-
-                                value="UPI"
-
-                            >
-
-                            <div class="payment-box">
-
-                                <div class="payment-icon">📲</div>
-
-                                <div class="payment-name">
-
-                                    UPI
-
-                                </div>
-
-                                <div class="payment-sub">
-
-                                    Pay using a supported UPI app.
-
-                                </div>
-
-                            </div>
-
-                        </label>
-
-
-
-                        <label class="payment-option">
-
-                            <input
-
-                                type="radio"
-
-                                name="payment_method"
-
-                                value="CARD"
-
-                            >
-
-                            <div class="payment-box">
-
-                                <div class="payment-icon">💳</div>
-
-                                <div class="payment-name">
-
-                                    Card
-
-                                </div>
-
-                                <div class="payment-sub">
-
-                                    Debit or credit card.
-
-                                </div>
-
-                            </div>
-
-                        </label>
-
-
-
-                        <label class="payment-option">
-
-                            <input
-
-                                type="radio"
-
-                                name="payment_method"
-
-                                value="NETBANKING"
-
-                            >
-
-                            <div class="payment-box">
-
-                                <div class="payment-icon">🏦</div>
-
-                                <div class="payment-name">
-
-                                    Net Banking
-
-                                </div>
-
-                                <div class="payment-sub">
-
-                                    Pay using internet banking.
-
-                                </div>
-
-                            </div>
-
-                        </label>
-
-
-
-                        <label class="payment-option">
-
-                            <input
-
-                                type="radio"
-
-                                name="payment_method"
-
-                                value="WALLET"
-
-                            >
-
-                            <div class="payment-box">
-
-                                <div class="payment-icon">👛</div>
-
-                                <div class="payment-name">
-
-                                    Wallet
-
-                                </div>
-
-                                <div class="payment-sub">
-
-                                    Wallet support can be connected later.
-
-                                </div>
-
-                            </div>
-
-                        </label>
-
-                    </div>
-
-
-
-                    <div class="gateway-note">
-
-                        ⚠️ COD is fully usable with the current backend.
-
-                        Online payment options are prepared in the checkout flow,
-
-                        but a real payment gateway must be connected before live Play Store payments.
-
-                    </div>
 
                 </section>
 
