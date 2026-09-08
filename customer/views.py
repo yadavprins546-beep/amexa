@@ -2961,6 +2961,8 @@ def checkout_view(request):
         or "COD"
     ).strip().upper()
 
+    print("DEBUG PAYMENT METHOD =", payment_method)
+
     allowed_payment_methods = {
         "COD",
         "UPI",
