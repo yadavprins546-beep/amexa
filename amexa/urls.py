@@ -74,6 +74,8 @@ from customer.views import (
 
     # CHECKOUT
     checkout_view,
+    razorpay_start_view,
+    razorpay_verify_view,
 
     # ORDERS / TRACKING
     orders_view,
@@ -412,6 +414,18 @@ urlpatterns = [
         "checkout/",
         checkout_view,
         name="checkout",
+    ),
+
+    path(
+        "payment/razorpay/start/",
+        razorpay_start_view,
+        name="razorpay_start",
+    ),
+
+    path(
+        "payment/razorpay/verify/",
+        razorpay_verify_view,
+        name="razorpay_verify",
     ),
 
 

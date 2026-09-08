@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMEXA Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+        }
+
+        .payment-box {
+            max-width: 420px;
+            margin: 70px auto;
+            background: white;
+            padding: 28px;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            text-align: center;
+        }
+
+        .payment-box h1 {
+            margin-bottom: 8px;
+        }
+
+        .amount {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 17px;
+            cursor: pointer;
+            background: #111;
+            color: white;
+        }
+
+        .safe {
+            color: #666;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="payment-box">
+    <h1>AMEXA</h1>
+    <p>Complete your secure payment</p>
+
+    <div class="amount">
+        ?{{ payable_total }}
+    </div>
+
+    <button id="pay-button">
+        Pay Now
+    </button>
+
+    <div class="safe">
+        Secure payment powered by Razorpay
+    </div>
+</div>
+
+
+<form
+    id="verify-form"
+    method="POST"
+    action="{% url 'razorpay_verify' %}"
+    style="display:none;"
+>
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="razorpay_payment_id"
+        id="razorpay_payment_id"
+    >
+
+    <input
+        type="hidden"
+        name="razorpay_order_id"
+        id="razorpay_order_id"
+    >
+
+    <input
+        type="hidden"
+        name="razorpay_signature"
+        id="razorpay_signature"
+    >
+</form>
+
+
+<script>
+const options = {
+    key: "{{ razorpay_key_id|escapejs }}",
+    amount: "{{ amount_paise }}",
+    currency: "INR",
+    name: "AMEXA",
+    description: "AMEXA Order Payment",
+    order_id: "{{ razorpay_order_id|escapejs }}",
+
+    handler: function (response) {
+
+        document.getElementById(
+            "razorpay_payment_id"
+        ).value = response.razorpay_payment_id;
+
+        document.getElementById(
+            "razorpay_order_id"
+        ).value = response.razorpay_order_id;
+
+        document.getElementById(
+            "razorpay_signature"
+        ).value = response.razorpay_signature;
+
+        document.getElementById(
+            "verify-form"
+        ).submit();
+    },
+
+    modal: {
+        ondismiss: function () {
+            window.location.href = "{% url 'checkout' %}";
+        }
+    },
+
+    theme: {
+        color: "#111111"
+    }
+};
+
+
+document.getElementById(
+    "pay-button"
+).addEventListener(
+    "click",
+    function (event) {
+        event.preventDefault();
+
+        const razorpay = new Razorpay(options);
+        razorpay.open();
+    }
+);
+</script>
+
+</body>
+</html>

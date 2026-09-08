@@ -1,6 +1,4 @@
-from django.conf import settings
-import razorpay
-import random
+﻿import random
 from datetime import datetime, time, timedelta
 from decimal import Decimal
 
@@ -388,7 +386,7 @@ def _coupon_for_cart(request, subtotal):
     if subtotal < coupon.minimum_order_amount:
         coupon_error = (
             f"Minimum order amount for {coupon.code} is "
-            f"₹{coupon.minimum_order_amount}."
+            f"â‚¹{coupon.minimum_order_amount}."
         )
         discount_amount = Decimal("0.00")
     else:
@@ -537,7 +535,7 @@ def _create_multi_shop_order_from_cart(
         if totals["subtotal"] < coupon.minimum_order_amount:
             raise ValueError(
                 f"Minimum order amount for {coupon.code} is "
-                f"₹{coupon.minimum_order_amount}."
+                f"â‚¹{coupon.minimum_order_amount}."
             )
 
         discount_amount = coupon.calculate_discount(
@@ -1028,7 +1026,7 @@ def home(request):
     elif location_ready:
         location_title = "Current Location"
         location_subtitle = (
-            "Live location selected · Tap to change"
+            "Live location selected Â· Tap to change"
         )
 
     elif default_address:
@@ -2657,7 +2655,7 @@ def apply_coupon_view(request):
         messages.error(
             request,
             f"Minimum order amount is "
-            f"₹{coupon.minimum_order_amount}."
+            f"â‚¹{coupon.minimum_order_amount}."
         )
         return redirect("cart")
 
@@ -2676,7 +2674,7 @@ def apply_coupon_view(request):
 
     messages.success(
         request,
-        f"{coupon.code} applied. You save ₹{discount}."
+        f"{coupon.code} applied. You save â‚¹{discount}."
     )
 
     return redirect("cart")
@@ -2752,7 +2750,7 @@ def checkout_view(request):
 
     # =====================================================
     # AMEXA COINS
-    # 1 Coin = ₹1, usable only against product value.
+    # 1 Coin = â‚¹1, usable only against product value.
     # =====================================================
     expire_wallet_coins(request.user)
 
@@ -2972,16 +2970,14 @@ def checkout_view(request):
     if payment_method not in allowed_payment_methods:
         payment_method = "COD"
 
-    # Online payment -> Razorpay.
-    # Actual AMEXA order is created only after payment verification.
+    # Real online gateway is not connected yet.
     if payment_method != "COD":
-        request.session["amexa_pending_payment"] = {
-            "address_id": address_id,
-            "payment_method": payment_method,
-            "use_coins": request.POST.get("use_coins", "0") or "0",
-        }
-        request.session.modified = True
-        return redirect("razorpay_start")
+        messages.warning(
+            request,
+            "Online payment gateway is not live yet. "
+            "Please use Cash on Delivery."
+        )
+        return redirect("checkout")
 
     # =====================================================
     # AMEXA COINS REDEMPTION
@@ -4474,12 +4470,12 @@ def location_save_view(request):
 
         messages.success(
             request,
-            "📍 Current location permanently saved."
+            "ðŸ“ Current location permanently saved."
         )
     else:
         messages.success(
             request,
-            "📍 Current location saved for this session."
+            "ðŸ“ Current location saved for this session."
         )
 
     return redirect("home")
@@ -7126,7 +7122,7 @@ def picker_scan_item_view(request, order_number):
                 picking_item.order_item.product_name
                 or picking_item.order_item.product.name
             )
-            messages.success(request, f"Picked {quantity} × {product_name}.")
+            messages.success(request, f"Picked {quantity} Ã— {product_name}.")
 
     return redirect("picker_order_detail", order_number=order_number)
 
@@ -7448,7 +7444,7 @@ def delivery_dashboard_view(request):
 
     # ---------------------------------------------------------
     # Earnings overview.
-    # Existing AMEXA rule: ₹15 delivery payout per completed shop order.
+    # Existing AMEXA rule: â‚¹15 delivery payout per completed shop order.
     # ---------------------------------------------------------
     now = timezone.now()
     today_start = now.replace(
@@ -7842,372 +7838,3 @@ def delivery_assignment_action_view(request, assignment_id):
             messages.error(request, "Invalid delivery action.")
 
     return redirect("delivery_dashboard")
-
-
-
-# =========================================================
-# RAZORPAY PAYMENT
-# =========================================================
-
-@login_required
-def razorpay_start_view(request):
-    pending = request.session.get("amexa_pending_payment")
-
-    if not pending:
-        messages.error(request, "Payment session expired. Please try again.")
-        return redirect("checkout")
-
-    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
-        messages.error(request, "Payment gateway configuration is missing.")
-        return redirect("checkout")
-
-    cart = _get_or_create_cart(request.user)
-
-    items = list(
-        cart.items
-        .select_related(
-            "product",
-            "product__shop",
-            "product__brand",
-        )
-        .all()
-    )
-
-    if not items:
-        messages.error(request, "Your cart is empty.")
-        return redirect("cart")
-
-    address = get_object_or_404(
-        Address,
-        pk=pending.get("address_id"),
-        user=request.user,
-    )
-
-    totals = _totals_with_coupon(request, items)
-
-    expire_wallet_coins(request.user)
-
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
-    wallet.refresh_from_db()
-
-    try:
-        requested_coins = int(pending.get("use_coins", "0") or 0)
-    except (TypeError, ValueError):
-        requested_coins = 0
-
-    requested_coins = max(0, requested_coins)
-
-    max_coin_usable = max(
-        0,
-        int(
-            max(
-                Decimal("0.00"),
-                totals["subtotal"] - totals["discount_amount"],
-            )
-        ),
-    )
-
-    requested_coins = min(
-        requested_coins,
-        wallet.coin_balance,
-        max_coin_usable,
-    )
-
-    coin_discount = Decimal(requested_coins)
-
-    payable_total = max(
-        Decimal("0.00"),
-        totals["payable_total"] - coin_discount,
-    )
-
-    if payable_total <= Decimal("0.00"):
-        messages.error(
-            request,
-            "Online payment amount must be greater than zero."
-        )
-        return redirect("checkout")
-
-    amount_paise = int(
-        (payable_total * Decimal("100")).quantize(Decimal("1"))
-    )
-
-    client = razorpay.Client(
-        auth=(
-            settings.RAZORPAY_KEY_ID,
-            settings.RAZORPAY_KEY_SECRET,
-        )
-    )
-
-    try:
-        gateway_order = client.order.create({
-            "amount": amount_paise,
-            "currency": "INR",
-            "receipt": (
-                f"AMEXA-{request.user.pk}-"
-                f"{timezone.now().strftime('%y%m%d%H%M%S')}"
-            ),
-        })
-    except Exception:
-        messages.error(
-            request,
-            "Unable to start online payment. Please try again."
-        )
-        return redirect("checkout")
-
-    request.session["amexa_razorpay_order_id"] = gateway_order["id"]
-    request.session["amexa_razorpay_amount"] = amount_paise
-    request.session.modified = True
-
-    return render(
-        request,
-        "customer/razorpay_payment.html",
-        {
-            "razorpay_key_id": settings.RAZORPAY_KEY_ID,
-            "razorpay_order_id": gateway_order["id"],
-            "amount_paise": amount_paise,
-            "payable_total": payable_total,
-        },
-    )
-
-
-@login_required
-def razorpay_verify_view(request):
-
-    if request.method != "POST":
-        return redirect("checkout")
-
-    pending = request.session.get("amexa_pending_payment")
-    server_order_id = request.session.get("amexa_razorpay_order_id")
-    expected_amount = request.session.get("amexa_razorpay_amount")
-
-    if not pending or not server_order_id or expected_amount is None:
-        messages.error(request, "Payment session expired.")
-        return redirect("checkout")
-
-    payment_id = (
-        request.POST.get("razorpay_payment_id", "") or ""
-    ).strip()
-
-    returned_order_id = (
-        request.POST.get("razorpay_order_id", "") or ""
-    ).strip()
-
-    signature = (
-        request.POST.get("razorpay_signature", "") or ""
-    ).strip()
-
-    if (
-        not payment_id
-        or not returned_order_id
-        or not signature
-        or returned_order_id != server_order_id
-    ):
-        messages.error(request, "Invalid payment response.")
-        return redirect("checkout")
-
-    client = razorpay.Client(
-        auth=(
-            settings.RAZORPAY_KEY_ID,
-            settings.RAZORPAY_KEY_SECRET,
-        )
-    )
-
-    try:
-        client.utility.verify_payment_signature({
-            "razorpay_order_id": server_order_id,
-            "razorpay_payment_id": payment_id,
-            "razorpay_signature": signature,
-        })
-    except Exception:
-        messages.error(
-            request,
-            "Payment verification failed. Order was not created."
-        )
-        return redirect("checkout")
-
-    # Confirm gateway-side amount/order/status too.
-    try:
-        gateway_payment = client.payment.fetch(payment_id)
-
-        if gateway_payment.get("order_id") != server_order_id:
-            raise ValueError("Gateway order mismatch.")
-
-        if int(gateway_payment.get("amount", 0)) != int(expected_amount):
-            raise ValueError("Gateway amount mismatch.")
-
-        status = gateway_payment.get("status")
-
-        # Ensure money is captured before fulfilling the AMEXA order.
-        if status == "authorized":
-            try:
-                gateway_payment = client.payment.capture(
-                    payment_id,
-                    int(expected_amount),
-                )
-            except Exception:
-                gateway_payment = client.payment.fetch(payment_id)
-
-            status = gateway_payment.get("status")
-
-        if status != "captured":
-            messages.error(
-                request,
-                "Payment is not captured yet. Order was not created."
-            )
-            return redirect("checkout")
-
-    except Exception:
-        messages.error(
-            request,
-            "Could not confirm payment with Razorpay."
-        )
-        return redirect("checkout")
-
-    cart = _get_or_create_cart(request.user)
-
-    items = list(
-        cart.items
-        .select_related(
-            "product",
-            "product__shop",
-            "product__brand",
-        )
-        .all()
-    )
-
-    if not items:
-        messages.error(
-            request,
-            "Payment succeeded but cart data is unavailable. "
-            "Please contact support."
-        )
-        return redirect("orders")
-
-    address = get_object_or_404(
-        Address,
-        pk=pending.get("address_id"),
-        user=request.user,
-    )
-
-    totals = _totals_with_coupon(request, items)
-
-    expire_wallet_coins(request.user)
-
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
-    wallet.refresh_from_db()
-
-    try:
-        requested_coins = int(pending.get("use_coins", "0") or 0)
-    except (TypeError, ValueError):
-        requested_coins = 0
-
-    requested_coins = max(0, requested_coins)
-
-    max_coin_usable = max(
-        0,
-        int(
-            max(
-                Decimal("0.00"),
-                totals["subtotal"] - totals["discount_amount"],
-            )
-        ),
-    )
-
-    requested_coins = min(
-        requested_coins,
-        wallet.coin_balance,
-        max_coin_usable,
-    )
-
-    coin_discount = Decimal(requested_coins)
-
-    current_total = max(
-        Decimal("0.00"),
-        totals["payable_total"] - coin_discount,
-    )
-
-    current_amount_paise = int(
-        (current_total * Decimal("100")).quantize(Decimal("1"))
-    )
-
-    if current_amount_paise != int(expected_amount):
-        messages.error(
-            request,
-            "Cart amount changed during payment. "
-            "Please contact support with your payment ID: "
-            f"{payment_id}"
-        )
-        return redirect("orders")
-
-    coupon = totals.get("applied_coupon")
-
-    try:
-        master_order, shop_orders = _create_multi_shop_order_from_cart(
-            request.user,
-            address,
-            cart,
-            payment_method=pending.get("payment_method", "UPI"),
-            coupon=coupon,
-            coin_discount=coin_discount,
-        )
-
-    except ValueError as error:
-        # Payment is already captured. Try immediate full refund
-        # if order creation cannot be completed.
-        try:
-            client.payment.refund(
-                payment_id,
-                {"amount": int(expected_amount)},
-            )
-            messages.error(
-                request,
-                f"{error} Payment refund has been initiated."
-            )
-        except Exception:
-            messages.error(
-                request,
-                f"{error} Payment ID: {payment_id}. "
-                "Please contact support."
-            )
-
-        return redirect("cart")
-
-    payment = master_order.payment
-    payment.payment_status = "Paid"
-    payment.transaction_id = payment_id
-    payment.gateway_name = "Razorpay"
-    payment.paid_at = timezone.now()
-    payment.save(
-        update_fields=[
-            "payment_status",
-            "transaction_id",
-            "gateway_name",
-            "paid_at",
-            "updated_at",
-        ]
-    )
-
-    Order.objects.filter(
-        master_order=master_order
-    ).update(
-        payment_status="Paid"
-    )
-
-    request.session.pop("amexa_pending_payment", None)
-    request.session.pop("amexa_razorpay_order_id", None)
-    request.session.pop("amexa_razorpay_amount", None)
-    request.session.pop("applied_coupon_code", None)
-    request.session.modified = True
-
-    messages.success(
-        request,
-        "Payment successful. Order placed successfully."
-    )
-
-    if shop_orders:
-        return redirect(
-            "order_success",
-            order_id=shop_orders[0].id,
-        )
-
-    return redirect("orders")
