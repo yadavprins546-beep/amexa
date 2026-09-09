@@ -5369,6 +5369,14 @@ def _assign_available_rider(order):
 
     fresh_after = timezone.now() - timedelta(minutes=RIDER_LOCATION_FRESH_MINUTES)
 
+    # Riders who already rejected/timed-out this order
+    # must not receive the same order again.
+    rejected_rider_ids = list(
+        order.delivery_assignments
+        .filter(status="Rejected")
+        .values_list("delivery_partner_id", flat=True)
+    )
+
     profiles = (
         DeliveryPartnerProfile.objects
         .filter(
@@ -5380,6 +5388,7 @@ def _assign_available_rider(order):
             current_longitude__isnull=False,
             location_updated_at__gte=fresh_after,
         )
+        .exclude(user_id__in=rejected_rider_ids)
         .select_related("user")
     )
 
@@ -7675,7 +7684,18 @@ def delivery_assignment_action_view(request, assignment_id):
             assignment.status = "Rejected"
             assignment.save(update_fields=["status"])
 
-            messages.info(request, "Assignment rejected.")
+            next_assignment = _assign_available_rider(order)
+
+            if next_assignment:
+                messages.info(
+                    request,
+                    "Assignment rejected. Next available rider assigned automatically."
+                )
+            else:
+                messages.warning(
+                    request,
+                    "Assignment rejected. No other available rider found right now."
+                )
 
         elif action == "picked":
             if assignment.status != "Accepted":
