@@ -114,6 +114,126 @@ body{font-size:14px;line-height:1.5}
 
 </style>
 
+
+<style>
+/* FINAL MOBILE WIDTH SAFETY */
+html, body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+*, *::before, *::after{
+    box-sizing:border-box;
+}
+
+.layout,
+.main,
+.top,
+.statusbar,
+.panel,
+.card,
+.banner,
+.quick,
+.earnings,
+.earnbox,
+.support,
+.forms,
+.details,
+.actions,
+.otp,
+.new-order-modal{
+    min-width:0;
+    max-width:100%;
+}
+
+img,
+video,
+canvas,
+iframe{
+    max-width:100%;
+    height:auto;
+}
+
+@media(max-width:900px){
+    .layout{
+        display:block !important;
+        width:100% !important;
+        max-width:100% !important;
+    }
+
+    .side{
+        display:none !important;
+    }
+
+    .main{
+        width:100% !important;
+        max-width:100% !important;
+        margin:0 !important;
+        padding-left:12px !important;
+        padding-right:12px !important;
+    }
+}
+
+@media(max-width:560px){
+    .top{
+        width:100%;
+        flex-wrap:wrap;
+    }
+
+    .top > *{
+        min-width:0;
+        max-width:100%;
+    }
+
+    .digital-head{
+        width:100%;
+        flex-wrap:wrap;
+        overflow-wrap:anywhere;
+    }
+
+    .statusbar,
+    .banners,
+    .earnings,
+    .forms,
+    .details,
+    .quickgrid,
+    .earnrow,
+    .new-order-grid,
+    .new-order-actions{
+        grid-template-columns:1fr !important;
+        width:100%;
+    }
+
+    .panel,
+    .card,
+    .banner,
+    .quick,
+    .earnbox,
+    .support{
+        width:100%;
+        max-width:100%;
+    }
+
+    .actions,
+    .otp{
+        width:100%;
+    }
+
+    .actions .btn,
+    .otp .btn,
+    .otp input{
+        width:100%;
+        max-width:100%;
+    }
+
+    .swipe{
+        width:100%;
+        max-width:100%;
+    }
+}
+</style>
+
 </head>
 
 <body>
