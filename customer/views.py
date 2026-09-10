@@ -1367,7 +1367,8 @@ def home(request):
         .filter(
             is_active=True,
             stock_quantity__gt=0,
-                is_online=True,
+            shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related(
             "shop",
@@ -1612,7 +1613,8 @@ def search_results_view(request):
         .filter(
             is_active=True,
             stock_quantity__gt=0,
-                is_online=True,
+            shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related("shop", "category", "brand")
     )
@@ -2462,7 +2464,8 @@ def category_products_view(request, slug):
             category=category,
             is_active=True,
             stock_quantity__gt=0,
-                is_online=True,
+            shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related(
             "shop",
