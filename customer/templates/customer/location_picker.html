@@ -19,6 +19,9 @@
         <input type="hidden" name="latitude" id="latitudeInput" value="{{ saved_latitude }}">
         <input type="hidden" name="longitude" id="longitudeInput" value="{{ saved_longitude }}">
         <input type="hidden" name="address_text" id="addressTextInput" value="{{ saved_address_text }}">
+        <input type="hidden" name="city" id="cityInput" value="">
+        <input type="hidden" name="state" id="stateInput" value="">
+        <input type="hidden" name="pincode" id="pincodeInput" value="">
         <input type="hidden" name="accuracy" id="accuracyInput" value="">
         <button type="submit" class="btn primary" style="width:100%">✓ Save Current Location Permanently</button>
       </form>
@@ -31,6 +34,9 @@
     const latInput = document.getElementById("latitudeInput");
     const lonInput = document.getElementById("longitudeInput");
     const addressInput = document.getElementById("addressTextInput");
+    const cityInput = document.getElementById("cityInput");
+    const stateInput = document.getElementById("stateInput");
+    const pincodeInput = document.getElementById("pincodeInput");
     const accuracyInput = document.getElementById("accuracyInput");
     const preview = document.getElementById("addressPreview");
     const status = document.getElementById("gpsStatus");
@@ -116,6 +122,31 @@
             const address = String(
                 data.display_name || ""
             ).trim().slice(0, 255);
+
+            const parts = data.address || {};
+
+            const city = String(
+                parts.city ||
+                parts.town ||
+                parts.village ||
+                parts.municipality ||
+                parts.county ||
+                ""
+            ).trim().slice(0, 100);
+
+            const stateName = String(
+                parts.state ||
+                parts.state_district ||
+                ""
+            ).trim().slice(0, 100);
+
+            const pincode = String(
+                parts.postcode || ""
+            ).trim().slice(0, 10);
+
+            cityInput.value = city;
+            stateInput.value = stateName;
+            pincodeInput.value = pincode;
 
             if (address) {
                 preview.textContent = address;

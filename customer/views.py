@@ -4711,6 +4711,9 @@ def location_save_view(request):
     latitude_raw = (request.POST.get("latitude", "") or "").strip()
     longitude_raw = (request.POST.get("longitude", "") or "").strip()
     address_text = (request.POST.get("address_text", "") or "").strip()[:255]
+    city = (request.POST.get("city", "") or "").strip()[:100]
+    state = (request.POST.get("state", "") or "").strip()[:100]
+    pincode = (request.POST.get("pincode", "") or "").strip()[:10]
     accuracy_raw = (request.POST.get("accuracy", "") or "").strip()
 
     if not latitude_raw or not longitude_raw:
@@ -4760,23 +4763,47 @@ def location_save_view(request):
             },
         )
 
-        default_address = (
+        existing_address = (
             request.user.addresses
-            .filter(is_default=True)
+            .filter(
+                latitude=latitude,
+                longitude=longitude,
+            )
             .first()
-            or request.user.addresses.first()
         )
-        if default_address:
-            default_address.latitude = latitude
-            default_address.longitude = longitude
-            default_address.save(
-                update_fields=["latitude", "longitude"]
+
+        if existing_address:
+            existing_address.full_name = request.user.name
+            existing_address.mobile = request.user.phone
+            existing_address.address_line = (
+                address_text or existing_address.address_line
+            )
+            existing_address.city = city or existing_address.city
+            existing_address.state = state or existing_address.state
+            existing_address.pincode = pincode or existing_address.pincode
+            existing_address.is_default = True
+            existing_address.save()
+
+        else:
+            Address.objects.create(
+                user=request.user,
+                full_name=request.user.name or "Customer",
+                mobile=request.user.phone or "",
+                address_line=address_text or "Current Location",
+                city=city,
+                state=state,
+                pincode=pincode,
+                latitude=latitude,
+                longitude=longitude,
+                address_type="Home",
+                is_default=True,
             )
 
         messages.success(
             request,
-            "ðŸ“ Current location permanently saved."
+            "Current location customer address me save ho gayi."
         )
+
     else:
         messages.success(
             request,
