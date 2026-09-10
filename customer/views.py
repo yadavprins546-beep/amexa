@@ -2608,8 +2608,14 @@ def cart_add_view(request, product_id):
         pk=product_id,
         is_active=True,
         shop__is_active=True,
-        shop__is_online=True,
     )
+
+    if not product.shop.is_online:
+        messages.warning(
+            request,
+            "Yeh shop abhi offline hai. Thodi der baad try karein."
+        )
+        return redirect("cart")
 
     cart = _get_or_create_cart(
         request.user
