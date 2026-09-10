@@ -1124,17 +1124,49 @@ def home(request):
             user_lat = float(request.GET.get("lat"))
             user_lon = float(request.GET.get("lon"))
 
+            if not (-90 <= user_lat <= 90):
+                raise ValueError("Invalid latitude")
+
+            if not (-180 <= user_lon <= 180):
+                raise ValueError("Invalid longitude")
+
+            accuracy = None
+            accuracy_raw = (
+                request.GET.get("accuracy", "")
+                or ""
+            ).strip()
+
+            if accuracy_raw:
+                try:
+                    accuracy = max(
+                        0,
+                        float(accuracy_raw),
+                    )
+                except (TypeError, ValueError):
+                    accuracy = None
+
             request.session["customer_lat"] = user_lat
             request.session["customer_lon"] = user_lon
+
+            if accuracy is not None:
+                request.session["customer_location_accuracy"] = (
+                    accuracy
+                )
+
             request.session.modified = True
 
             if request.user.is_authenticated:
+                defaults = {
+                    "latitude": user_lat,
+                    "longitude": user_lon,
+                }
+
+                if accuracy is not None:
+                    defaults["accuracy_meters"] = accuracy
+
                 CustomerSavedLocation.objects.update_or_create(
                     user=request.user,
-                    defaults={
-                        "latitude": user_lat,
-                        "longitude": user_lon,
-                    },
+                    defaults=defaults,
                 )
 
             location_source = "live"
@@ -1146,6 +1178,13 @@ def home(request):
             if session_lat is not None and session_lon is not None:
                 user_lat = float(session_lat)
                 user_lon = float(session_lon)
+
+                if not (-90 <= user_lat <= 90):
+                    raise ValueError("Invalid session latitude")
+
+                if not (-180 <= user_lon <= 180):
+                    raise ValueError("Invalid session longitude")
+
                 location_source = "session"
 
     except (TypeError, ValueError):
