@@ -1,4 +1,4 @@
-from django.conf import settings
+﻿from django.conf import settings
 import razorpay
 import random
 from datetime import datetime, time, timedelta
@@ -631,7 +631,7 @@ def _coupon_for_cart(request, subtotal):
     if subtotal < coupon.minimum_order_amount:
         coupon_error = (
             f"Minimum order amount for {coupon.code} is "
-            f"₹{coupon.minimum_order_amount}."
+            f"â‚¹{coupon.minimum_order_amount}."
         )
         discount_amount = Decimal("0.00")
     else:
@@ -780,7 +780,7 @@ def _create_multi_shop_order_from_cart(
         if totals["subtotal"] < coupon.minimum_order_amount:
             raise ValueError(
                 f"Minimum order amount for {coupon.code} is "
-                f"₹{coupon.minimum_order_amount}."
+                f"â‚¹{coupon.minimum_order_amount}."
             )
 
         discount_amount = coupon.calculate_discount(
@@ -1277,7 +1277,7 @@ def home(request):
     elif location_ready:
         location_title = "Current Location"
         location_subtitle = (
-            "Live location selected · Tap to change"
+            "Live location selected Â· Tap to change"
         )
 
     elif default_address:
@@ -1367,8 +1367,7 @@ def home(request):
         .filter(
             is_active=True,
             stock_quantity__gt=0,
-            shop__is_active=True,
-            shop__is_online=True,
+                is_online=True,
         )
         .select_related(
             "shop",
@@ -1613,8 +1612,7 @@ def search_results_view(request):
         .filter(
             is_active=True,
             stock_quantity__gt=0,
-            shop__is_active=True,
-            shop__is_online=True,
+                is_online=True,
         )
         .select_related("shop", "category", "brand")
     )
@@ -2269,8 +2267,7 @@ def shop_detail_view(request, slug):
         Shop,
         slug=slug,
         is_active=True,
-        shop__is_active=True,
-        shop__is_online=True,
+        is_online=True,
     )
 
     query = request.GET.get("q", "").strip()
@@ -2465,8 +2462,7 @@ def category_products_view(request, slug):
             category=category,
             is_active=True,
             stock_quantity__gt=0,
-            shop__is_active=True,
-            shop__is_online=True,
+                is_online=True,
         )
         .select_related(
             "shop",
@@ -2609,8 +2605,7 @@ def cart_add_view(request, product_id):
         Product.objects.select_related("shop"),
         pk=product_id,
         is_active=True,
-        shop__is_active=True,
-        shop__is_online=True,
+        is_online=True,
     )
 
     cart = _get_or_create_cart(
@@ -2913,7 +2908,7 @@ def apply_coupon_view(request):
         messages.error(
             request,
             f"Minimum order amount is "
-            f"₹{coupon.minimum_order_amount}."
+            f"â‚¹{coupon.minimum_order_amount}."
         )
         return redirect("cart")
 
@@ -2932,7 +2927,7 @@ def apply_coupon_view(request):
 
     messages.success(
         request,
-        f"{coupon.code} applied. You save ₹{discount}."
+        f"{coupon.code} applied. You save â‚¹{discount}."
     )
 
     return redirect("cart")
@@ -3008,7 +3003,7 @@ def checkout_view(request):
 
     # =====================================================
     # AMEXA COINS
-    # 1 Coin = ₹1, usable only against product value.
+    # 1 Coin = â‚¹1, usable only against product value.
     # =====================================================
     expire_wallet_coins(request.user)
 
@@ -4732,12 +4727,12 @@ def location_save_view(request):
 
         messages.success(
             request,
-            "📍 Current location permanently saved."
+            "ðŸ“ Current location permanently saved."
         )
     else:
         messages.success(
             request,
-            "📍 Current location saved for this session."
+            "ðŸ“ Current location saved for this session."
         )
 
     return redirect("home")
@@ -7553,7 +7548,7 @@ def picker_scan_item_view(request, order_number):
                 picking_item.order_item.product_name
                 or picking_item.order_item.product.name
             )
-            messages.success(request, f"Picked {quantity} × {product_name}.")
+            messages.success(request, f"Picked {quantity} Ã— {product_name}.")
 
     return redirect("picker_order_detail", order_number=order_number)
 
@@ -7890,7 +7885,7 @@ def delivery_dashboard_view(request):
 
     # ---------------------------------------------------------
     # Earnings overview.
-    # Existing AMEXA rule: ₹15 delivery payout per completed shop order.
+    # Existing AMEXA rule: â‚¹15 delivery payout per completed shop order.
     # ---------------------------------------------------------
     now = timezone.now()
     today_start = now.replace(
@@ -8665,3 +8660,5 @@ def razorpay_verify_view(request):
         )
 
     return redirect("orders")
+
+
