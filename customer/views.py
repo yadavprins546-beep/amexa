@@ -8587,6 +8587,48 @@ def razorpay_verify_view(request):
         )
         return redirect("checkout")
 
+    # Same Razorpay payment response dobara aaye to
+    # duplicate AMEXA order create na ho.
+    existing_payment = (
+        Payment.objects
+        .filter(
+            transaction_id=payment_id,
+            payment_status="Paid",
+        )
+        .select_related("master_order")
+        .first()
+    )
+
+    if existing_payment:
+        request.session.pop("amexa_pending_payment", None)
+        request.session.pop("amexa_razorpay_order_id", None)
+        request.session.pop("amexa_razorpay_amount", None)
+        request.session.pop("applied_coupon_code", None)
+        request.session.modified = True
+
+        existing_order = (
+            Order.objects
+            .filter(
+                master_order=existing_payment.master_order,
+            )
+            .order_by("id")
+            .first()
+        )
+
+        messages.info(
+            request,
+            "Payment already verified. Existing order opened."
+        )
+
+        if existing_order:
+            return redirect(
+                "order_success",
+                order_id=existing_order.id,
+            )
+
+        return redirect("orders")
+
+
     cart = _get_or_create_cart(request.user)
 
     items = list(
@@ -8655,13 +8697,32 @@ def razorpay_verify_view(request):
     )
 
     if current_amount_paise != int(expected_amount):
-        messages.error(
-            request,
-            "Cart amount changed during payment. "
-            "Please contact support with your payment ID: "
-            f"{payment_id}"
-        )
-        return redirect("orders")
+        try:
+            client.payment.refund(
+                payment_id,
+                {"amount": int(expected_amount)},
+            )
+
+            messages.error(
+                request,
+                "Cart amount changed during payment. "
+                "Full refund has been initiated."
+            )
+
+        except Exception:
+            messages.error(
+                request,
+                "Cart amount changed after payment. "
+                f"Payment ID: {payment_id}. "
+                "Please contact support."
+            )
+
+        request.session.pop("amexa_pending_payment", None)
+        request.session.pop("amexa_razorpay_order_id", None)
+        request.session.pop("amexa_razorpay_amount", None)
+        request.session.modified = True
+
+        return redirect("cart")
 
     coupon = totals.get("applied_coupon")
 
