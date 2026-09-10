@@ -103,6 +103,9 @@
 
 <script>
 const options = {
+
+    // Debug: exact Razorpay checkout failure browser console me dikhayega.
+
     key: "{{ razorpay_key_id|escapejs }}",
     amount: "{{ amount_paise }}",
     currency: "INR",
@@ -141,6 +144,16 @@ const options = {
 };
 
 
+const razorpayDebug = new Razorpay(options);
+
+razorpayDebug.on("payment.failed", function (response) {
+    console.error("RAZORPAY PAYMENT FAILED:", response.error);
+    alert(
+        "Razorpay Error: " +
+        (response.error.description || response.error.reason || "Unknown error")
+    );
+});
+
 document.getElementById(
     "pay-button"
 ).addEventListener(
@@ -148,8 +161,7 @@ document.getElementById(
     function (event) {
         event.preventDefault();
 
-        const razorpay = new Razorpay(options);
-        razorpay.open();
+        razorpayDebug.open();
     }
 );
 </script>
