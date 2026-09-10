@@ -1125,6 +1125,7 @@ def home(request):
             is_active=True,
             stock_quantity__gt=0,
             shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related(
             "shop",
@@ -1370,6 +1371,7 @@ def search_results_view(request):
             is_active=True,
             stock_quantity__gt=0,
             shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related("shop", "category", "brand")
     )
@@ -2024,6 +2026,8 @@ def shop_detail_view(request, slug):
         Shop,
         slug=slug,
         is_active=True,
+        shop__is_active=True,
+        shop__is_online=True,
     )
 
     query = request.GET.get("q", "").strip()
@@ -2219,6 +2223,7 @@ def category_products_view(request, slug):
             is_active=True,
             stock_quantity__gt=0,
             shop__is_active=True,
+            shop__is_online=True,
         )
         .select_related(
             "shop",
@@ -2361,6 +2366,8 @@ def cart_add_view(request, product_id):
         Product.objects.select_related("shop"),
         pk=product_id,
         is_active=True,
+        shop__is_active=True,
+        shop__is_online=True,
     )
 
     cart = _get_or_create_cart(
