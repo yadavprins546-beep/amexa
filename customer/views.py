@@ -7289,6 +7289,21 @@ def delivery_dashboard_view(request):
 
             return redirect("delivery_verification_status")
 
+    # Free launch-stage rider timeout check.
+    # Runs the existing safe management command whenever
+    # an approved delivery dashboard is opened/refreshed.
+    try:
+        from django.core.management import call_command
+        call_command(
+            "process_rider_timeouts",
+            timeout_seconds=120,
+            verbosity=0,
+        )
+    except Exception:
+        # Dashboard must never crash only because timeout
+        # processing failed temporarily.
+        pass
+
     # ---------------------------------------------------------
     # Dashboard POST actions:
     # - online/offline availability
