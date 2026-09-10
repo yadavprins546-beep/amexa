@@ -2269,7 +2269,6 @@ def shop_detail_view(request, slug):
         Shop,
         slug=slug,
         is_active=True,
-        is_online=True,
     )
 
     query = request.GET.get("q", "").strip()
