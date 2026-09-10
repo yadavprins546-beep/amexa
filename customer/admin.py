@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
+from .shop_wallet_services import pay_settlement_claim
 
 from .models import (
     AboutPage,
@@ -46,6 +47,9 @@ from .models import (
     ShopkeeperBankAccount,
     ShopkeeperDocument,
     ShopkeeperProfile,
+    ShopkeeperWallet,
+    ShopkeeperWalletTransaction,
+    SettlementClaim,
     ShopProduct,
 )
 
@@ -2727,4 +2731,250 @@ class DeliveryIncentiveProgressAdmin(admin.ModelAdmin):
 admin.site.site_header = "AMEXA Operations Admin"
 admin.site.site_title = "AMEXA Admin"
 admin.site.index_title = "AMEXA Operations & Management"
+
+
+
+# =========================================================
+# SHOPKEEPER MONEY WALLET ADMIN
+# =========================================================
+
+@admin.register(ShopkeeperWallet)
+class ShopkeeperWalletAdmin(admin.ModelAdmin):
+    list_display = (
+        "shop",
+        "available_balance",
+        "pending_balance",
+        "hold_balance",
+        "lifetime_earned",
+        "lifetime_paid",
+        "updated_at",
+    )
+
+    search_fields = (
+        "shop__name",
+        "shop__phone",
+    )
+
+    list_filter = (
+        "updated_at",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    list_select_related = (
+        "shop",
+    )
+
+    ordering = (
+        "-updated_at",
+    )
+
+    list_per_page = 30
+
+
+@admin.register(ShopkeeperWalletTransaction)
+class ShopkeeperWalletTransactionAdmin(admin.ModelAdmin):
+    list_display = (
+        "wallet",
+        "transaction_type",
+        "reason",
+        "amount",
+        "balance_after",
+        "order",
+        "settlement",
+        "created_by",
+        "created_at",
+    )
+
+    search_fields = (
+        "wallet__shop__name",
+        "order__order_number",
+        "description",
+    )
+
+    list_filter = (
+        "transaction_type",
+        "reason",
+        "created_at",
+    )
+
+    readonly_fields = (
+        "created_at",
+    )
+
+    list_select_related = (
+        "wallet",
+        "wallet__shop",
+        "order",
+        "settlement",
+        "created_by",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    list_per_page = 40
+
+
+@admin.register(SettlementClaim)
+class SettlementClaimAdmin(admin.ModelAdmin):
+    list_display = (
+        "shop",
+        "amount",
+        "payout_method",
+        "status_badge",
+        "requested_by",
+        "utr_reference",
+        "created_at",
+        "paid_at",
+    )
+
+    search_fields = (
+        "shop__name",
+        "requested_by__name",
+        "requested_by__phone",
+        "utr_reference",
+    )
+
+    list_filter = (
+        "status",
+        "payout_method",
+        "created_at",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "reviewed_at",
+        "paid_at",
+    )
+
+    list_select_related = (
+        "wallet",
+        "shop",
+        "requested_by",
+        "reviewed_by",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    list_per_page = 30
+
+    actions = (
+        "mark_under_review",
+        "approve_claims",
+        "mark_processing",
+        "mark_paid",
+        "reject_claims",
+    )
+
+    @admin.display(
+        description="Status",
+        ordering="status",
+    )
+    def status_badge(self, obj):
+        status = (obj.status or "").strip()
+
+        colors = {
+            "PENDING": ("#92400e", "#fef3c7"),
+            "UNDER_REVIEW": ("#1e40af", "#dbeafe"),
+            "APPROVED": ("#166534", "#dcfce7"),
+            "PROCESSING": ("#1e40af", "#dbeafe"),
+            "PAID": ("#166534", "#dcfce7"),
+            "REJECTED": ("#991b1b", "#fee2e2"),
+            "CANCELLED": ("#6b7280", "#f3f4f6"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status.replace("_", " ").title() or "-",
+        )
+
+    def _update_status(self, request, queryset, status):
+        changed = queryset.update(
+            status=status,
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(
+            request,
+            f"{changed} settlement claim(s) updated to {status}.",
+        )
+
+    @admin.action(description="Move selected claims to Under Review")
+    def mark_under_review(self, request, queryset):
+        self._update_status(
+            request,
+            queryset,
+            "UNDER_REVIEW",
+        )
+
+    @admin.action(description="Approve selected settlement claims")
+    def approve_claims(self, request, queryset):
+        self._update_status(
+            request,
+            queryset,
+            "APPROVED",
+        )
+
+    @admin.action(description="Mark selected claims as Processing")
+    def mark_processing(self, request, queryset):
+        self._update_status(
+            request,
+            queryset,
+            "PROCESSING",
+        )
+
+    @admin.action(description="Mark selected claims as Paid")
+    def mark_paid(self, request, queryset):
+        paid_count = 0
+        failed = []
+
+        for claim in queryset.order_by("created_at"):
+            try:
+                pay_settlement_claim(
+                    claim.pk,
+                    admin_user=request.user,
+                )
+                paid_count += 1
+
+            except Exception as exc:
+                failed.append(
+                    f"Claim #{claim.pk}: {exc}"
+                )
+
+        if paid_count:
+            self.message_user(
+                request,
+                f"{paid_count} settlement claim(s) paid successfully.",
+            )
+
+        if failed:
+            self.message_user(
+                request,
+                " | ".join(failed[:5]),
+            )
+
+    @admin.action(description="Reject selected settlement claims")
+    def reject_claims(self, request, queryset):
+        self._update_status(
+            request,
+            queryset,
+            "REJECTED",
+        )
 

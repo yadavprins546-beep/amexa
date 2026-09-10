@@ -5,6 +5,7 @@ from django.dispatch import receiver
 
 from .models import Order
 from .wallet_services import reward_completed_master_order
+from .shop_wallet_services import credit_shop_order_earning
 
 logger = logging.getLogger(__name__)
 
@@ -22,4 +23,13 @@ def amexa_order_delivered_wallet_reward(sender, instance, **kwargs):
         logger.exception(
             "AMEXA Coins reward failed for MasterOrder %s",
             instance.master_order_id,
+        )
+
+    try:
+        credit_shop_order_earning(instance.pk)
+    except Exception:
+        # Shop wallet failure must never break order delivery.
+        logger.exception(
+            "AMEXA shop wallet credit failed for Order %s",
+            instance.pk,
         )

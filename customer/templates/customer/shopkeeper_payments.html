@@ -3,10 +3,353 @@
 {% block extra_head %}
 <style>
 .summary{display:grid;grid-template-columns:1.25fr .75fr;gap:13px;margin-bottom:13px}.profit{padding:19px;border:1px solid rgba(53,233,162,.2);border-radius:18px;background:radial-gradient(circle at 100% 0,rgba(53,233,162,.14),transparent 45%),linear-gradient(145deg,#0e1e2a,#07101d)}.profit span{color:var(--muted);font-size:8px;font-weight:900;text-transform:uppercase}.profit strong{display:block;margin:9px 0 5px;color:var(--green);font:1000 29px ui-monospace}.profit small{color:#6d8297;font-size:8px}.gst{padding:17px;border:1px solid rgba(140,134,255,.2);border-radius:18px;background:rgba(140,134,255,.06)}.gst b{display:block;margin-top:9px;font:1000 21px ui-monospace}.settlement{display:grid;grid-template-columns:1fr repeat(3,auto);gap:12px;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.settlement:first-of-type{border:0}.settlement small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.amount{text-align:right;font:900 10px ui-monospace}@media(max-width:720px){.summary{grid-template-columns:1fr}.settlement{grid-template-columns:1fr auto}.settlement .hide-mobile{display:none}}
+
+/* SHOPKEEPER WALLET CENTER V1 */
+.wallet-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:13px
+}
+.wallet-card{
+    padding:15px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:16px;
+    background:linear-gradient(145deg,#0d1b2a,#08111d)
+}
+.wallet-card span{
+    display:block;
+    color:var(--muted);
+    font-size:8px;
+    font-weight:900;
+    text-transform:uppercase
+}
+.wallet-card b{
+    display:block;
+    margin-top:8px;
+    font:1000 20px ui-monospace
+}
+.wallet-card.available b{color:var(--green)}
+.wallet-card.claimable b{color:#6ae6ff}
+.wallet-card.pending b{color:#ffd36b}
+.wallet-card.paid b{color:#b58cff}
+
+.wallet-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(280px,.65fr);
+    gap:13px;
+    margin-bottom:13px
+}
+.payout-status{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:11px 0;
+    border-top:1px solid rgba(255,255,255,.055)
+}
+.payout-status:first-of-type{border-top:0}
+.payout-status b{font-size:9px}
+.payout-status small{
+    display:block;
+    margin-top:3px;
+    color:var(--muted);
+    font-size:7px
+}
+.claim-form{
+    display:grid;
+    gap:10px
+}
+.claim-form label{
+    color:var(--muted);
+    font-size:8px;
+    font-weight:900
+}
+.claim-form input,
+.claim-form select{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:11px;
+    color:#fff;
+    background:#091421;
+    outline:none
+}
+.claim-form button{
+    padding:12px;
+    border:0;
+    border-radius:11px;
+    color:#03130e;
+    background:linear-gradient(135deg,var(--green),#6ae6ff);
+    font-weight:1000;
+    cursor:pointer
+}
+.claim-note{
+    color:var(--muted);
+    font-size:7px;
+    line-height:1.5
+}
+.money-table{
+    width:100%;
+    border-collapse:collapse;
+    white-space:nowrap
+}
+.money-table th{
+    padding:0 9px 9px;
+    text-align:left;
+    color:#60768d;
+    font-size:7px;
+    text-transform:uppercase
+}
+.money-table td{
+    padding:10px 9px;
+    border-top:1px solid rgba(255,255,255,.055);
+    font-size:8px
+}
+.claim-status{
+    display:inline-flex;
+    padding:4px 7px;
+    border-radius:999px;
+    font-size:7px;
+    font-weight:950
+}
+.claim-paid{color:var(--green);background:rgba(53,233,162,.08)}
+.claim-pending,.claim-under_review,.claim-processing{
+    color:#ffd36b;
+    background:rgba(255,211,107,.08)
+}
+.claim-approved{color:#6ae6ff;background:rgba(106,230,255,.08)}
+.claim-rejected,.claim-cancelled{
+    color:#ff6685;
+    background:rgba(255,102,133,.08)
+}
+@media(max-width:900px){
+    .wallet-grid{grid-template-columns:repeat(2,1fr)}
+    .wallet-layout{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+    .wallet-grid{grid-template-columns:1fr 1fr}
+    .wallet-card b{font-size:16px}
+}
+
 </style>
 {% endblock %}
 {% block content %}
 <section class="page-title"><h1>Payments & Profit</h1><p>Sales, settlement, GST and estimated net profit.</p></section>
+
+<section class="wallet-grid">
+    <article class="wallet-card available">
+        <span>Available Balance</span>
+        <b>?{{ wallet.available_balance|floatformat:2 }}</b>
+    </article>
+
+    <article class="wallet-card claimable">
+        <span>Claimable Now</span>
+        <b>?{{ claimable_balance|floatformat:2 }}</b>
+    </article>
+
+    <article class="wallet-card pending">
+        <span>Reserved / Pending</span>
+        <b>?{{ reserved_claim_amount|floatformat:2 }}</b>
+    </article>
+
+    <article class="wallet-card paid">
+        <span>Lifetime Paid</span>
+        <b>?{{ wallet.lifetime_paid|floatformat:2 }}</b>
+    </article>
+</section>
+
+<section class="wallet-layout">
+    <article class="panel">
+        <div class="section-head">
+            <div>
+                <h2>Request Settlement</h2>
+                <p>Withdraw available shop earnings</p>
+            </div>
+        </div>
+
+        {% if bank_account %}
+            <div class="payout-status">
+                <div>
+                    <b>Bank Account</b>
+                    <small>{{ bank_account.bank_name|default:"Bank" }} ? {{ bank_account.masked_account_number }}</small>
+                </div>
+                <span class="badge">{{ bank_account.status }}</span>
+            </div>
+
+            {% if bank_account.upi_id %}
+            <div class="payout-status">
+                <div>
+                    <b>UPI</b>
+                    <small>{{ bank_account.upi_id }}</small>
+                </div>
+                <span class="badge">{{ bank_account.status }}</span>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty">No payout account added yet.</div>
+        {% endif %}
+
+        <form method="post" class="claim-form" style="margin-top:14px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="request_settlement">
+
+            <label>Settlement Amount</label>
+            <input
+                type="number"
+                name="amount"
+                min="1"
+                step="0.01"
+                max="{{ claimable_balance }}"
+                placeholder="Enter amount"
+                required
+            >
+
+            <label>Payout Method</label>
+            <select name="payout_method">
+                <option value="BANK">Bank Account</option>
+                {% if bank_account and bank_account.upi_id %}
+                <option value="UPI">UPI</option>
+                {% endif %}
+            </select>
+
+            <button type="submit">
+                Request Settlement
+            </button>
+
+            <div class="claim-note">
+                Available claimable balance: ?{{ claimable_balance|floatformat:2 }}.
+                Payout request will be reviewed by AMEXA Admin.
+            </div>
+        </form>
+    </article>
+
+    <article class="panel">
+        <div class="section-head">
+            <div>
+                <h2>Wallet Summary</h2>
+                <p>Shop earning ledger</p>
+            </div>
+        </div>
+
+        <div class="payout-status">
+            <div>
+                <b>Lifetime Earned</b>
+                <small>Total credited shop earnings</small>
+            </div>
+            <strong>?{{ wallet.lifetime_earned|floatformat:2 }}</strong>
+        </div>
+
+        <div class="payout-status">
+            <div>
+                <b>On Hold</b>
+                <small>Temporarily blocked amount</small>
+            </div>
+            <strong>?{{ wallet.hold_balance|floatformat:2 }}</strong>
+        </div>
+
+        <div class="payout-status">
+            <div>
+                <b>Pending Balance</b>
+                <small>Future settlement reserve</small>
+            </div>
+            <strong>?{{ wallet.pending_balance|floatformat:2 }}</strong>
+        </div>
+    </article>
+</section>
+
+<section class="panel" style="margin-bottom:13px">
+    <div class="section-head">
+        <div>
+            <h2>Settlement Claims</h2>
+            <p>Your withdrawal request history</p>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto">
+        <table class="money-table">
+            <thead>
+                <tr>
+                    <th>Claim</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>UTR</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in settlement_claims %}
+                <tr>
+                    <td>#{{ claim.pk }}</td>
+                    <td>?{{ claim.amount|floatformat:2 }}</td>
+                    <td>{{ claim.payout_method }}</td>
+                    <td>
+                        <span class="claim-status claim-{{ claim.status|lower }}">
+                            {{ claim.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ claim.utr_reference|default:"-" }}</td>
+                    <td>{{ claim.created_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No settlement claims yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel" style="margin-bottom:13px">
+    <div class="section-head">
+        <div>
+            <h2>Wallet Transactions</h2>
+            <p>Every earning and payout movement</p>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto">
+        <table class="money-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Order</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in wallet_transactions %}
+                <tr>
+                    <td>{{ tx.transaction_type }}</td>
+                    <td>{{ tx.get_reason_display }}</td>
+                    <td>
+                        {% if tx.transaction_type == "CREDIT" %}+{% else %}-{% endif %}
+                        ?{{ tx.amount|floatformat:2 }}
+                    </td>
+                    <td>?{{ tx.balance_after|floatformat:2 }}</td>
+                    <td>
+                        {% if tx.order %}
+                            #{{ tx.order.order_number }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ tx.created_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No wallet transactions yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 <section class="summary"><article class="profit"><span>Estimated Net Profit</span><strong>₹{{ estimated_profit|floatformat:2 }}</strong><small>Shop payout − product cost − bad inventory loss</small></article><article class="gst"><span class="badge">GST Summary</span><b>₹{{ total_gst|floatformat:2 }}</b><p style="color:var(--muted);font-size:8px;margin-bottom:0">GSTIN: {{ shop.gstin }}</p></article></section>
 <section class="metrics">
     <article class="metric"><span>Total Sales</span><b>₹{{ total_sales|floatformat:0 }}</b><small>Product value</small></article>

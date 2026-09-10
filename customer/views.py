@@ -79,6 +79,9 @@ from .models import (
     ShopkeeperBankAccount,
     ShopkeeperDocument,
     ShopkeeperProfile,
+    ShopkeeperWallet,
+    ShopkeeperWalletTransaction,
+    SettlementClaim,
     ShopProduct,
     Wallet,
     WalletTransaction,
@@ -6997,7 +7000,153 @@ def shopkeeper_payments_view(request):
     profile = _shopkeeper_app_profile(request)
     if profile is None:
         return redirect("shopkeeper_dashboard")
+
     shop = profile.shop
+
+    wallet, _ = ShopkeeperWallet.objects.get_or_create(
+        shop=shop
+    )
+
+    bank_account = (
+        ShopkeeperBankAccount.objects
+        .filter(profile=profile)
+        .first()
+    )
+
+    active_claim_statuses = [
+        "PENDING",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "PROCESSING",
+    ]
+
+    reserved_claim_amount = (
+        SettlementClaim.objects
+        .filter(
+            wallet=wallet,
+            status__in=active_claim_statuses,
+        )
+        .aggregate(value=Sum("amount"))["value"]
+        or Decimal("0.00")
+    )
+
+    claimable_balance = max(
+        Decimal("0.00"),
+        wallet.available_balance - reserved_claim_amount,
+    )
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+
+        if action == "request_settlement":
+            amount_raw = (
+                request.POST.get("amount") or ""
+            ).strip()
+
+            payout_method = (
+                request.POST.get("payout_method")
+                or "BANK"
+            ).strip().upper()
+
+            try:
+                amount = Decimal(amount_raw)
+            except Exception:
+                amount = Decimal("0.00")
+
+            if amount <= 0:
+                messages.error(
+                    request,
+                    "Enter a valid settlement amount.",
+                )
+                return redirect("shopkeeper_payments")
+
+            if bank_account is None:
+                messages.error(
+                    request,
+                    "Add payout bank details before requesting settlement.",
+                )
+                return redirect("shopkeeper_payments")
+
+            if bank_account.status != "VERIFIED":
+                messages.error(
+                    request,
+                    "Your payout account must be verified before settlement.",
+                )
+                return redirect("shopkeeper_payments")
+
+            if payout_method not in {"BANK", "UPI"}:
+                messages.error(
+                    request,
+                    "Invalid payout method.",
+                )
+                return redirect("shopkeeper_payments")
+
+            if (
+                payout_method == "UPI"
+                and not bank_account.upi_id
+            ):
+                messages.error(
+                    request,
+                    "No verified UPI ID is available for payout.",
+                )
+                return redirect("shopkeeper_payments")
+
+            # Lock wallet while validating claimable balance.
+            with transaction.atomic():
+                locked_wallet = (
+                    ShopkeeperWallet.objects
+                    .select_for_update()
+                    .get(pk=wallet.pk)
+                )
+
+                reserved = (
+                    SettlementClaim.objects
+                    .filter(
+                        wallet=locked_wallet,
+                        status__in=active_claim_statuses,
+                    )
+                    .aggregate(value=Sum("amount"))["value"]
+                    or Decimal("0.00")
+                )
+
+                available_to_claim = max(
+                    Decimal("0.00"),
+                    locked_wallet.available_balance - reserved,
+                )
+
+                if amount > available_to_claim:
+                    messages.error(
+                        request,
+                        (
+                            "Settlement amount exceeds your "
+                            f"claimable balance of Rs. {available_to_claim}."
+                        ),
+                    )
+                    return redirect("shopkeeper_payments")
+
+                claim = SettlementClaim.objects.create(
+                    wallet=locked_wallet,
+                    shop=shop,
+                    requested_by=request.user,
+                    amount=amount,
+                    payout_method=payout_method,
+                    payout_upi_id=(
+                        bank_account.upi_id
+                        if payout_method == "UPI"
+                        else ""
+                    ),
+                    status="PENDING",
+                )
+
+            messages.success(
+                request,
+                (
+                    f"Settlement claim #{claim.pk} for "
+                    f"Rs. {claim.amount} submitted successfully."
+                ),
+            )
+            return redirect("shopkeeper_payments")
+
     settlements = (
         Settlement.objects
         .filter(shop=shop)
@@ -7035,6 +7184,20 @@ def shopkeeper_payments_view(request):
         {
             "profile": profile,
             "shop": shop,
+            "wallet": wallet,
+            "bank_account": bank_account,
+            "claimable_balance": claimable_balance,
+            "reserved_claim_amount": reserved_claim_amount,
+            "wallet_transactions": (
+                wallet.transactions
+                .select_related("order", "settlement", "created_by")
+                .all()[:30]
+            ),
+            "settlement_claims": (
+                SettlementClaim.objects
+                .filter(wallet=wallet)
+                .order_by("-created_at")[:30]
+            ),
             "settlements": settlements[:100],
             "total_sales": totals["product_sales"] or Decimal("0.00"),
             "total_commission": totals["commission"] or Decimal("0.00"),

@@ -1700,6 +1700,232 @@ class Settlement(models.Model):
 
 
 # =========================================================
+# SHOPKEEPER MONEY WALLET / LEDGER
+# =========================================================
+
+class ShopkeeperWallet(models.Model):
+    shop = models.OneToOneField(
+        Shop,
+        on_delete=models.CASCADE,
+        related_name="money_wallet",
+    )
+    available_balance = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    pending_balance = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    hold_balance = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    lifetime_earned = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    lifetime_paid = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Shopkeeper Money Wallet"
+        verbose_name_plural = "Shopkeeper Money Wallets"
+
+    def __str__(self):
+        return (
+            f"{self.shop.name} - "
+            f"Available Rs. {self.available_balance}"
+        )
+
+
+class ShopkeeperWalletTransaction(models.Model):
+    TRANSACTION_TYPES = [
+        ("CREDIT", "Credit"),
+        ("DEBIT", "Debit"),
+    ]
+
+    REASON_CHOICES = [
+        ("ORDER_EARNING", "Order Earning"),
+        ("SETTLEMENT_CLAIM", "Settlement Claim"),
+        ("SETTLEMENT_PAID", "Settlement Paid"),
+        ("REFUND", "Refund Adjustment"),
+        ("ADMIN_ADJUSTMENT", "Admin Adjustment"),
+        ("HOLD", "Amount Put On Hold"),
+        ("RELEASE", "Hold Released"),
+        ("REVERSAL", "Reversal"),
+        ("OTHER", "Other"),
+    ]
+
+    wallet = models.ForeignKey(
+        ShopkeeperWallet,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+    )
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=TRANSACTION_TYPES,
+    )
+    reason = models.CharField(
+        max_length=30,
+        choices=REASON_CHOICES,
+        default="OTHER",
+    )
+    amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+    )
+    balance_after = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shop_wallet_transactions",
+    )
+    settlement = models.ForeignKey(
+        Settlement,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="wallet_transactions",
+    )
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_shop_wallet_transactions",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["wallet", "-created_at"],
+            ),
+            models.Index(fields=["reason"]),
+        ]
+
+    def __str__(self):
+        sign = "+" if self.transaction_type == "CREDIT" else "-"
+        return (
+            f"{self.wallet.shop.name} "
+            f"{sign}Rs. {self.amount}"
+        )
+
+
+class SettlementClaim(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("UNDER_REVIEW", "Under Review"),
+        ("APPROVED", "Approved"),
+        ("PROCESSING", "Processing"),
+        ("PAID", "Paid"),
+        ("REJECTED", "Rejected"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    PAYOUT_METHOD_CHOICES = [
+        ("BANK", "Bank Account"),
+        ("UPI", "UPI"),
+    ]
+
+    wallet = models.ForeignKey(
+        ShopkeeperWallet,
+        on_delete=models.PROTECT,
+        related_name="settlement_claims",
+    )
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.PROTECT,
+        related_name="settlement_claims",
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="shop_settlement_claims",
+    )
+    amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+    )
+    payout_method = models.CharField(
+        max_length=10,
+        choices=PAYOUT_METHOD_CHOICES,
+        default="BANK",
+    )
+    payout_upi_id = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING",
+        db_index=True,
+    )
+    admin_note = models.TextField(blank=True)
+    rejection_reason = models.TextField(blank=True)
+    utr_reference = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_settlement_claims",
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["shop", "status"],
+            ),
+            models.Index(
+                fields=["status", "-created_at"],
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.shop.name} - "
+            f"Rs. {self.amount} - {self.status}"
+        )
+
+
+# =========================================================
 # COUPONS / OFFERS
 # =========================================================
 
