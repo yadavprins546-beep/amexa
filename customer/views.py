@@ -176,8 +176,248 @@ def admin_control_center_view(request):
         status__in=["Open", "In Review"]
     )
 
+    # =====================================================
+    # AMEXA OPS ANALYTICS V1
+    # =====================================================
+
+    today_shop_orders = Order.objects.filter(
+        created_at__gte=today_start,
+        created_at__lt=tomorrow_start,
+    )
+
+    today_non_cancelled = today_shop_orders.exclude(
+        status="Cancelled"
+    )
+
+    today_buyers = (
+        today_non_cancelled
+        .values("user_id")
+        .distinct()
+        .count()
+    )
+
+    # -----------------------------
+    # TOP AREAS / PINCODES
+    # -----------------------------
+    top_areas = list(
+        today_non_cancelled
+        .exclude(address__pincode="")
+        .values(
+            "address__city",
+            "address__pincode",
+        )
+        .annotate(order_count=Count("id"))
+        .order_by("-order_count")[:8]
+    )
+
+    # -----------------------------
+    # PEAK ORDER HOURS
+    # -----------------------------
+    hourly_counts = {}
+
+    for created_at in today_non_cancelled.values_list(
+        "created_at",
+        flat=True,
+    ):
+        local_dt = timezone.localtime(created_at)
+        hour = local_dt.hour
+        hourly_counts[hour] = hourly_counts.get(hour, 0) + 1
+
+    peak_hours = [
+        {
+            "hour": hour,
+            "label": (
+                timezone.datetime(
+                    2000, 1, 1, hour, 0
+                ).strftime("%I %p")
+            ),
+            "order_count": count,
+        }
+        for hour, count in sorted(
+            hourly_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        )[:6]
+    ]
+
+    # -----------------------------
+    # TOP PRODUCTS TODAY
+    # -----------------------------
+    top_products = list(
+        OrderItem.objects
+        .filter(
+            order__created_at__gte=today_start,
+            order__created_at__lt=tomorrow_start,
+        )
+        .exclude(order__status="Cancelled")
+        .values("product_name")
+        .annotate(
+            units_sold=Sum("quantity"),
+            order_count=Count("order_id", distinct=True),
+        )
+        .order_by("-units_sold", "-order_count")[:10]
+    )
+
+    # -----------------------------
+    # SHOP-WISE EARNINGS
+    # -----------------------------
+    shop_earnings = list(
+        Settlement.objects
+        .values(
+            "shop_id",
+            "shop__name",
+        )
+        .annotate(
+            total_sales=Sum("product_amount"),
+            shop_payable_total=Sum("shop_payable"),
+            amexa_earning_total=Sum("amexa_earning"),
+            settlement_count=Count("id"),
+        )
+        .order_by("-total_sales")[:12]
+    )
+
+    total_amexa_earning = (
+        Settlement.objects
+        .aggregate(value=Sum("amexa_earning"))["value"]
+        or Decimal("0.00")
+    )
+
+    today_amexa_earning = (
+        Settlement.objects
+        .filter(
+            created_at__gte=today_start,
+            created_at__lt=tomorrow_start,
+        )
+        .aggregate(value=Sum("amexa_earning"))["value"]
+        or Decimal("0.00")
+    )
+
+    # -----------------------------
+    # STUCK / PROBLEM ORDERS
+    # -----------------------------
+    shop_late_cutoff = now - timedelta(minutes=3)
+    delivery_late_cutoff = now - timedelta(minutes=45)
+
+    shop_response_late = (
+        Order.objects
+        .filter(
+            status="Pending",
+            created_at__lte=shop_late_cutoff,
+        )
+        .select_related("shop", "user")
+        .order_by("created_at")[:10]
+    )
+
+    delivery_late = (
+        Order.objects
+        .filter(
+            status="Out for Delivery",
+            updated_at__lte=delivery_late_cutoff,
+        )
+        .select_related("shop", "user")
+        .order_by("updated_at")[:10]
+    )
+
+    no_rider_orders = (
+        Order.objects
+        .filter(
+            picking_task__status="PACKED",
+        )
+        .exclude(
+            delivery_assignments__status__in=[
+                "Assigned",
+                "Accepted",
+                "Picked",
+                "Completed",
+            ]
+        )
+        .select_related("shop", "user")
+        .distinct()
+        .order_by("created_at")[:10]
+    )
+
+    # -----------------------------
+    # ADMIN NOTIFICATION CENTER
+    # Dynamic alerts - no DB migration.
+    # -----------------------------
+    admin_alerts = []
+
+    for order in shop_response_late:
+        admin_alerts.append({
+            "level": "HIGH",
+            "type": "SHOP_DELAY",
+            "title": f"Shop response late - #{order.order_number}",
+            "message": (
+                f"{order.shop.name if order.shop else 'Shop'} "
+                "has not processed this order within 3 minutes."
+            ),
+            "order_number": order.order_number,
+        })
+
+    for order in no_rider_orders:
+        admin_alerts.append({
+            "level": "HIGH",
+            "type": "NO_RIDER",
+            "title": f"No rider - #{order.order_number}",
+            "message": "Packed order has no active rider assignment.",
+            "order_number": order.order_number,
+        })
+
+    for order in delivery_late:
+        admin_alerts.append({
+            "level": "CRITICAL",
+            "type": "DELIVERY_DELAY",
+            "title": f"Delivery delayed - #{order.order_number}",
+            "message": "Order has been Out for Delivery for over 45 minutes.",
+            "order_number": order.order_number,
+        })
+
+    failed_payment_rows = (
+        Payment.objects
+        .filter(payment_status="Failed")
+        .select_related("master_order")
+        .order_by("-created_at")[:5]
+    )
+
+    for payment in failed_payment_rows:
+        admin_alerts.append({
+            "level": "CRITICAL",
+            "type": "PAYMENT_FAILED",
+            "title": "Payment failed",
+            "message": (
+                f"Payment failed for "
+                f"{payment.master_order.master_order_number}."
+            ),
+            "order_number": "",
+        })
+
+    alert_priority = {
+        "CRITICAL": 0,
+        "HIGH": 1,
+        "MEDIUM": 2,
+        "INFO": 3,
+    }
+
+    admin_alerts.sort(
+        key=lambda item: alert_priority.get(
+            item["level"],
+            9,
+        )
+    )
+
     context = {
         "generated_at": now,
+        "today_buyers": today_buyers,
+        "top_areas": top_areas,
+        "peak_hours": peak_hours,
+        "top_products": top_products,
+        "shop_earnings": shop_earnings,
+        "total_amexa_earning": total_amexa_earning,
+        "today_amexa_earning": today_amexa_earning,
+        "shop_response_late": shop_response_late,
+        "delivery_late": delivery_late,
+        "no_rider_orders": no_rider_orders,
+        "admin_alerts": admin_alerts,
+        "admin_alert_count": len(admin_alerts),
         "total_revenue": total_revenue,
         "today_revenue": today_revenue,
         "total_orders": MasterOrder.objects.count(),

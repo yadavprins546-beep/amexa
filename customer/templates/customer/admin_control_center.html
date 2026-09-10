@@ -20,6 +20,32 @@
         .status-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.status-card{padding:11px;border:1px solid rgba(255,255,255,.065);border-radius:12px;background:rgba(255,255,255,.025)}.status-card span{display:block;color:var(--muted);font-size:8px}.status-card b{display:block;margin-top:5px;font:900 16px ui-monospace,monospace}.status-card.pending b,.status-card.preparing b{color:var(--yellow)}.status-card.delivered b{color:var(--green)}.status-card.cancelled b{color:var(--red)}.status-card.out-for-delivery b{color:var(--cyan)}
         .table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;white-space:nowrap}.table th{padding:0 10px 10px;text-align:left;color:#60768d;font-size:7px;text-transform:uppercase;letter-spacing:.7px}.table td{padding:11px 10px;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.table td strong{font-size:9px}.table td small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.badge{display:inline-flex;padding:5px 7px;border-radius:999px;font-size:7px;font-weight:950;text-transform:uppercase}.status-pending,.status-confirmed,.status-preparing{color:var(--yellow);background:rgba(255,211,107,.08)}.status-out-for-delivery{color:var(--cyan);background:rgba(106,230,255,.08)}.status-delivered,.status-approved{color:var(--green);background:rgba(53,233,162,.08)}.status-cancelled,.status-rejected,.status-blocked{color:var(--red);background:rgba(255,102,133,.08)}
         .queue{display:grid;gap:8px}.queue-item{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.022)}.avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;color:#03130e;background:linear-gradient(135deg,var(--green),var(--cyan));font-size:12px;font-weight:1000}.queue-item b{display:block;font-size:9px}.queue-item small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.queue-empty{padding:18px;text-align:center;color:var(--muted);font-size:9px}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick{min-height:74px;padding:12px;border:1px solid rgba(255,255,255,.065);border-radius:13px;background:rgba(255,255,255,.025);transition:.2s}.quick:hover{transform:translateY(-2px);border-color:rgba(106,230,255,.18)}.quick i{display:block;font-style:normal;font-size:16px}.quick b{display:block;margin-top:8px;font-size:9px}.quick small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.support-item{padding:10px 0;border-top:1px solid rgba(255,255,255,.055)}.support-item:first-of-type{border-top:0}.support-item b{font-size:9px}.support-item p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.4}.support-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:#596f85;font-size:7px}
+
+        /* AMEXA BUSINESS ANALYTICS V1 */
+        .biz-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+        .biz-card{padding:15px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(16,29,48,.9),rgba(7,15,28,.96))}
+        .biz-card span{display:block;color:var(--muted);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px}
+        .biz-card b{display:block;margin-top:8px;font:1000 19px ui-monospace,monospace}
+        .analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
+        .mini-list{display:grid;gap:8px}
+        .mini-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 11px;border:1px solid rgba(255,255,255,.06);border-radius:11px;background:rgba(255,255,255,.022)}
+        .mini-row b{display:block;font-size:9px}.mini-row small{display:block;margin-top:3px;color:var(--muted);font-size:7px}
+        .mini-row strong{font:900 11px ui-monospace,monospace}
+        .notification-panel{margin-bottom:16px}
+        .notification-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .notification-count{display:inline-flex;min-width:28px;height:28px;align-items:center;justify-content:center;border-radius:999px;color:#fff;background:rgba(255,102,133,.16);border:1px solid rgba(255,102,133,.25);font:900 10px ui-monospace,monospace}
+        .notification-list{display:grid;gap:9px}
+        .notice{display:grid;grid-template-columns:9px minmax(0,1fr);gap:11px;padding:12px;border:1px solid rgba(255,255,255,.065);border-radius:12px;background:rgba(255,255,255,.025)}
+        .notice-dot{width:9px;height:9px;margin-top:4px;border-radius:50%}
+        .notice-critical .notice-dot{background:var(--red);box-shadow:0 0 10px rgba(255,102,133,.55)}
+        .notice-high .notice-dot{background:var(--yellow);box-shadow:0 0 10px rgba(255,211,107,.45)}
+        .notice-medium .notice-dot{background:var(--cyan)}.notice-info .notice-dot{background:var(--green)}
+        .notice b{display:block;font-size:9px}.notice p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.45}
+        .notice-tag{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.05);color:#9fb2c6;font-size:7px;font-weight:900}
+        .shop-earn-table{width:100%;border-collapse:collapse;white-space:nowrap}.shop-earn-table th{padding:0 9px 9px;text-align:left;color:#60768d;font-size:7px;text-transform:uppercase}.shop-earn-table td{padding:10px 9px;border-top:1px solid rgba(255,255,255,.055);font-size:8px}
+        @media(max-width:900px){.biz-metrics{grid-template-columns:repeat(2,1fr)}.analytics-grid{grid-template-columns:1fr}}
+        @media(max-width:480px){.biz-metrics{grid-template-columns:1fr 1fr}.biz-card b{font-size:16px}}
+
         @media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}.alert-grid{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}.stack{grid-template-columns:1fr 1fr}.stack .panel:last-child{grid-column:1/-1}}
         @media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:14px;border-right:0;border-bottom:1px solid var(--line)}.brand{display:inline-block;padding:3px 7px 13px}.live{position:absolute;right:14px;top:14px;margin:0}.nav-label,.sidebar-foot{display:none}.nav{display:flex;overflow-x:auto;padding-bottom:3px}.nav a{flex:0 0 auto;padding:9px 10px}.main{padding:18px 12px 45px}.topbar{align-items:flex-start}.welcome h1{font-size:20px}.top-actions .btn:not(.btn-primary){display:none}.metrics{gap:9px}.metric{min-height:120px;padding:14px}.metric strong{font-size:21px}.stack{grid-template-columns:1fr}.stack .panel:last-child{grid-column:auto}.status-list{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:480px){.alert-grid{grid-template-columns:1fr 1fr}.alert{padding:10px}.metrics{grid-template-columns:1fr 1fr}.metric{min-height:112px;padding:12px;border-radius:15px}.metric-icon{width:30px;height:30px}.metric strong{margin-top:11px;font-size:18px}.metric-label{font-size:7px}.dashboard-grid{gap:11px}.panel{padding:14px;border-radius:16px}.chart{gap:5px;height:180px}.bar{width:60%}.quick-grid{grid-template-columns:1fr 1fr}.queue-item{grid-template-columns:34px 1fr}.queue-item .badge{display:none}.avatar{width:34px;height:34px}}
@@ -69,6 +95,194 @@
             <article class="metric yellow"><div class="metric-top"><span class="metric-label">Active Shops</span><span class="metric-icon">▤</span></div><strong>{{ active_shops }}</strong><small>{{ inactive_shops }} inactive shop{{ inactive_shops|pluralize }}</small></article>
             <article class="metric purple"><div class="metric-top"><span class="metric-label">Customers</span><span class="metric-icon">◎</span></div><strong>{{ total_customers }}</strong><small>{{ online_riders }} rider{{ online_riders|pluralize }} online • {{ approved_riders }} approved</small></article>
         </section>
+
+
+        <!-- AMEXA BUSINESS ANALYTICS V1 -->
+
+        <section class="biz-metrics">
+            <article class="biz-card">
+                <span>Today's Buyers</span>
+                <b>{{ today_buyers }}</b>
+            </article>
+
+            <article class="biz-card">
+                <span>Today's AMEXA Earning</span>
+                <b>?{{ today_amexa_earning|floatformat:0 }}</b>
+            </article>
+
+            <article class="biz-card">
+                <span>Total AMEXA Earning</span>
+                <b>?{{ total_amexa_earning|floatformat:0 }}</b>
+            </article>
+
+            <article class="biz-card">
+                <span>Active Alerts</span>
+                <b>{{ admin_alert_count }}</b>
+            </article>
+        </section>
+
+        <article class="panel notification-panel">
+            <div class="notification-head panel-head">
+                <div>
+                    <h2>?? Notification Center</h2>
+                    <p>Operational problems that need admin attention</p>
+                </div>
+                <span class="notification-count">{{ admin_alert_count }}</span>
+            </div>
+
+            <div class="notification-list">
+                {% for alert in admin_alerts %}
+                <div class="notice notice-{{ alert.level|lower }}">
+                    <span class="notice-dot"></span>
+                    <div>
+                        <b>{{ alert.title }}</b>
+                        <p>{{ alert.message }}</p>
+                        <span class="notice-tag">{{ alert.level }} ? {{ alert.type }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="queue-empty">? No operational alerts right now.</div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <section class="analytics-grid">
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Top Order Areas Today</h2>
+                        <p>Where most orders are coming from</p>
+                    </div>
+                </div>
+
+                <div class="mini-list">
+                    {% for area in top_areas %}
+                    <div class="mini-row">
+                        <div>
+                            <b>{{ area.address__city|default:"Unknown Area" }}</b>
+                            <small>Pincode {{ area.address__pincode }}</small>
+                        </div>
+                        <strong>{{ area.order_count }} orders</strong>
+                    </div>
+                    {% empty %}
+                    <div class="queue-empty">No area data for today.</div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Peak Order Time</h2>
+                        <p>Highest order-volume hours today</p>
+                    </div>
+                </div>
+
+                <div class="mini-list">
+                    {% for item in peak_hours %}
+                    <div class="mini-row">
+                        <div>
+                            <b>{{ item.label }}</b>
+                            <small>Order activity</small>
+                        </div>
+                        <strong>{{ item.order_count }}</strong>
+                    </div>
+                    {% empty %}
+                    <div class="queue-empty">No hourly order data today.</div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Top Products Today</h2>
+                        <p>Best-selling items by quantity</p>
+                    </div>
+                </div>
+
+                <div class="mini-list">
+                    {% for item in top_products %}
+                    <div class="mini-row">
+                        <div>
+                            <b>{{ item.product_name|default:"Product" }}</b>
+                            <small>{{ item.order_count }} order{{ item.order_count|pluralize }}</small>
+                        </div>
+                        <strong>{{ item.units_sold }} units</strong>
+                    </div>
+                    {% empty %}
+                    <div class="queue-empty">No product sales today.</div>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Operational Delays</h2>
+                        <p>Current exceptions in the order flow</p>
+                    </div>
+                </div>
+
+                <div class="mini-list">
+                    <div class="mini-row">
+                        <div><b>Shop response late</b><small>Pending more than 3 min</small></div>
+                        <strong>{{ shop_response_late|length }}</strong>
+                    </div>
+                    <div class="mini-row">
+                        <div><b>No rider assigned</b><small>Packed but no active rider</small></div>
+                        <strong>{{ no_rider_orders|length }}</strong>
+                    </div>
+                    <div class="mini-row">
+                        <div><b>Delivery late</b><small>Out for delivery over 45 min</small></div>
+                        <strong>{{ delivery_late|length }}</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <article class="panel" style="margin-bottom:16px">
+            <div class="panel-head">
+                <div>
+                    <h2>Shop Earnings & AMEXA Revenue</h2>
+                    <p>Shop-wise sales, payable amount and AMEXA earning</p>
+                </div>
+                <a class="link" href="{% url 'admin:customer_settlement_changelist' %}">
+                    Settlements ?
+                </a>
+            </div>
+
+            <div class="table-wrap">
+                <table class="shop-earn-table">
+                    <thead>
+                        <tr>
+                            <th>Shop</th>
+                            <th>Sales</th>
+                            <th>Shop Payable</th>
+                            <th>AMEXA Earning</th>
+                            <th>Settlements</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shop in shop_earnings %}
+                        <tr>
+                            <td><strong>{{ shop.shop__name|default:"Shop" }}</strong></td>
+                            <td>?{{ shop.total_sales|default:0|floatformat:0 }}</td>
+                            <td>?{{ shop.shop_payable_total|default:0|floatformat:0 }}</td>
+                            <td>?{{ shop.amexa_earning_total|default:0|floatformat:0 }}</td>
+                            <td>{{ shop.settlement_count }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No settlement data available yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
 
         <section class="dashboard-grid">
             <div class="stack">
