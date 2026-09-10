@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
+from django.utils.html import format_html
 
 from .models import (
     AboutPage,
@@ -370,15 +371,13 @@ class ShopAdmin(admin.ModelAdmin):
 
     list_display = (
         "name",
-        "owner",
         "shop_type",
+        "owner",
         "phone",
-        "gstin",
-        "latitude",
-        "longitude",
-        "is_online",
+        "online_status",
+        "active_status",
         "rating",
-        "is_active",
+        "gstin",
         "created_at",
     )
 
@@ -388,17 +387,98 @@ class ShopAdmin(admin.ModelAdmin):
         "address",
         "gstin",
         "fssai_number",
+        "owner__name",
+        "owner__phone",
     )
 
     list_filter = (
+        "shop_type",
+        "is_online",
         "is_active",
+        "created_at",
     )
 
+    ordering = ("-created_at",)
+    list_per_page = 25
+    list_select_related = ("owner",)
+    readonly_fields = ("created_at",)
+
     prepopulated_fields = {
-        "slug": (
-            "name",
-        )
+        "slug": ("name",)
     }
+
+    fieldsets = (
+        (
+            "Shop Information",
+            {
+                "fields": (
+                    "name",
+                    "legal_name",
+                    "slug",
+                    "shop_type",
+                    "owner",
+                    "phone",
+                    "address",
+                )
+            },
+        ),
+        (
+            "Business Details",
+            {
+                "fields": (
+                    "gstin",
+                    "fssai_number",
+                    "minimum_order_value",
+                )
+            },
+        ),
+        (
+            "Location",
+            {
+                "fields": (
+                    "latitude",
+                    "longitude",
+                )
+            },
+        ),
+        (
+            "Shop Status",
+            {
+                "fields": (
+                    "is_active",
+                    "is_online",
+                    "auto_accept_orders",
+                    "opening_time",
+                    "closing_time",
+                    "rating",
+                )
+            },
+        ),
+        (
+            "System",
+            {
+                "fields": (
+                    "created_at",
+                )
+            },
+        ),
+    )
+
+    @admin.display(
+        description="Online",
+        boolean=True,
+        ordering="is_online",
+    )
+    def online_status(self, obj):
+        return obj.is_online
+
+    @admin.display(
+        description="Active",
+        boolean=True,
+        ordering="is_active",
+    )
+    def active_status(self, obj):
+        return obj.is_active
 
 
 # =========================================================
@@ -412,26 +492,93 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "shop",
         "category",
-        "pack_size",
-        "cost_price",
-        "price",
-        "mrp",
-        "gst_rate",
+        "price_display",
+        "mrp_display",
         "stock_quantity",
-        "is_active",
+        "stock_badge",
+        "active_status",
         "created_at",
     )
+
+    list_display_links = (
+        "name",
+        "shop",
+    )
+
+    list_per_page = 30
+    empty_value_display = "-"
 
     search_fields = (
         "name",
         "description",
+        "shop__name",
+        "category__name",
+        "brand__name",
     )
 
     list_filter = (
         "shop",
         "category",
+        "brand",
         "is_active",
+        "created_at",
     )
+
+    list_select_related = (
+        "shop",
+        "category",
+        "brand",
+    )
+
+    ordering = (
+        "stock_quantity",
+        "name",
+    )
+
+    @admin.display(
+        description="Price",
+        ordering="price",
+    )
+    def price_display(self, obj):
+        return f"Rs. {obj.price}"
+
+    @admin.display(
+        description="MRP",
+        ordering="mrp",
+    )
+    def mrp_display(self, obj):
+        return f"Rs. {obj.mrp}"
+
+    @admin.display(
+        description="Stock Status",
+        ordering="stock_quantity",
+    )
+    def stock_badge(self, obj):
+        qty = obj.stock_quantity or 0
+
+        if qty <= 0:
+            fg, bg, label = "#991b1b", "#fee2e2", "OUT OF STOCK"
+        elif qty <= 5:
+            fg, bg, label = "#92400e", "#fef3c7", "LOW STOCK"
+        else:
+            fg, bg, label = "#166534", "#dcfce7", "IN STOCK"
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            label,
+        )
+
+    @admin.display(
+        description="Active",
+        boolean=True,
+        ordering="is_active",
+    )
+    def active_status(self, obj):
+        return obj.is_active
 
     prepopulated_fields = {
         "slug": (
@@ -663,15 +810,23 @@ class AddressAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "order_number",
-        "master_order",
-        "user",
+        "customer_display",
         "shop",
-        "total_amount",
-        "payment_method",
-        "payment_status",
-        "status",
+        "total_display",
+        "payment_badge",
+        "status_badge",
+        "rider_display",
         "created_at",
     )
+
+    list_display_links = (
+        "order_number",
+        "customer_display",
+    )
+
+    list_per_page = 30
+    date_hierarchy = "created_at"
+    empty_value_display = "-"
 
     search_fields = (
         "order_number",
@@ -710,6 +865,103 @@ class OrderAdmin(admin.ModelAdmin):
         "mark_out_for_delivery",
         "mark_delivered",
     )
+
+    @admin.display(
+        description="Customer",
+        ordering="user__name",
+    )
+    def customer_display(self, obj):
+        name = getattr(obj.user, "name", "") or "Customer"
+        phone = getattr(obj.user, "phone", "") or ""
+        if phone:
+            return f"{name} | {phone}"
+        return name
+
+    @admin.display(
+        description="Total",
+        ordering="total_amount",
+    )
+    def total_display(self, obj):
+        return f"Rs. {obj.total_amount}"
+
+    @admin.display(
+        description="Payment",
+        ordering="payment_status",
+    )
+    def payment_badge(self, obj):
+        status = (obj.payment_status or "").strip()
+
+        colors = {
+            "Paid": ("#166534", "#dcfce7"),
+            "Pending": ("#92400e", "#fef3c7"),
+            "Processing": ("#1e40af", "#dbeafe"),
+            "Failed": ("#991b1b", "#fee2e2"),
+            "Refunded": ("#5b21b6", "#ede9fe"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status or "-",
+        )
+
+    @admin.display(
+        description="Order Status",
+        ordering="status",
+    )
+    def status_badge(self, obj):
+        status = (obj.status or "").strip()
+
+        colors = {
+            "Pending": ("#92400e", "#fef3c7"),
+            "Confirmed": ("#1e40af", "#dbeafe"),
+            "Preparing": ("#6b21a8", "#f3e8ff"),
+            "Out for Delivery": ("#075985", "#e0f2fe"),
+            "Delivered": ("#166534", "#dcfce7"),
+            "Cancelled": ("#991b1b", "#fee2e2"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status or "-",
+        )
+
+    @admin.display(description="Rider")
+    def rider_display(self, obj):
+        assignment = (
+            obj.delivery_assignments
+            .exclude(status="Rejected")
+            .select_related("delivery_partner")
+            .order_by("-assigned_at")
+            .first()
+        )
+
+        if not assignment:
+            return "Not Assigned"
+
+        rider = assignment.delivery_partner
+        return (
+            getattr(rider, "name", "")
+            or getattr(rider, "phone", "")
+            or f"Rider #{rider.pk}"
+        )
 
     def _change_status(self, request, queryset, status, note):
         changed = 0
@@ -1263,13 +1515,71 @@ class MasterOrderAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
         "master_order",
-        "user",
+        "customer_display",
         "payment_method",
-        "payment_status",
-        "amount",
+        "payment_badge",
+        "amount_display",
         "transaction_id",
         "created_at",
     )
+
+    list_display_links = (
+        "master_order",
+        "customer_display",
+    )
+
+    list_per_page = 30
+    date_hierarchy = "created_at"
+    empty_value_display = "-"
+    list_select_related = (
+        "master_order",
+        "user",
+    )
+
+    @admin.display(
+        description="Customer",
+        ordering="user__name",
+    )
+    def customer_display(self, obj):
+        name = getattr(obj.user, "name", "") or "Customer"
+        phone = getattr(obj.user, "phone", "") or ""
+        return f"{name} | {phone}" if phone else name
+
+    @admin.display(
+        description="Status",
+        ordering="payment_status",
+    )
+    def payment_badge(self, obj):
+        status = (obj.payment_status or "").strip()
+
+        colors = {
+            "Paid": ("#166534", "#dcfce7"),
+            "Pending": ("#92400e", "#fef3c7"),
+            "Processing": ("#1e40af", "#dbeafe"),
+            "Failed": ("#991b1b", "#fee2e2"),
+            "Refunded": ("#5b21b6", "#ede9fe"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status or "-",
+        )
+
+    @admin.display(
+        description="Amount",
+        ordering="amount",
+    )
+    def amount_display(self, obj):
+        return f"Rs. {obj.amount}"
 
     search_fields = (
         "master_order__master_order_number",
@@ -1296,15 +1606,84 @@ class SettlementAdmin(admin.ModelAdmin):
     list_display = (
         "order",
         "shop",
-        "product_amount",
-        "shop_commission",
-        "shop_payable",
-        "delivery_partner_payout",
-        "platform_fee",
-        "amexa_earning",
-        "status",
+        "product_amount_display",
+        "shop_payable_display",
+        "rider_payout_display",
+        "amexa_earning_display",
+        "settlement_badge",
         "created_at",
     )
+
+    list_display_links = (
+        "order",
+        "shop",
+    )
+
+    list_per_page = 30
+    date_hierarchy = "created_at"
+    empty_value_display = "-"
+    list_select_related = (
+        "order",
+        "shop",
+    )
+
+    @admin.display(
+        description="Product Amount",
+        ordering="product_amount",
+    )
+    def product_amount_display(self, obj):
+        return f"Rs. {obj.product_amount}"
+
+    @admin.display(
+        description="Shop Payable",
+        ordering="shop_payable",
+    )
+    def shop_payable_display(self, obj):
+        return f"Rs. {obj.shop_payable}"
+
+    @admin.display(
+        description="Rider Payout",
+        ordering="delivery_partner_payout",
+    )
+    def rider_payout_display(self, obj):
+        return f"Rs. {obj.delivery_partner_payout}"
+
+    @admin.display(
+        description="AMEXA Earning",
+        ordering="amexa_earning",
+    )
+    def amexa_earning_display(self, obj):
+        return f"Rs. {obj.amexa_earning}"
+
+    @admin.display(
+        description="Settlement",
+        ordering="status",
+    )
+    def settlement_badge(self, obj):
+        status = (obj.status or "").strip()
+
+        colors = {
+            "Paid": ("#166534", "#dcfce7"),
+            "Completed": ("#166534", "#dcfce7"),
+            "Pending": ("#92400e", "#fef3c7"),
+            "Processing": ("#1e40af", "#dbeafe"),
+            "On Hold": ("#9a3412", "#ffedd5"),
+            "Failed": ("#991b1b", "#fee2e2"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status or "-",
+        )
 
     search_fields = (
         "order__order_number",
@@ -1479,13 +1858,24 @@ def _auto_approve_verified_shopkeepers(profile_ids, reviewer):
 @admin.register(ShopkeeperProfile)
 class ShopkeeperProfileAdmin(admin.ModelAdmin):
     list_display = (
-        "user",
+        "owner_name",
+        "owner_phone",
         "shop",
-        "verification_status",
+        "verification_badge",
+        "shop_online",
+        "shop_active",
         "onboarding_step",
         "submitted_at",
-        "reviewed_at",
     )
+
+    list_display_links = (
+        "owner_name",
+        "shop",
+    )
+
+    list_per_page = 30
+    date_hierarchy = "submitted_at"
+    empty_value_display = "-"
     search_fields = (
         "user__name",
         "user__email",
@@ -1510,6 +1900,73 @@ class ShopkeeperProfileAdmin(admin.ModelAdmin):
         "approve_shopkeepers",
         "block_shopkeepers",
     )
+
+    @admin.display(
+        description="Owner",
+        ordering="user__name",
+    )
+    def owner_name(self, obj):
+        return (
+            getattr(obj.user, "name", "")
+            or f"User #{obj.user_id}"
+        )
+
+    @admin.display(
+        description="Phone",
+        ordering="user__phone",
+    )
+    def owner_phone(self, obj):
+        return getattr(obj.user, "phone", "") or "-"
+
+    @admin.display(
+        description="KYC Status",
+        ordering="verification_status",
+    )
+    def verification_badge(self, obj):
+        status = (obj.verification_status or "").strip()
+
+        colors = {
+            "DRAFT": ("#374151", "#f3f4f6"),
+            "PENDING": ("#92400e", "#fef3c7"),
+            "UNDER_REVIEW": ("#1e40af", "#dbeafe"),
+            "APPROVED": ("#166534", "#dcfce7"),
+            "REJECTED": ("#991b1b", "#fee2e2"),
+            "BLOCKED": ("#7f1d1d", "#fecaca"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            status.replace("_", " ").title() or "-",
+        )
+
+    @admin.display(
+        description="Online",
+        boolean=True,
+        ordering="shop__is_online",
+    )
+    def shop_online(self, obj):
+        if not obj.shop_id:
+            return False
+        return bool(obj.shop.is_online)
+
+    @admin.display(
+        description="Active",
+        boolean=True,
+        ordering="shop__is_active",
+    )
+    def shop_active(self, obj):
+        if not obj.shop_id:
+            return False
+        return bool(obj.shop.is_active)
 
     def save_model(self, request, obj, form, change):
         if "verification_status" in form.changed_data:
@@ -1781,14 +2238,25 @@ def _auto_approve_verified_delivery_profiles(profile_ids, reviewer):
 @admin.register(DeliveryPartnerProfile)
 class DeliveryPartnerProfileAdmin(admin.ModelAdmin):
     list_display = (
-        "user",
-        "verification_status",
-        "onboarding_step",
+        "rider_name",
+        "rider_phone",
+        "verification_badge",
+        "online_status",
         "vehicle_type",
         "city",
+        "active_orders",
+        "location_updated_at",
         "submitted_at",
-        "reviewed_at",
     )
+
+    list_display_links = (
+        "rider_name",
+        "rider_phone",
+    )
+
+    list_per_page = 30
+    date_hierarchy = "submitted_at"
+    empty_value_display = "-"
     search_fields = (
         "user__name",
         "user__email",
@@ -1871,6 +2339,76 @@ class DeliveryPartnerProfileAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    @admin.display(
+        description="Rider",
+        ordering="user__name",
+    )
+    def rider_name(self, obj):
+        return (
+            getattr(obj.user, "name", "")
+            or f"Rider #{obj.user_id}"
+        )
+
+    @admin.display(
+        description="Phone",
+        ordering="user__phone",
+    )
+    def rider_phone(self, obj):
+        return getattr(obj.user, "phone", "") or "-"
+
+    @admin.display(
+        description="KYC Status",
+        ordering="verification_status",
+    )
+    def verification_badge(self, obj):
+        status = (obj.verification_status or "").strip()
+
+        colors = {
+            "DRAFT": ("#374151", "#f3f4f6"),
+            "PENDING": ("#92400e", "#fef3c7"),
+            "UNDER_REVIEW": ("#1e40af", "#dbeafe"),
+            "APPROVED": ("#166534", "#dcfce7"),
+            "REJECTED": ("#991b1b", "#fee2e2"),
+            "BLOCKED": ("#7f1d1d", "#fecaca"),
+        }
+
+        fg, bg = colors.get(
+            status,
+            ("#374151", "#f3f4f6"),
+        )
+
+        label = status.replace("_", " ").title()
+
+        return format_html(
+            '<span style="display:inline-block;padding:4px 9px;'
+            'border-radius:999px;font-weight:700;'
+            'color:{};background:{};">{}</span>',
+            fg,
+            bg,
+            label or "-",
+        )
+
+    @admin.display(
+        description="Online",
+        boolean=True,
+        ordering="user__is_active_delivery",
+    )
+    def online_status(self, obj):
+        return bool(
+            getattr(obj.user, "is_active_delivery", False)
+        )
+
+    @admin.display(description="Active Orders")
+    def active_orders(self, obj):
+        return DeliveryAssignment.objects.filter(
+            delivery_partner=obj.user,
+            status__in=[
+                "Assigned",
+                "Accepted",
+                "Picked",
+            ],
+        ).count()
 
     def save_model(self, request, obj, form, change):
         if "verification_status" in form.changed_data:
@@ -2181,3 +2719,12 @@ class DeliveryIncentiveProgressAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+
+# =========================================================
+# AMEXA ADMIN BRANDING
+# =========================================================
+admin.site.site_header = "AMEXA Operations Admin"
+admin.site.site_title = "AMEXA Admin"
+admin.site.index_title = "AMEXA Operations & Management"
+
