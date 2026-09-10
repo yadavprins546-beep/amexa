@@ -2605,7 +2605,8 @@ def cart_add_view(request, product_id):
         Product.objects.select_related("shop"),
         pk=product_id,
         is_active=True,
-        is_online=True,
+        shop__is_active=True,
+        shop__is_online=True,
     )
 
     cart = _get_or_create_cart(
