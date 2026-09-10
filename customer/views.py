@@ -652,6 +652,12 @@ def _create_multi_shop_order_from_cart(
         ):
             shop = group["shop"]
 
+            if not shop.is_active or not shop.is_online:
+                raise ValueError(
+                    f"{shop.name} is currently offline. "
+                    "Please remove its items from cart or try again later."
+                )
+
             shop_total_after_discount = max(
                 Decimal("0.00"),
                 group["total"] - group_discount,
