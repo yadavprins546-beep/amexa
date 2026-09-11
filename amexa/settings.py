@@ -72,6 +72,12 @@ SECURE_PROXY_SSL_HEADER = (
 )
 
 
+# Initial HSTS - 1 day
+SECURE_HSTS_SECONDS = 86400
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = False
+
+
 # =========================================================
 # APPLICATIONS
 # =========================================================
