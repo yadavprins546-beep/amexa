@@ -21,7 +21,7 @@ SECRET_KEY = os.environ.get(
     "dev-only-change-this-before-production",
 )
 
-DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 
 # =========================================================
@@ -44,6 +44,32 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "https://amexa.onrender.com",
 ]
+
+
+
+# =========================================================
+# PRODUCTION HTTPS SECURITY
+# =========================================================
+
+SECURE_SSL_REDIRECT = os.environ.get(
+    "SECURE_SSL_REDIRECT",
+    "False"
+).lower() == "true"
+
+SESSION_COOKIE_SECURE = os.environ.get(
+    "SESSION_COOKIE_SECURE",
+    "False"
+).lower() == "true"
+
+CSRF_COOKIE_SECURE = os.environ.get(
+    "CSRF_COOKIE_SECURE",
+    "False"
+).lower() == "true"
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
 
 
 # =========================================================
