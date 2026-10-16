@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Search{% if query %} - {{ query }}{% endif %} | AMEXA</title>
+<title>Search{% if query %} - {{ query }}{% endif %} | BYXOM</title>
 <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
 <style>
 *{box-sizing:border-box}
@@ -30,7 +30,7 @@ a{color:inherit;text-decoration:none}button,input,select{font:inherit}.page{widt
 <body>
 <div class="page">
 <header class="top">
-<a href="{% url 'home' %}" class="brand"><div class="brand-icon">🛍️</div><div><div class="brand-name">AMEXA</div><div class="brand-sub">SMART • LOCAL • FAST</div></div></a>
+<a href="{% url 'home' %}" class="brand"><div class="brand-icon">🛍️</div><div><div class="brand-name">BYXOM</div><div class="brand-sub">SMART • LOCAL • FAST</div></div></a>
 <div class="top-actions"><a href="{% url 'cart' %}" class="top-btn">🛒</a><a href="{% url 'profile' %}" class="top-btn">👤</a></div>
 </header>
 
@@ -41,7 +41,7 @@ a{color:inherit;text-decoration:none}button,input,select{font:inherit}.page{widt
 </form>
 
 <div class="breadcrumb"><a href="{% url 'home' %}">Home</a> › Search{% if query %} › {{ query }}{% endif %}</div>
-<div class="headline"><div><h1>{% if query %}Results for “{{ query }}”{% else %}Search Products{% endif %}</h1><p>Nearby stores within {{ service_radius_km|default:"5" }} km</p></div><div class="result-count">{{ product_count }} product{{ product_count|pluralize }} found</div></div>
+<div class="headline"><div><h1>{% if query %}Results for "{{ query }}"{% else %}Search Products{% endif %}</h1><p>Nearby stores within {{ service_radius_km|default:"5" }} km</p></div><div class="result-count">{{ product_count }} product{{ product_count|pluralize }} found</div></div>
 
 <div class="layout">
 <form class="filters" id="filters" method="get" action="{% url 'search_results' %}">
@@ -59,7 +59,7 @@ a{color:inherit;text-decoration:none}button,input,select{font:inherit}.page{widt
 <div class="sort-row"><button type="button" class="mobile-filter" onclick="document.getElementById('filters').classList.toggle('open')">☰ Filters</button></div>
 
 {% if not location_ready %}
-<div class="empty"><div class="empty-icon">📍</div><h3>Select your delivery location</h3><p>AMEXA shows products only from stores within your service area.</p><br><a class="store-link" href="{% url 'location_picker' %}">Select Location →</a></div>
+<div class="empty"><div class="empty-icon">📍</div><h3>Select your delivery location</h3><p>BYXOM shows products only from stores within your service area.</p><br><a class="store-link" href="{% url 'location_picker' %}">Select Location →</a></div>
 {% elif store_groups %}
 {% for group in store_groups %}
 <section class="store-section">

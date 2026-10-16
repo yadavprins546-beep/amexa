@@ -1,0 +1,1569 @@
+{% load india_notifications %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#d71920">
+    <title>BYXOM Shopping | Shop Across India</title>
+
+    <style>
+        :root {
+            --red: #d71920;
+            --red-dark: #a90f17;
+            --black: #151515;
+            --white: #ffffff;
+            --gold: #d6a63d;
+            --cream: #fff8e9;
+            --grey: #f5f5f5;
+            --muted: #707070;
+            --border: #e9e9e9;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--white);
+            color: var(--black);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        button, input, select { font: inherit; }
+
+        .top-strip {
+            background: var(--black);
+            color: white;
+            text-align: center;
+            padding: 9px 12px;
+            font-size: 12px;
+            letter-spacing: .4px;
+        }
+
+        .top-strip strong { color: #ffcf68; }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            max-width: 1250px;
+            margin: auto;
+            padding: 17px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 31px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            white-space: nowrap;
+        }
+
+        .brand .x { color: var(--red); }
+
+        .brand small {
+            display: block;
+            font-size: 9px;
+            letter-spacing: .6px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 570px;
+            display: flex;
+            border: 1px solid #dadada;
+            border-radius: 9px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .search input {
+            min-width: 0;
+            width: 100%;
+            border: 0;
+            outline: 0;
+            padding: 13px;
+            background: transparent;
+        }
+
+        .search button {
+            background: var(--red);
+            color: white;
+            border: 0;
+            padding: 0 19px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .header-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .header-label span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-weight: normal;
+            font-size: 11px;
+        }
+
+        .page {
+            max-width: 1250px;
+            margin: auto;
+            padding: 22px 20px 50px;
+        }
+
+        .festival {
+            background: linear-gradient(115deg, #211719, #6f1117 55%, #c71922);
+            color: white;
+            min-height: 225px;
+            padding: 35px;
+            border-radius: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .festival::after {
+            content: "✦";
+            position: absolute;
+            right: 12%;
+            top: -55px;
+            font-size: 240px;
+            color: rgba(255, 205, 100, .14);
+            pointer-events: none;
+        }
+
+        .festival-content {
+            position: relative;
+            z-index: 1;
+            max-width: 650px;
+        }
+
+        .festival-tag {
+            display: inline-block;
+            background: var(--gold);
+            color: #211719;
+            padding: 7px 11px;
+            font-size: 10px;
+            border-radius: 4px;
+            letter-spacing: 1.3px;
+            font-weight: 900;
+        }
+
+        .festival h1 {
+            font-size: clamp(28px, 4vw, 45px);
+            line-height: 1.08;
+            margin: 16px 0 10px;
+        }
+
+        .festival p {
+            color: #f4e5e5;
+            line-height: 1.6;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .festival-side {
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 216, 137, .65);
+            color: #ffda89;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 155px;
+            font-weight: 900;
+            font-size: 17px;
+        }
+
+        .festival-side span {
+            display: block;
+            margin-top: 8px;
+            color: white;
+            font-size: 11px;
+            font-weight: normal;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 19px 0 32px;
+        }
+
+        .benefit {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .benefit span {
+            display: block;
+            color: var(--muted);
+            font-weight: normal;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 16px;
+        }
+
+        .section-heading h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .section-heading p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .categories {
+            display: flex;
+            gap: 9px;
+            overflow-x: auto;
+            padding: 2px 0 12px;
+            margin-bottom: 25px;
+        }
+
+        .category-chip {
+            flex-shrink: 0;
+            border: 1px solid #e5e5e5;
+            background: white;
+            border-radius: 30px;
+            padding: 10px 17px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .category-chip.active,
+        .category-chip:hover {
+            background: var(--red);
+            border-color: var(--red);
+            color: white;
+        }
+
+        .product-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0 16px;
+        }
+
+        .product-count {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .sort {
+            padding: 10px;
+            border: 1px solid #dedede;
+            border-radius: 8px;
+            background: white;
+            max-width: 190px;
+            font-size: 12px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 17px;
+        }
+
+        .product-card {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            transition: transform .18s, box-shadow .18s;
+            min-width: 0;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 26px rgba(0,0,0,.08);
+        }
+
+        .product-photo {
+            height: 235px;
+            background: var(--grey);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .25s;
+        }
+
+        .product-card:hover .product-photo img {
+            transform: scale(1.035);
+        }
+
+        .badge-stack {
+            position: absolute;
+            left: 9px;
+            top: 9px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            z-index: 2;
+        }
+
+        .badge {
+            display: inline-block;
+            max-width: 155px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .4px;
+            overflow-wrap: anywhere;
+        }
+
+        .badge-sale {
+            background: var(--red);
+            color: white;
+        }
+
+        .badge-festive {
+            background: var(--gold);
+            color: #241b0b;
+        }
+
+        .badge-black {
+            background: var(--black);
+            color: white;
+        }
+
+        .product-info { padding: 13px; }
+
+        .product-category {
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+        }
+
+        .product-name {
+            margin: 7px 0 10px;
+            font-size: 14px;
+            line-height: 1.45;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .prices {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .selling-price {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .mrp {
+            font-size: 12px;
+            color: #888;
+            text-decoration: line-through;
+        }
+
+        .discount {
+            color: #168044;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .stock-status {
+            margin-top: 11px;
+            font-size: 11px;
+            color: #168044;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            background: #fafafa;
+            border: 1px dashed #ddd;
+            border-radius: 12px;
+            color: var(--muted);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state strong {
+            display: block;
+            color: var(--black);
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .reselling-thumbnails {
+            display: flex;
+            gap: 8px;
+            padding: 8px 12px 0;
+            overflow-x: auto;
+        }
+        .reselling-thumb {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            padding: 2px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .reselling-thumb.is-active {
+            border: 2px solid var(--accent, #d97706);
+        }
+        .reselling-thumb img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .reselling-description {
+            margin: 8px 12px 4px;
+            color: #626262;
+            font-size: 13px;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.9em;
+        }
+
+        .india-cart-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #8a4b08;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+        .reselling-cart-form {
+            margin: 12px;
+        }
+        .reselling-cart-form button {
+            width: 100%;
+            padding: 11px 14px;
+            border: 0;
+            border-radius: 9px;
+            background: #171717;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .reselling-cart-form button:hover {
+            opacity: .88;
+        }
+
+        .trust-note {
+            margin-top: 28px;
+            border-radius: 10px;
+            padding: 19px;
+            background: var(--cream);
+            border: 1px solid #f1dfb4;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        footer {
+            background: var(--black);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        footer strong { color: #ffcb65; }
+
+        @media (max-width: 900px) {
+            .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .product-photo { height: 215px; }
+            .header-label { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .header-inner { padding: 13px 12px; gap: 10px; flex-wrap: wrap; }
+            .brand { font-size: 26px; }
+            .search { flex-basis: 100%; max-width: none; order: 2; }
+            .page { padding: 14px 12px 35px; }
+            .festival { min-height: 210px; padding: 23px 18px; }
+            .festival h1 { font-size: 30px; }
+            .festival p { font-size: 12px; }
+            .festival-side { display: none; }
+            .benefits { gap: 7px; margin-bottom: 27px; }
+            .benefit { padding: 11px 8px; font-size: 10px; }
+            .benefit span { font-size: 10px; }
+            .section-heading h2 { font-size: 20px; }
+            .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .product-photo { height: 185px; }
+            .product-info { padding: 10px; }
+            .product-name { font-size: 12px; }
+            .selling-price { font-size: 16px; }
+            .badge { font-size: 8px; padding: 5px 6px; }
+            .sort { max-width: 150px; }
+        }
+
+        .product-card[hidden] {
+            display: none !important;
+        }
+
+/* BYXOM service navigation: only inserted into the four requested pages. */
+.byxom-servicebar-wrap {
+    flex: 1 1 440px;
+    min-width: 0;
+    max-width: 720px;
+    margin: 0 10px;
+}
+.byxom-servicebar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid var(--byxom-bar-border, #e4dce9);
+    border-radius: 14px;
+    background: var(--byxom-bar-bg, #fff);
+    box-shadow: 0 5px 18px rgba(25, 13, 35, .06);
+}
+.byxom-service-link {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 10px;
+    border: 1px solid var(--byxom-link-border, #e7e1ec);
+    border-radius: 10px;
+    color: var(--byxom-link-ink, #33243d);
+    background: var(--byxom-link-bg, #f7f5f8);
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.byxom-service-icon { font-size: 17px; line-height: 1; }
+.byxom-service-link:hover,
+.byxom-service-link:focus-visible {
+    border-color: var(--byxom-active-border, #c9b4d8);
+    outline: 2px solid transparent;
+}
+.byxom-service-link.active {
+    color: var(--byxom-active-ink, #2a1b35);
+    border-color: var(--byxom-active-border, #edc15e);
+    background: var(--byxom-active-bg, #f8cf76);
+}
+@media (max-width: 800px) {
+    .top .byxom-servicebar-wrap {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+        margin: 10px 0 0;
+    }
+    .byxom-servicebar-wrap { max-width: none; }
+    .byxom-service-link { padding: 8px 5px; font-size: 11px; }
+}
+@media (max-width: 600px) {
+    .header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px;
+    }
+    .shell > header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px 0 0;
+    }
+    .byxom-servicebar { gap: 4px; padding: 5px; }
+    .byxom-service-link {
+        flex-direction: column;
+        gap: 5px;
+        min-height: 53px;
+        padding: 7px 2px;
+        font-size: 10px;
+        white-space: normal;
+        text-align: center;
+    }
+    .byxom-service-icon { font-size: 16px; }
+}
+@media (max-width: 350px) {
+    .byxom-servicebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .byxom-service-link { flex-direction: row; font-size: 11px; }
+}
+
+header.header { display: flex; flex-wrap: wrap; align-items: center; }
+header.header > .header-inner { flex: 1 0 100%; width: 100%; }
+header.header > .byxom-servicebar-wrap {
+    flex: 1 1 440px;
+    max-width: 760px;
+    width: auto;
+    margin: 8px;
+}
+header.header .byxom-service-link {
+    --byxom-active-bg: #d71920;
+    --byxom-active-ink: #ffffff;
+    --byxom-active-border: #c9151b;
+}
+
+
+/* BYXOM-CATALOG-IMAGE-FALLBACK-V1 */
+.byxom-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 150px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 12px;
+    text-align: center;
+    overflow: hidden;
+    color: #39234b;
+    background:
+        radial-gradient(ellipse at 15% 15%, rgba(255,255,255,.95), transparent 48%),
+        linear-gradient(145deg, #fff7df 0%, #f8e9f5 52%, #ece7ff 100%);
+    border: 1px solid rgba(90, 55, 110, .10);
+}
+.byxom-placeholder-mark {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #452052, #8c4f98);
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    box-shadow: 0 8px 20px rgba(69, 32, 82, .18);
+}
+.byxom-image-placeholder strong {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.byxom-image-placeholder small {
+    max-width: 210px;
+    color: #75677d;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+</style>
+
+<style id="BYXOM-PREMIUM-DIWALI-V1">
+:root {
+  --byxom-red: #b91627;
+  --byxom-deep: #650d1a;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #201b1c;
+  --byxom-cream: #fffaf1;
+  --byxom-muted: #766b6a;
+}
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at 4% 4%, rgba(233,189,104,.12), transparent 28rem),
+    #fffaf6;
+  color: var(--byxom-ink);
+}
+.top-strip {
+  background: #3a1016 !important;
+  color: #ffe7b1 !important;
+  letter-spacing: .045em;
+}
+.header {
+  background: rgba(255,255,255,.97) !important;
+  border-bottom: 1px solid #f0e0ce !important;
+  box-shadow: 0 8px 28px rgba(65,25,23,.07);
+}
+.brand { letter-spacing: -.045em; }
+.search input, #productSearch {
+  border: 1px solid #e8d8cd !important;
+  border-radius: 999px !important;
+  background: #fffdfa !important;
+  min-height: 44px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.search input:focus, #productSearch:focus {
+  outline: none;
+  border-color: var(--byxom-red) !important;
+  box-shadow: 0 0 0 4px rgba(185,22,39,.09);
+}
+.search button, .search [type="submit"] {
+  border-radius: 999px !important;
+}
+.page { max-width: 1420px; }
+.festival {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 290px;
+  margin: 24px 0 28px;
+  padding: clamp(28px, 5vw, 62px);
+  border: 1px solid rgba(255,219,151,.48);
+  border-radius: 28px;
+  color: #fff8e9;
+  background:
+    radial-gradient(circle at 82% 22%, rgba(255,211,126,.25), transparent 13rem),
+    radial-gradient(circle at 74% 100%, rgba(222,67,49,.42), transparent 22rem),
+    linear-gradient(118deg, #420d18 0%, #811322 52%, #3c1019 100%) !important;
+  box-shadow: 0 24px 55px rgba(92,15,25,.19);
+}
+.festival::before, .festival::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid rgba(255,218,145,.34);
+  border-radius: 50%;
+}
+.festival::before {
+  width: 330px; height: 330px;
+  right: 7%; top: -108px;
+  box-shadow: 0 0 0 18px rgba(255,218,145,.035),
+              0 0 0 38px rgba(255,218,145,.035);
+}
+.festival::after {
+  width: 170px; height: 170px;
+  right: 12%; bottom: -92px;
+  background: rgba(255,216,142,.05);
+}
+.festival-content, .festival-side { position: relative; z-index: 1; }
+.festival-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,226,173,.46);
+  border-radius: 999px;
+  background: rgba(255,248,228,.09);
+  padding: 8px 13px;
+  color: #ffe2a2 !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+.festival h1 {
+  max-width: 720px;
+  margin: 19px 0 12px;
+  color: #fff9ec !important;
+  font-size: clamp(34px, 5vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+.festival-content p {
+  max-width: 530px;
+  color: #f6dfd4 !important;
+  font-size: 15px;
+  line-height: 1.75;
+}
+.festival-side {
+  border: 1px solid rgba(255,224,164,.48) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg, rgba(255,218,148,.17), rgba(255,255,255,.035)) !important;
+  color: #ffe4aa !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.12);
+  backdrop-filter: blur(8px);
+}
+.section-heading { margin: 28px 0 15px; }
+.section-heading h2, .reselling-section h2 {
+  color: #34151a;
+  letter-spacing: -.035em;
+}
+.section-heading p, .reselling-section p { color: var(--byxom-muted); }
+.benefits {
+  gap: 12px !important;
+  margin: 20px 0 28px;
+}
+.benefit {
+  border: 1px solid #f0e3d6;
+  border-radius: 16px;
+  background: rgba(255,255,255,.84);
+  box-shadow: 0 5px 18px rgba(80,37,29,.035);
+}
+.categories { gap: 9px !important; }
+.category-chip {
+  border: 1px solid #eadbd0 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #5c4240 !important;
+  padding: 10px 16px !important;
+  font-weight: 700;
+  transition: transform .18s, background .18s, border-color .18s;
+}
+.category-chip:hover { transform: translateY(-1px); border-color: #d8a3a0 !important; }
+.category-chip.active {
+  background: #8b1422 !important;
+  border-color: #8b1422 !important;
+  color: #fff !important;
+  box-shadow: 0 5px 13px rgba(139,20,34,.16);
+}
+.product-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid #f0e1d5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 6px 22px rgba(80,37,29,.035);
+}
+.product-count {
+  margin-right: auto;
+  color: #5b3434;
+  font-size: 13px;
+  font-weight: 800;
+}
+.price-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.price-filter-input {
+  box-sizing: border-box;
+  width: 104px;
+  min-height: 39px;
+  padding: 8px 10px;
+  border: 1px solid #e8d9ce;
+  border-radius: 10px;
+  background: #fffdfa;
+  color: #321b1c;
+  font: inherit;
+  font-size: 13px;
+}
+.price-filter-input:focus {
+  outline: 2px solid rgba(185,22,39,.13);
+  border-color: var(--byxom-red);
+}
+.price-separator { color: #8c7770; font-size: 12px; }
+.reset-filters {
+  min-height: 39px;
+  padding: 8px 12px;
+  border: 1px solid #e8d9ce;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #7f1823;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.reset-filters:hover { background: #fce9d8; }
+.sort {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e8d9ce !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #3d2929;
+}
+.product-grid { gap: 18px !important; }
+.product-card {
+  overflow: hidden;
+  border: 1px solid #efe2d7 !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+  box-shadow: 0 5px 22px rgba(62,29,25,.045) !important;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  border-color: #e7c9bb !important;
+  box-shadow: 0 16px 32px rgba(62,29,25,.11) !important;
+}
+.product-photo {
+  overflow: hidden;
+  background: linear-gradient(140deg, #fffaf3, #f8eee5) !important;
+}
+.product-photo img {
+  transition: transform .35s ease;
+}
+.product-card:hover .product-photo img { transform: scale(1.035); }
+.product-info { padding: 14px !important; }
+.product-category {
+  color: #9a6c48 !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.product-name {
+  color: #302020 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+.selling-price { color: #94182a !important; font-weight: 900 !important; }
+.mrp { color: #9b8b83 !important; }
+.discount {
+  border-radius: 6px;
+  background: #fff0e6;
+  color: #a62a25 !important;
+  padding: 3px 5px;
+  font-weight: 800;
+}
+.badge { border-radius: 6px !important; letter-spacing: .035em; }
+.badge-festive {
+  background: #9c1d2b !important;
+  color: #fff5df !important;
+}
+.stock-status { font-size: 11px !important; }
+.reselling-section {
+  margin-top: 36px;
+  padding-top: 10px;
+}
+.india-cart-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px 5px 8px 0;
+  padding: 9px 13px;
+  border: 1px solid #ebd8c8;
+  border-radius: 999px;
+  background: #fff;
+  color: #7f1823 !important;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.india-cart-link:hover { background: #fff1e7; }
+.empty-state {
+  border: 1px dashed #e5c9b8;
+  border-radius: 18px;
+  background: #fffdf8;
+}
+footer {
+  margin-top: 44px;
+  padding: 30px 18px !important;
+  background: #351017 !important;
+  color: #f4dfcf !important;
+  line-height: 1.9;
+}
+footer strong { color: #ffe0a0; }
+@media (max-width: 700px) {
+  .festival { border-radius: 20px; margin-top: 15px; }
+  .festival::before { right: -150px; opacity: .7; }
+  .festival-side { display: none; }
+  .product-toolbar { align-items: stretch; }
+  .product-count { flex-basis: 100%; }
+  .price-filters { width: 100%; }
+  .price-filter-input { flex: 1; min-width: 0; width: 60px; }
+  .sort { flex: 1; width: 100%; }
+  .product-grid { gap: 11px !important; }
+  .product-card { border-radius: 14px !important; }
+  .product-info { padding: 10px !important; }
+  .product-name { font-size: 13px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .product-card, .product-photo img, .category-chip { transition: none !important; }
+}
+</style>
+
+</head>
+
+<body>
+    <div class="top-strip">
+        <strong>BYXOM FESTIVE SHOPPING</strong>
+        &nbsp; | &nbsp; Smart • Local • Fast Commerce
+    </div>
+
+    <header class="header">
+        <div class="header-inner">
+            <a href="" class="brand" aria-label="BYXOM Shopping home">
+                BY<span class="x">X</span>OM
+                <small>LOCAL PEOPLE STRONGER TOMORROW</small>
+            </a>
+
+            <form class="search" id="searchForm" action="{% url 'india_store:search' %}" method="get">
+                <input
+                    type="search"
+                    id="productSearch"
+                    placeholder="Search products or categories..."
+                    aria-label="Search products"
+                 name="q">
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="header-label">
+                BYXOM SHOPPING
+                <span>Discover products across India</span>
+            </div>
+        </div>
+    <a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+<div class="byxom-servicebar-wrap">
+<nav class="byxom-servicebar" aria-label="BYXOM services">
+<a class="byxom-service-link active" href="{% url 'india_store:home' %}" aria-current="page"><span class="byxom-service-icon" aria-hidden="true">&#128722;</span><span>Shopping</span></a>
+<a class="byxom-service-link" href="{% url 'home' %}"><span class="byxom-service-icon" aria-hidden="true">&#9889;</span><span>Local Fast</span></a>
+<a class="byxom-service-link" href="{% url 'health' %}"><span class="byxom-service-icon" aria-hidden="true">&#9829;</span><span>Health</span></a>
+<a class="byxom-service-link" href="{% url 'flight_tickets' %}"><span class="byxom-service-icon" aria-hidden="true">&#9992;</span><span>Travel</span></a>
+</nav>
+</div>
+</header>
+
+    <main class="page">
+        <section class="festival">
+            <div class="festival-content">
+                <span class="festival-tag">BYXOM FESTIVE EDITION</span>
+                <h1>Celebrate More.<br>Shop Smarter.</h1>
+                <p>
+                    Discover products for your everyday needs and special moments.
+                    Explore the BYXOM collection.
+                </p>
+            </div>
+            <div class="festival-side">
+                FESTIVE<br>FAVOURITES
+                <span>Find your next favourite</span>
+            </div>
+        </section>
+
+        <section class="benefits" aria-label="Shopping highlights">
+            <div class="benefit">
+                ✦ Carefully Displayed Products
+                <span>Clear images, product names and pricing</span>
+            </div>
+            <div class="benefit">
+                ✦ Offers with Admin Control
+                <span>Sale badges appear when enabled for a product</span>
+            </div>
+            <div class="benefit">
+                ✦ Shop Your Way
+                <span>Search and filter the visible collection</span>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <div>
+                    <h2>Shop by Category</h2>
+                    <p>Choose a category to explore products.</p>
+                </div>
+            </div>
+
+            <div class="categories" id="categoryFilters">
+                <button class="category-chip active" type="button" data-category="all">
+                    All Products
+                </button>
+
+                {% for category in categories %}
+                    <button
+                        class="category-chip"
+                        type="button"
+                        data-category="{{ category.slug|escape }}"
+                    >
+                        {{ category.name }}
+                    </button>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <div>
+                    <h2>Explore Products</h2>
+                    <p>Find something you will love.</p>
+                </div>
+            </div>
+
+            <div class="product-toolbar">
+                <span class="product-count" id="productCount">
+                    {{ products|length }} products
+                </span>
+
+                <div class="price-filters" role="group" aria-label="Filter by price range">
+                    <input class="price-filter-input" type="number" id="minPrice"
+                           min="0" step="1" inputmode="numeric"
+                           placeholder="Min price" aria-label="Minimum price">
+                    <span class="price-separator">to</span>
+                    <input class="price-filter-input" type="number" id="maxPrice"
+                           min="0" step="1" inputmode="numeric"
+                           placeholder="Max price" aria-label="Maximum price">
+                    <button class="reset-filters" type="button" id="resetFilters">Reset</button>
+                </div>
+                <select class="sort" id="sortProducts" aria-label="Sort products">
+                    <option value="newest">Newest first</option>
+                    <option value="price-low">Price: Low to high</option>
+                    <option value="price-high">Price: High to low</option>
+                    <option value="discount">Biggest discount</option>
+                </select>
+            </div>
+
+            <div class="product-grid" id="productGrid">
+                {% for product in products %}
+                    <article
+                        class="product-card"
+                        data-name="{{ product.name|lower|escape }}"
+                        data-category="{{ product.category.slug|escape }}"
+                        data-price="{{ product.selling_price }}"
+                        data-discount="{{ product.discount_percent }}"
+                        data-created="{{ product.created_at|date:'U' }}"
+                    >
+                        <div class="product-photo">
+                            {% if product.image %}
+                                <img
+                                    src="{{ product.image.url }}"
+                                    alt="{{ product.name|escape }}"
+                                    loading="lazy"
+                                >
+                            {% else %}
+                                <div class="byxom-image-placeholder" role="img"
+     aria-label="{{ product.name|escape }} product photo pending verification">
+    <span class="byxom-placeholder-mark">B</span>
+    <strong>{{ product.name|escape }}</strong>
+    <small>Exact product photo pending verification</small>
+</div>
+                            {% endif %}
+
+                            <div class="badge-stack">
+                                {% if product.sale_badge_is_active %}
+                                    <span class="badge badge-sale">
+                                        {{ product.sale_badge_text|escape }}
+                                    </span>
+                                {% endif %}
+
+                                {% if product.show_new_arrival_badge %}
+                                    <span class="badge badge-festive">NEW ARRIVAL</span>
+                                {% endif %}
+
+                                {% if product.show_bestseller_badge %}
+                                    <span class="badge badge-black">BESTSELLER</span>
+                                {% endif %}
+
+                                {% if product.show_trending_badge %}
+                                    <span class="badge badge-festive">TRENDING</span>
+                                {% endif %}
+
+                                {% if product.is_featured %}
+                                    <span class="badge badge-black">FEATURED</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-category">
+                                {{ product.category.name|escape }}
+                            </div>
+
+                            <h3 class="product-name">{{ product.name|escape }}</h3>
+
+                            <div class="prices">
+                                <span class="selling-price">
+                                    ₹{{ product.selling_price|floatformat:2 }}
+                                </span>
+
+                                {% if product.discount_percent > 0 %}
+                                    <span class="mrp">
+                                        ₹{{ product.mrp|floatformat:2 }}
+                                    </span>
+                                    <span class="discount">
+                                        {{ product.discount_percent }}% OFF
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="stock-status">
+                                {% if product.stock > 0 %}
+                                    ● In stock
+                                {% else %}
+                                    Out of stock
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="empty-state">
+                        <strong>Products are coming soon!</strong>
+                        <p>Products will appear here when active products are available.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="reselling-section">
+            <div style="margin: 24px 0 14px;">
+                <h2>BYXOM Reselling Picks</h2>
+                <p>Discover selected products available through BYXOM.</p>
+                <a class="india-cart-link" href="{% url 'india_store:cart' %}">View Cart</a>
+                <a class="india-cart-link" href="{% url 'india_store:wishlist' %}">Wishlist</a>
+                <a class="india-cart-link" href="{% url 'india_store:orders' %}">My Orders</a>
+            </div>
+
+            <div class="product-grid" id="resellingProductGrid">
+                {% for product in reselling_products %}
+                    <article
+                        class="product-card"
+                        data-reselling-search-card="1"
+                        data-name="{{ product.name|lower|escape }}"
+                        data-category="{% if product.category %}{{ product.category.slug|escape }}{% endif %}"
+                        data-price="{{ product.selling_price }}"
+                        data-discount="{{ product.discount_percent }}"
+                        data-created="{{ product.created_at|date:'U' }}"
+                    >
+                        <div class="product-photo">
+                            {% if product.image %}
+                                <img class="reselling-main-photo" src="{{ product.image.url }}" alt="{{ product.name|escape }}" loading="lazy">
+                            {% elif product.image_2 %}
+                                <img class="reselling-main-photo" src="{{ product.image_2.url }}" alt="{{ product.name|escape }}" loading="lazy">
+                            {% elif product.image_3 %}
+                                <img class="reselling-main-photo" src="{{ product.image_3.url }}" alt="{{ product.name|escape }}" loading="lazy">
+                            {% else %}
+                                <div class="byxom-image-placeholder" role="img"
+     aria-label="{{ product.name|escape }} product photo pending verification">
+    <span class="byxom-placeholder-mark">B</span>
+    <strong>{{ product.name|escape }}</strong>
+    <small>Exact product photo pending verification</small>
+</div>
+                            {% endif %}
+
+                            <div class="badge-stack">
+                                {% if product.sale_badge_is_active %}
+                                    <span class="badge badge-sale">
+                                        {{ product.sale_badge_text|escape }}
+                                    </span>
+                                {% endif %}
+
+                                {% if product.show_new_arrival_badge %}
+                                    <span class="badge badge-festive">NEW ARRIVAL</span>
+                                {% endif %}
+
+                                {% if product.show_bestseller_badge %}
+                                    <span class="badge badge-black">BESTSELLER</span>
+                                {% endif %}
+
+                                {% if product.show_trending_badge %}
+                                    <span class="badge badge-festive">TRENDING</span>
+                                {% endif %}
+
+                                {% if product.is_featured %}
+                                    <span class="badge badge-black">FEATURED</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if product.image or product.image_2 or product.image_3 %}
+                        <div class="reselling-thumbnails" aria-label="Product photos">
+                            {% if product.image %}
+                            <button type="button" class="reselling-thumb is-active" data-src="{{ product.image.url }}" data-alt="{{ product.name|escape }}" onclick="byxomChangeResellingPhoto(this)" aria-label="View photo 1"><img src="{{ product.image.url }}" alt="" loading="lazy"></button>
+                            {% endif %}
+                            {% if product.image_2 %}
+                            <button type="button" class="reselling-thumb{% if not product.image %} is-active{% endif %}" data-src="{{ product.image_2.url }}" data-alt="{{ product.name|escape }}" onclick="byxomChangeResellingPhoto(this)" aria-label="View photo 2"><img src="{{ product.image_2.url }}" alt="" loading="lazy"></button>
+                            {% endif %}
+                            {% if product.image_3 %}
+                            <button type="button" class="reselling-thumb{% if not product.image and not product.image_2 %} is-active{% endif %}" data-src="{{ product.image_3.url }}" data-alt="{{ product.name|escape }}" onclick="byxomChangeResellingPhoto(this)" aria-label="View photo 3"><img src="{{ product.image_3.url }}" alt="" loading="lazy"></button>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="product-info">
+                            <div class="product-category">
+                                {% if product.category %}
+                                    {{ product.category.name|escape }}
+                                {% else %}
+                                    Reselling Pick
+                                {% endif %}
+                            </div>
+
+                            <h3 class="product-name">
+                                {{ product.name|escape }}
+                            </h3>
+
+                            <a
+                                href="{% url 'india_store:product_detail' product.id %}"
+                                style="display:inline-block;margin:0 0 12px;color:#174ea6;font-weight:700;text-decoration:none;"
+                            >View Product &rarr;</a>
+
+                            <p class="reselling-description">{{ product.description|default:"Selected by BYXOM"|striptags|truncatechars:110 }}</p>
+
+                            <div class="prices">
+                                <span class="selling-price">
+                                    &#8377;{{ product.selling_price|floatformat:2 }}
+                                </span>
+
+                                {% if product.discount_percent > 0 %}
+                                    <span class="mrp">
+                                        &#8377;{{ product.mrp|floatformat:2 }}
+                                    </span>
+                                    <span class="discount">
+                                        {{ product.discount_percent }}% OFF
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <form method="post"
+                                  action="{% url 'india_store:cart_add' product.id %}"
+                                  class="reselling-cart-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit">Add to Cart</button>
+                            </form>
+
+                            <div class="stock-status">
+                                Source availability marked as available
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="empty-state">
+                        <strong>Reselling products coming soon</strong>
+                        Products will appear here after the admin activates the listing
+                        and confirms source availability.
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+<div class="trust-note">
+            <strong>Shopping made clearer with BYXOM.</strong><br>
+            Product offers and discount amounts are shown using the product
+            settings and prices entered by the admin. Product ratings and
+            customer reviews will be connected after the review system is built.
+        </div>
+    </main>
+
+    <footer>
+        <strong>BYXOM</strong><br>
+        Smart • Local • Fast Commerce<br>
+        LOCAL PEOPLE STRONGER TOMORROW
+    </footer>
+
+    <script>
+        (() => {
+
+            const searchInput = document.getElementById("productSearch");
+            const searchForm = document.getElementById("searchForm");
+            const sortSelect = document.getElementById("sortProducts");
+            const minPriceInput = document.getElementById("minPrice");
+            const maxPriceInput = document.getElementById("maxPrice");
+            const resetFiltersButton = document.getElementById("resetFilters");
+            const countLabel = document.getElementById("productCount");
+            const noMatches = document.getElementById("noMatches");
+            const categoryButtons = Array.from(
+                document.querySelectorAll(".category-chip")
+            );
+            const grids = [
+                document.getElementById("productGrid"),
+                document.getElementById("resellingProductGrid")
+            ].filter(Boolean);
+
+            let selectedCategory = "all";
+
+            function getCards(grid) {
+                return Array.from(grid.querySelectorAll(".product-card"));
+            }
+
+            function updateProducts() {
+                const query = (searchInput ? searchInput.value : "")
+                    .trim()
+                    .toLowerCase();
+                const sortMode = sortSelect ? sortSelect.value : "newest";
+                const minPrice = minPriceInput && minPriceInput.value !== ""
+                    ? Math.max(0, Number(minPriceInput.value)) : 0;
+                const maxPrice = maxPriceInput && maxPriceInput.value !== ""
+                    ? Math.max(0, Number(maxPriceInput.value)) : Infinity;
+                let visibleCount = 0;
+
+                grids.forEach(function (grid) {
+                    const cards = getCards(grid);
+                    const visibleCards = [];
+
+                    cards.forEach(function (card) {
+                        const name = (
+                            card.dataset.name ||
+                            card.querySelector(".product-name")?.textContent ||
+                            ""
+                        ).toLowerCase();
+
+                        const categoryElement = card.querySelector(".product-category");
+                        const categoryText = categoryElement
+                            ? categoryElement.textContent.trim().toLowerCase()
+                            : "";
+
+                        const descriptionElement = card.querySelector(
+                            ".reselling-description"
+                        );
+                        const descriptionText = descriptionElement
+                            ? descriptionElement.textContent.trim().toLowerCase()
+                            : "";
+
+                        const matchesText =
+                            !query ||
+                            name.includes(query) ||
+                            categoryText.includes(query) ||
+                            descriptionText.includes(query);
+
+                        const categorySlug = (card.dataset.category || "").trim();
+                        const matchesCategory =
+                            selectedCategory === "all" ||
+                            categorySlug === selectedCategory;
+
+                        const cardPrice = Number(card.dataset.price || 0);
+                        const matchesPrice = cardPrice >= minPrice && cardPrice <= maxPrice;
+                        const show = matchesText && matchesCategory && matchesPrice;
+                        card.hidden = !show;
+
+                        if (show) {
+                            visibleCards.push(card);
+                            visibleCount += 1;
+                        }
+                    });
+
+                    visibleCards.sort(function (a, b) {
+                        const priceA = Number(a.dataset.price || 0);
+                        const priceB = Number(b.dataset.price || 0);
+                        const discountA = Number(a.dataset.discount || 0);
+                        const discountB = Number(b.dataset.discount || 0);
+                        const createdA = Number(a.dataset.created || 0);
+                        const createdB = Number(b.dataset.created || 0);
+
+                        if (sortMode === "price-low") {
+                            return priceA - priceB;
+                        }
+                        if (sortMode === "price-high") {
+                            return priceB - priceA;
+                        }
+                        if (sortMode === "discount") {
+                            return discountB - discountA;
+                        }
+                        return createdB - createdA;
+                    });
+
+                    // Keep the two existing shopping sections separate.
+                    visibleCards.forEach(function (card) {
+                        grid.appendChild(card);
+                    });
+                });
+
+                if (countLabel) {
+                    countLabel.textContent =
+                        visibleCount + (visibleCount === 1 ? " product" : " products");
+                }
+
+                if (noMatches) {
+                    noMatches.hidden = visibleCount !== 0;
+                }
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener("input", updateProducts);
+            }
+            if (sortSelect) {
+                sortSelect.addEventListener("change", updateProducts);
+            }
+            if (minPriceInput) {
+                minPriceInput.addEventListener("input", updateProducts);
+            }
+            if (maxPriceInput) {
+                maxPriceInput.addEventListener("input", updateProducts);
+            }
+            if (resetFiltersButton) {
+                resetFiltersButton.addEventListener("click", function () {
+                    if (searchInput) searchInput.value = "";
+                    if (minPriceInput) minPriceInput.value = "";
+                    if (maxPriceInput) maxPriceInput.value = "";
+                    if (sortSelect) sortSelect.value = "newest";
+                    selectedCategory = "all";
+                    categoryButtons.forEach(function (item) {
+                        const active = item.dataset.category === "all";
+                        item.classList.toggle("active", active);
+                        item.setAttribute("aria-pressed", active ? "true" : "false");
+                    });
+                    updateProducts();
+                });
+            }
+            // Allow Search to open the full server-side results page.
+
+            categoryButtons.forEach(function (button) {
+                button.addEventListener("click", function () {
+                    selectedCategory = button.dataset.category || "all";
+
+                    categoryButtons.forEach(function (item) {
+                        const active = item === button;
+                        item.classList.toggle("active", active);
+                        item.setAttribute("aria-pressed", active ? "true" : "false");
+                    });
+
+                    updateProducts();
+                });
+            });
+
+            // Hide cards reliably even if card CSS declares display:flex/grid.
+            updateProducts();
+})();
+    </script>
+
+<script>
+function byxomChangeResellingPhoto(button) {
+    const card = button.closest('.product-card');
+    if (!card) return;
+
+    const mainPhoto = card.querySelector('.product-photo .reselling-main-photo');
+    if (!mainPhoto) return;
+
+    mainPhoto.src = button.dataset.src;
+    if (button.dataset.alt) mainPhoto.alt = button.dataset.alt;
+
+    card.querySelectorAll('.reselling-thumb').forEach(function (thumb) {
+        thumb.classList.remove('is-active');
+    });
+    button.classList.add('is-active');
+}
+</script>
+
+</body>
+</html>

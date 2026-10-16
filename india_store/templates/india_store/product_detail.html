@@ -1,0 +1,1534 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#160e2c">
+    <meta name="description" content="{{ product.name|escape }} at BYXOM. Explore product photos, details and current listed price.">
+    <title>{{ product.name|escape }} | BYXOM Diwali Edit</title>
+    <style>
+        :root {
+            --night: #170d2b;
+            --night2: #281243;
+            --plum: #40185e;
+            --gold: #f8ce72;
+            --gold2: #ffeab0;
+            --cream: #fffaf0;
+            --ink: #21152e;
+            --muted: #776b80;
+            --line: #eee5f2;
+            --pink: #ff719e;
+            --green: #087f58;
+            --shadow: 0 18px 60px rgba(41, 16, 59, .10);
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: #faf7fc;
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        button, input { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+        a { color: inherit; }
+        .festival-topline {
+            min-height: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 7px 12px;
+            text-align: center;
+            color: #fff4d1;
+            background: linear-gradient(90deg, #39134d, #792855, #39134d);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .festival-topline .spark { color: var(--gold); margin: 0 9px; }
+        .site-header {
+            position: relative;
+            z-index: 5;
+            color: white;
+            background:
+                radial-gradient(ellipse at 13% 0%, rgba(246, 192, 91, .13), transparent 38%),
+                linear-gradient(110deg, #170d2b, #28123e 64%, #351345);
+            border-bottom: 1px solid rgba(248, 206, 114, .22);
+        }
+        .header-inner {
+            width: min(1240px, calc(100% - 36px));
+            min-height: 78px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+        .brand {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .brand-name {
+            font-weight: 950;
+            font-size: 29px;
+            letter-spacing: 2px;
+            line-height: 1;
+            color: #fff;
+        }
+        .brand-name span { color: var(--gold); }
+        .brand-caption {
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #e6cde9;
+            font-weight: 700;
+        }
+        .header-note {
+            color: #f7e8ff;
+            font-size: 12px;
+            text-align: center;
+        }
+        .header-note strong {
+            display: block;
+            color: var(--gold2);
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .header-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 234, 176, .36);
+            border-radius: 999px;
+            padding: 10px 15px;
+            min-height: 39px;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 750;
+            transition: background .2s, border-color .2s, transform .2s;
+        }
+        .header-pill:hover { background: rgba(255,255,255,.10); border-color: var(--gold); transform: translateY(-1px); }
+        .header-pill.primary { color: #2c1740; background: var(--gold); border-color: var(--gold); }
+        .header-pill.primary:hover { background: var(--gold2); }
+        .diwali-banner {
+            position: relative;
+            overflow: hidden;
+            color: white;
+            background:
+                radial-gradient(circle at 83% 48%, rgba(255, 190, 70, .20), transparent 19%),
+                radial-gradient(circle at 90% 35%, rgba(255, 105, 150, .18), transparent 25%),
+                linear-gradient(105deg, #211036, #48194e 58%, #692348);
+            border-bottom: 1px solid rgba(248, 206, 114, .18);
+        }
+        .diwali-banner::before,
+        .diwali-banner::after {
+            content: "";
+            pointer-events: none;
+            position: absolute;
+            border: 1px solid rgba(255, 224, 153, .18);
+            border-radius: 50%;
+            width: 270px;
+            height: 270px;
+            right: 7%;
+            top: -140px;
+        }
+        .diwali-banner::after { width: 190px; height: 190px; right: 10%; top: -100px; }
+        .banner-inner {
+            width: min(1240px, calc(100% - 36px));
+            min-height: 94px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+            padding: 17px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .eyebrow {
+            color: var(--gold);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2.3px;
+            text-transform: uppercase;
+        }
+        .banner-title {
+            margin: 6px 0 0;
+            font-size: clamp(18px, 2.6vw, 27px);
+            line-height: 1.2;
+            letter-spacing: -.5px;
+        }
+        .banner-title span { color: var(--gold2); }
+        .banner-side {
+            color: #f1dced;
+            text-align: right;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        .banner-side strong { display: block; color: var(--gold2); font-size: 13px; }
+        .page-wrap { width: min(1240px, calc(100% - 36px)); margin: 0 auto; padding: 24px 0 60px; }
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 9px;
+            color: #8b7d95;
+            font-size: 12px;
+            margin: 0 0 20px;
+        }
+        .breadcrumb a { text-decoration: none; color: #604276; font-weight: 700; }
+        .breadcrumb a:hover { color: #b16a0b; }
+        .slash { color: #c8bbd0; }
+        .product-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+            gap: 0;
+            background: #fff;
+            border: 1px solid #eee5f1;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .gallery-panel {
+            min-width: 0;
+            padding: clamp(16px, 3vw, 30px);
+            background:
+                radial-gradient(ellipse at 50% 2%, rgba(255, 220, 147, .32), transparent 40%),
+                linear-gradient(150deg, #fffaf0, #fff 58%, #fbf1fc);
+            border-right: 1px solid #f2e9f1;
+        }
+        .gallery-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+        .gallery-label { color: #806a8c; font-size: 10px; font-weight: 900; letter-spacing: 1.6px; text-transform: uppercase; }
+        .festival-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            color: #713a11;
+            background: #ffedc4;
+            border: 1px solid #f7d994;
+            font-size: 10px;
+            font-weight: 850;
+            white-space: nowrap;
+        }
+        .main-photo-wrap {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 280px;
+            height: clamp(300px, 41vw, 485px);
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1px solid rgba(222, 201, 230, .65);
+            background:
+                radial-gradient(circle at 50% 44%, #fff 0, #fff 38%, #fff8e9 75%, #f8edf9 100%);
+        }
+        .main-photo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 12px;
+            cursor: zoom-in;
+            transition: transform .35s ease;
+        }
+        .main-photo:hover { transform: scale(1.035); }
+        .no-photo {
+            color: #887694;
+            text-align: center;
+            padding: 30px;
+            font-size: 13px;
+        }
+        .photo-zoom-hint {
+            position: absolute;
+            right: 13px;
+            bottom: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            color: #4d355e;
+            background: rgba(255,255,255,.91);
+            border: 1px solid #eaddef;
+            box-shadow: 0 4px 13px rgba(33, 21, 46, .08);
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 750;
+            pointer-events: none;
+        }
+        .thumbs { display: flex; gap: 11px; flex-wrap: wrap; padding-top: 14px; }
+        .detail-thumb {
+            width: 69px;
+            height: 69px;
+            padding: 4px;
+            cursor: pointer;
+            border: 1px solid #eaddec;
+            border-radius: 12px;
+            background: white;
+            overflow: hidden;
+            transition: .18s ease;
+        }
+        .detail-thumb:hover { transform: translateY(-2px); border-color: #bf9acb; }
+        .detail-thumb.active { border: 2px solid #7f3295; box-shadow: 0 0 0 3px rgba(127,50,149,.10); }
+        .detail-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 7px; }
+        .gallery-footnote { display: flex; align-items: center; gap: 7px; margin-top: 18px; color: #897b91; font-size: 10px; }
+        .gallery-footnote .gold-dot { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: #d79b30; }
+        .details-panel { padding: clamp(20px, 3.3vw, 38px); min-width: 0; }
+        .product-heading-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .category {
+            color: #87639a;
+            font-size: 10px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        h1 {
+            font-size: clamp(25px, 3vw, 37px);
+            line-height: 1.17;
+            letter-spacing: -1px;
+            margin: 10px 0 12px;
+            color: #271437;
+            overflow-wrap: anywhere;
+        }
+        .wishlist-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 39px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #ebdeef;
+            color: #69457a;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+            transition: .2s ease;
+        }
+        .wishlist-btn:hover { border-color: #df8eac; color: #b32659; }
+        .wishlist-btn.saved { color: #b32659; background: #fff0f5; border-color: #f4c5d6; }
+        .wishlist-heart { font-size: 17px; line-height: 1; }
+        .badge-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 11px 0 15px; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 5px;
+            padding: 6px 8px;
+            background: #f5edfa;
+            color: #71368b;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .5px;
+        }
+        .badge.sale { background: #fff0d2; color: #9a5206; }
+        .badge.green { background: #e8f8ef; color: #087443; }
+        .rating-note { display: flex; align-items: center; gap: 8px; color: #877a8d; font-size: 11px; margin: 12px 0 20px; }
+        .rating-note .stars { color: #d99a23; letter-spacing: 1px; font-size: 14px; }
+        .rating-note strong { color: #5d486b; }
+        .price-box {
+            padding: 17px 18px;
+            border: 1px solid #f1dbaa;
+            border-radius: 16px;
+            background: linear-gradient(110deg, #fff8e7, #fffaf4 63%, #fff4fa);
+            position: relative;
+            overflow: hidden;
+        }
+        .price-box::after {
+            content: "\2726";
+            position: absolute;
+            right: 16px;
+            top: 11px;
+            color: rgba(194, 133, 31, .20);
+            font-size: 45px;
+        }
+        .price-label { color: #8d6d3d; text-transform: uppercase; font-size: 9px; font-weight: 900; letter-spacing: 1.5px; }
+        .price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-top: 6px; position: relative; z-index: 1; }
+        .selling-price { color: #29143a; font-size: clamp(29px, 4vw, 39px); font-weight: 950; letter-spacing: -1px; }
+        .mrp { color: #978b99; text-decoration: line-through; font-size: 15px; }
+        .discount-pill { color: #087443; background: #e4f7eb; border: 1px solid #c9efd8; padding: 5px 8px; border-radius: 7px; font-size: 11px; font-weight: 900; }
+        .listed-price-note { font-size: 10px; color: #8c7e8e; margin-top: 4px; }
+        .description-block { padding: 20px 0 17px; border-bottom: 1px solid #f0e8f2; }
+        .section-kicker { color: #957da1; font-size: 9px; text-transform: uppercase; letter-spacing: 1.7px; font-weight: 900; }
+        .section-heading { color: #2d1a3d; font-size: 14px; font-weight: 900; margin: 7px 0 9px; }
+        .description { color: #74667e; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+        .availability-strip {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 13px;
+            border-radius: 12px;
+            background: #f0fbf5;
+            border: 1px solid #d8f2e2;
+            color: #216848;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+        .availability-icon {
+            display: inline-flex;
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            background: #27966b;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .availability-strip strong { display: block; font-size: 12px; margin-bottom: 2px; }
+        .purchase-area { padding: 20px 0 0; }
+        .purchase-label { color: #4f3a5f; font-size: 11px; font-weight: 850; margin-bottom: 10px; }
+        .buy-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; }
+        .quantity-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #8a7b91;
+            font-size: 9px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+        }
+        .quantity-input {
+            width: 100%;
+            min-height: 51px;
+            border-radius: 12px;
+            border: 1px solid #e5d9e9;
+            background: #fff;
+            color: #2d183e;
+            font-weight: 800;
+            font-size: 15px;
+            padding: 0 10px;
+            outline: none;
+        }
+        .quantity-input:focus { border-color: #a46ab4; box-shadow: 0 0 0 3px rgba(164,106,180,.13); }
+        .add-btn {
+            align-self: end;
+            min-height: 51px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 0;
+            border-radius: 12px;
+            padding: 13px 16px;
+            background: linear-gradient(105deg, #3d1755, #672b79 75%, #80356f);
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 900;
+            box-shadow: 0 8px 18px rgba(91, 35, 112, .18);
+            transition: transform .18s, box-shadow .18s, filter .18s;
+        }
+        .add-btn:hover { transform: translateY(-2px); box-shadow: 0 11px 24px rgba(91,35,112,.25); filter: brightness(1.08); }
+        .add-btn:active { transform: translateY(0); }
+        .share-row { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+        .outline-btn {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border: 1px solid #eadfee;
+            border-radius: 10px;
+            background: #fff;
+            color: #654a73;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 800;
+            transition: .18s;
+        }
+        .outline-btn:hover { border-color: #c39bce; background: #fcf7ff; }
+        .micro-trust {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 17px;
+            border-top: 1px solid #f0e8f2;
+        }
+        .micro-trust-item { color: #85788c; text-align: center; font-size: 9px; line-height: 1.5; }
+        .micro-trust-item .symbol { display: block; color: #8f5ba0; font-size: 17px; margin-bottom: 5px; }
+        .micro-trust-item strong { display: block; color: #4e3a5d; font-size: 10px; margin-bottom: 2px; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin: 20px 0 34px;
+        }
+        .info-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 16px;
+            background: white;
+            border: 1px solid #eee4f2;
+            border-radius: 15px;
+            box-shadow: 0 7px 22px rgba(41,16,59,.035);
+        }
+        .info-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            color: #7c438d;
+            background: #f5ebf9;
+            font-size: 17px;
+        }
+        .info-card strong { display: block; color: #392448; font-size: 11px; margin-bottom: 4px; }
+        .info-card span { display: block; color: #8c7d93; font-size: 10px; line-height: 1.45; }
+        .section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
+        .section-head .eyebrow { color: #9d762e; }
+        .section-head h2 { color: #29143a; font-size: clamp(21px, 3vw, 27px); letter-spacing: -.7px; margin: 6px 0 0; }
+        .section-head p { color: #83738d; font-size: 11px; margin: 6px 0 0; }
+        .related-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+        .related-card {
+            min-width: 0;
+            text-decoration: none;
+            overflow: hidden;
+            border: 1px solid #eee4f2;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 7px 24px rgba(41,16,59,.035);
+            transition: transform .2s, box-shadow .2s, border-color .2s;
+        }
+        .related-card:hover { transform: translateY(-4px); box-shadow: 0 14px 28px rgba(41,16,59,.10); border-color: #d7b5df; }
+        .related-photo { height: 170px; display: grid; place-items: center; background: linear-gradient(140deg,#fff7e4,#faf2fb); padding: 12px; }
+        .related-photo img { width: 100%; height: 100%; object-fit: contain; }
+        .related-placeholder { color: #907e98; font-size: 10px; }
+        .related-body { padding: 13px; }
+        .related-cat { color: #9b7eaa; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 850; }
+        .related-title { margin: 6px 0 9px; color: #382347; font-size: 12px; line-height: 1.45; font-weight: 850; overflow-wrap: anywhere; }
+        .related-price { color: #2d183f; font-size: 15px; font-weight: 950; }
+        .related-mrp { color: #96889b; font-size: 10px; text-decoration: line-through; margin-left: 5px; }
+        .related-open { color: #815394; font-size: 10px; font-weight: 850; margin-top: 11px; }
+        .empty-related { color: #85748f; font-size: 12px; padding: 20px; border: 1px dashed #d9c7e1; border-radius: 13px; background: #fff; }
+        .last-festive-note {
+            margin-top: 36px;
+            padding: 24px;
+            text-align: center;
+            color: #f9e9c2;
+            background:
+                radial-gradient(circle at 10% 50%, rgba(255, 214, 112, .15), transparent 25%),
+                linear-gradient(110deg, #1c1030, #451a51 60%, #622346);
+            border: 1px solid rgba(248,206,114,.25);
+            border-radius: 18px;
+        }
+        .last-festive-note .ornament { color: var(--gold); font-size: 18px; letter-spacing: 10px; }
+        .last-festive-note h2 { margin: 9px 0 7px; color: #fff; font-size: 20px; }
+        .last-festive-note p { color: #e8d6ec; font-size: 11px; line-height: 1.65; margin: 0; }
+        .site-footer { padding: 23px 16px; text-align: center; color: #9b8ba4; font-size: 10px; line-height: 1.8; }
+        .site-footer a { color: #755387; text-decoration: none; font-weight: 800; }
+        .mobile-buybar { display: none; }
+        .toast {
+            position: fixed;
+            z-index: 40;
+            bottom: 22px;
+            left: 50%;
+            transform: translate(-50%, 15px);
+            opacity: 0;
+            pointer-events: none;
+            max-width: calc(100% - 28px);
+            padding: 12px 17px;
+            color: white;
+            background: #271237;
+            border: 1px solid rgba(248,206,114,.4);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+            font-size: 12px;
+            font-weight: 750;
+            transition: .22s;
+        }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(16, 7, 26, .92);
+            cursor: zoom-out;
+        }
+        .zoom-modal.open { display: flex; }
+        .zoom-modal img { max-width: min(100%, 1050px); max-height: 88vh; object-fit: contain; background: white; border-radius: 12px; cursor: default; }
+        .zoom-close {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            color: white;
+            border: 1px solid rgba(255,255,255,.4);
+            border-radius: 50%;
+            background: rgba(255,255,255,.1);
+            cursor: pointer;
+            font-size: 23px;
+        }
+        @media (max-width: 900px) {
+            .product-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+            .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .related-photo { height: 155px; }
+            .header-note { display: none; }
+            .micro-trust { gap: 4px; }
+        }
+        @media (max-width: 640px) {
+            body { padding-bottom: 70px; }
+            .festival-topline { font-size: 9px; letter-spacing: .8px; min-height: 31px; }
+            .header-inner { width: calc(100% - 28px); min-height: 66px; gap: 9px; }
+            .brand-name { font-size: 24px; }
+            .brand-caption { font-size: 8px; letter-spacing: 2px; }
+            .header-actions { gap: 6px; }
+            .header-pill { min-height: 35px; padding: 8px 10px; font-size: 10px; }
+            .diwali-banner::before { right: -90px; }
+            .diwali-banner::after { right: -55px; }
+            .banner-inner { width: calc(100% - 28px); min-height: 82px; padding: 14px 0; }
+            .eyebrow { font-size: 8px; letter-spacing: 1.4px; }
+            .banner-title { font-size: 19px; max-width: 250px; }
+            .banner-side { max-width: 110px; font-size: 9px; }
+            .banner-side strong { font-size: 10px; }
+            .page-wrap { width: calc(100% - 22px); padding-top: 16px; }
+            .breadcrumb { font-size: 10px; margin-bottom: 13px; }
+            .product-layout { grid-template-columns: 1fr; border-radius: 17px; }
+            .gallery-panel { padding: 14px; border-right: 0; border-bottom: 1px solid #f2e9f1; }
+            .main-photo-wrap { height: min(92vw, 370px); min-height: 255px; border-radius: 13px; }
+            .detail-thumb { width: 58px; height: 58px; }
+            .gallery-footnote { margin-top: 12px; font-size: 9px; }
+            .details-panel { padding: 19px 16px 18px; }
+            h1 { font-size: 27px; margin: 8px 0; }
+            .wishlist-btn { min-height: 35px; padding: 0 9px; font-size: 10px; }
+            .rating-note { margin: 10px 0 16px; }
+            .selling-price { font-size: 31px; }
+            .price-box { padding: 14px; }
+            .description-block { padding: 17px 0 14px; }
+            .buy-row { grid-template-columns: 82px minmax(0, 1fr); gap: 8px; }
+            .add-btn { font-size: 12px; padding: 12px 8px; }
+            .micro-trust { margin-top: 17px; }
+            .micro-trust-item { font-size: 8px; }
+            .micro-trust-item strong { font-size: 9px; }
+            .info-grid { grid-template-columns: 1fr; gap: 8px; margin: 14px 0 30px; }
+            .info-card { padding: 12px; }
+            .related-grid { gap: 10px; }
+            .related-photo { height: 140px; padding: 8px; }
+            .related-body { padding: 10px; }
+            .related-title { font-size: 11px; }
+            .related-price { font-size: 13px; }
+            .section-head { align-items: start; }
+            .section-head h2 { font-size: 22px; }
+            .last-festive-note { padding: 21px 14px; margin-top: 28px; }
+            .last-festive-note h2 { font-size: 18px; }
+            .mobile-buybar {
+                position: fixed;
+                z-index: 30;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 10px 13px calc(10px + env(safe-area-inset-bottom));
+                background: rgba(255,255,255,.97);
+                border-top: 1px solid #eee3f2;
+                box-shadow: 0 -5px 24px rgba(37,14,53,.10);
+                backdrop-filter: blur(12px);
+            }
+            .mobile-price { min-width: 0; flex: 1; }
+            .mobile-price small { display: block; color: #8b7a91; font-size: 9px; margin-bottom: 2px; }
+            .mobile-price strong { display: block; color: #29143a; font-size: 18px; font-weight: 950; }
+            .mobile-add {
+                flex: 1.2;
+                min-height: 43px;
+                border: 0;
+                border-radius: 10px;
+                color: white;
+                background: linear-gradient(105deg, #3d1755, #78306f);
+                font-size: 12px;
+                font-weight: 900;
+                cursor: pointer;
+            }
+            .toast { bottom: 82px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+        }
+
+        .reviews-section {
+            margin: 28px 0;
+            padding: clamp(18px, 3vw, 30px);
+            background: #fff;
+            border: 1px solid #eee2f2;
+            border-radius: 20px;
+            box-shadow: 0 8px 26px rgba(41,16,59,.045);
+        }
+        .reviews-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #f0e8f2;
+            padding-bottom: 17px;
+            margin-bottom: 18px;
+        }
+        .reviews-head h2 { margin: 5px 0 0; color: #29143a; font-size: 23px; }
+        .review-summary { color: #745d80; font-size: 12px; }
+        .review-summary strong { color: #321b43; font-size: 22px; }
+        .review-card {
+            padding: 16px 0;
+            border-bottom: 1px solid #f2eaf4;
+        }
+        .review-card:last-child { border-bottom: 0; }
+        .review-card h3 { margin: 8px 0; color: #372247; font-size: 15px; }
+        .review-stars { color: #bc8120; font-weight: 900; letter-spacing: 1px; }
+        .review-meta { margin-top: 7px; color: #887a91; font-size: 10px; }
+        .review-body { color: #756781; font-size: 13px; line-height: 1.75; overflow-wrap: anywhere; }
+        .review-form {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 14px;
+            background: #fcf8ff;
+            border: 1px solid #ecdfef;
+        }
+        .review-form h3 { margin: 0 0 14px; font-size: 16px; }
+        .review-form label { display: block; margin: 11px 0 6px; color: #624674; font-size: 11px; font-weight: 850; }
+        .review-form input, .review-form select, .review-form textarea {
+            width: 100%; max-width: 100%; padding: 11px;
+            border: 1px solid #e1d4e8; border-radius: 9px;
+            background: white; color: #281738; font: inherit;
+        }
+        .review-form textarea { min-height: 110px; resize: vertical; }
+        .review-note { color: #887a91; font-size: 11px; line-height: 1.6; }
+        .review-message {
+            padding: 10px 12px; margin-bottom: 10px; border-radius: 8px;
+            background: #fff3d4; border: 1px solid #f1d99b; color: #6b4a13;
+            font-size: 12px;
+        }
+</style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* BYXOM-PRODUCT-COIN-REWARD-V1 */
+.reward-coin-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin: 16px 0 6px;
+    padding: 16px;
+    border: 1px solid #ead6a6;
+    border-radius: 15px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(229,183,91,.16), transparent 42%),
+        linear-gradient(135deg, #fffdf5, #fff8e8);
+}
+.reward-coin-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #f3e5bd;
+    color: #805817;
+    font-size: 19px;
+}
+.reward-coin-content { min-width: 0; }
+.reward-coin-kicker {
+    color: #987126;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+}
+.reward-coin-title {
+    margin-top: 4px;
+    color: #392448;
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.5;
+}
+.reward-coin-title strong { color: #8d1725; }
+.reward-coin-content p {
+    margin: 5px 0 0;
+    color: #796a59;
+    font-size: 11px;
+    line-height: 1.6;
+}
+.new-listing-label {
+    display: inline-block;
+    margin-right: 7px;
+    color: #826021;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .6px;
+}
+@media (max-width: 640px) {
+    .reward-coin-card { gap: 10px; padding: 13px; }
+    .reward-coin-icon { flex-basis: 34px; width: 34px; height: 34px; }
+    .reward-coin-title { font-size: 13px; }
+}
+
+</style>
+
+</head>
+<body>
+    <div class="festival-topline">
+        <span class="spark">&#10022;</span> THE DIWALI EDIT <span class="spark">&#10022;</span>
+        A little more sparkle, a lot more BYXOM
+        <span class="spark">&#10022;</span>
+    </div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="{% url 'india_store:home' %}" aria-label="BYXOM All India Shopping home">
+                <span class="brand-name">BY<span>X</span>OM</span>
+                <span class="brand-caption">ALL INDIA SHOPPING</span>
+            </a>
+            <div class="header-note">
+                <strong>Celebrate your way</strong>
+                Discover your festive favourites
+            </div>
+            <nav class="header-actions" aria-label="Shopping navigation">
+                <a class="header-pill" href="{% url 'india_store:home' %}">&#8592; Shop</a>
+                <a class="header-pill primary" href="{% url 'india_store:cart' %}">Bag / Cart &#8599;</a>
+            </nav>
+        </div>
+    <a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+
+    <section class="diwali-banner" aria-label="BYXOM Diwali collection">
+        <div class="banner-inner">
+            <div>
+                <div class="eyebrow">&#10022; Festival of lights &#10022; BYXOM</div>
+                <h2 class="banner-title">Make this Diwali <span>feel special.</span></h2>
+            </div>
+            <div class="banner-side">
+                <strong>THE FESTIVE EDIT</strong>
+                Thoughtful finds. Your style.<br>One brighter celebration.
+            </div>
+        </div>
+    </section>
+
+    <main class="page-wrap">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'india_store:home' %}">All India Shopping</a>
+            <span class="slash">/</span>
+            <span>Festive finds</span>
+            <span class="slash">/</span>
+            <span>{{ product.name|escape }}</span>
+        </nav>
+
+        <section class="product-layout" aria-label="Product details">
+            <div class="gallery-panel">
+                <div class="gallery-topline">
+                    <span class="gallery-label">Product gallery</span>
+                    <span class="festival-chip">&#10022; Diwali Edit</span>
+                </div>
+
+                <div class="main-photo-wrap">
+                    {% if product.image %}
+                        <img id="mainProductImage" class="main-photo"
+                             src="{{ product.image.url }}" alt="{{ product.name|escape }}"
+                             fetchpriority="high">
+                        <span class="photo-zoom-hint">&#8981; Click to zoom</span>
+                    {% elif product.image_2 %}
+                        <img id="mainProductImage" class="main-photo"
+                             src="{{ product.image_2.url }}" alt="{{ product.name|escape }}"
+                             fetchpriority="high">
+                        <span class="photo-zoom-hint">&#8981; Click to zoom</span>
+                    {% elif product.image_3 %}
+                        <img id="mainProductImage" class="main-photo"
+                             src="{{ product.image_3.url }}" alt="{{ product.name|escape }}"
+                             fetchpriority="high">
+                        <span class="photo-zoom-hint">&#8981; Click to zoom</span>
+                    {% else %}
+                        <div class="no-photo">Product photos are being prepared.</div>
+                    {% endif %}
+                </div>
+
+                <div class="thumbs" aria-label="Choose product photo">
+                    {% if product.image %}
+                        <button type="button" class="detail-thumb active"
+                                data-product-src="{{ product.image.url }}"
+                                data-product-alt="{{ product.name|escape }}"
+                                aria-label="Show photo one">
+                            <img src="{{ product.image.url }}" alt="" loading="lazy">
+                        </button>
+                    {% endif %}
+                    {% if product.image_2 %}
+                        <button type="button"
+                                class="detail-thumb{% if not product.image %} active{% endif %}"
+                                data-product-src="{{ product.image_2.url }}"
+                                data-product-alt="{{ product.name|escape }}"
+                                aria-label="Show photo two">
+                            <img src="{{ product.image_2.url }}" alt="" loading="lazy">
+                        </button>
+                    {% endif %}
+                    {% if product.image_3 %}
+                        <button type="button"
+                                class="detail-thumb{% if not product.image and not product.image_2 %} active{% endif %}"
+                                data-product-src="{{ product.image_3.url }}"
+                                data-product-alt="{{ product.name|escape }}"
+                                aria-label="Show photo three">
+                            <img src="{{ product.image_3.url }}" alt="" loading="lazy">
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="gallery-footnote">
+                    <span class="gold-dot"></span>
+                    Product imagery provided for this listing
+                </div>
+            </div>
+
+            <div class="details-panel">
+                <div class="product-heading-row">
+                    <div>
+                        <div class="category">
+                            {% if product.category %}
+                                {{ product.category.name|escape }}
+                            {% else %}
+                                BYXOM FESTIVE FIND
+                            {% endif %}
+                        </div>
+                        <h1>{{ product.name|escape }}</h1>
+                    </div>
+                    <form method="post" action="{% url 'india_store:wishlist_toggle' product.id %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="wishlist-btn{% if is_wishlisted %} saved{% endif %}"
+                                aria-pressed="{{ is_wishlisted|yesno:'true,false' }}"
+                                aria-label="{% if is_wishlisted %}Remove from wishlist{% else %}Save to wishlist{% endif %}">
+                            <span class="wishlist-heart">{% if is_wishlisted %}&#9829;{% else %}&#9825;{% endif %}</span>
+                            <span>{% if is_wishlisted %}Saved{% else %}Wishlist{% endif %}</span>
+                        </button>
+                        <input type="hidden" name="next" value="detail">
+                    </form>
+                </div>
+
+                <div class="badge-row">
+                    <span class="badge">BYXOM PICK</span>
+                    {% if product.sale_badge_is_active and product.sale_badge_text %}
+                        <span class="badge sale">{{ product.sale_badge_text|escape }}</span>
+                    {% endif %}
+                    {% if product.show_new_arrival_badge %}<span class="badge">NEW ARRIVAL</span>{% endif %}
+                    {% if product.show_bestseller_badge %}<span class="badge">BESTSELLER</span>{% endif %}
+                    {% if product.show_trending_badge %}<span class="badge">TRENDING</span>{% endif %}
+                    {% if product.is_featured %}<span class="badge">FEATURED</span>{% endif %}
+                </div>
+
+                <div class="rating-note">
+                    {% if review_count %}
+                        <span class="stars" aria-hidden="true">&#9733;</span>
+                        <span>
+                            <strong>{{ average_rating|floatformat:1 }} / 5</strong>
+                            &#183; {{ review_count }} approved review{{ review_count|pluralize }}
+                        </span>
+                    {% else %}
+                        <span class="new-listing-label">NEW LISTING</span>
+                        <span><strong>No approved reviews yet</strong></span>
+                    {% endif %}
+                </div>
+
+                <div class="price-box">
+                    <div class="price-label">Current listed price</div>
+                    <div class="price-row">
+                        <span class="selling-price">&#8377;{{ product.selling_price|floatformat:2 }}</span>
+                        {% if product.mrp and product.mrp > product.selling_price %}
+                            <span class="mrp">&#8377;{{ product.mrp|floatformat:2 }}</span>
+                            <span class="discount-pill">{{ product.discount_percent }}% OFF</span>
+                        {% endif %}
+                    </div>
+                    <div class="listed-price-note">
+                        {% if product.mrp and product.mrp > product.selling_price %}
+                            Discount calculated from the listed MRP.
+                        {% else %}
+                            Price shown for this product listing.
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if coins_enabled %}
+                    <section class="reward-coin-card" aria-label="BYXOM coin rewards">
+                        <div class="reward-coin-icon" aria-hidden="true">&#10022;</div>
+                        <div class="reward-coin-content">
+                            <div class="reward-coin-kicker">BYXOM COIN REWARDS</div>
+                            {% if product.reward_coins > 0 %}
+                                <div class="reward-coin-title">
+                                    Earn <strong><span id="estimatedRewardCoins">{{ product.reward_coins }}</span> coins</strong>
+                                    after delivery
+                                </div>
+                                <p>Estimated for the selected quantity. Coins are credited only after the order is successfully delivered.</p>
+                            {% else %}
+                                <div class="reward-coin-title">No coins on this product right now</div>
+                                <p>Reward offers may vary by product and current BYXOM settings.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <div class="description-block">
+                    <div class="section-kicker">A closer look</div>
+                    <div class="section-heading">Product description</div>
+                    <div class="description">
+                        {% if product.description %}
+                            {{ product.description|linebreaksbr }}
+                        {% else %}
+                            A BYXOM selection. More product details will be added as they become available.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="availability-strip">
+                    <span class="availability-icon">&#10003;</span>
+                    <span>
+                        <strong>Source marked as available</strong>
+                        Availability is based on the current listing. Review your order details at checkout before placing the order.
+                    </span>
+                </div>
+
+                <div class="purchase-area">
+                    <div class="purchase-label">Make it yours</div>
+                    <form id="addToCartForm" method="post"
+                          action="{% url 'india_store:cart_add' product.id %}">
+                        {% csrf_token %}
+                        <div class="buy-row">
+                            <label class="quantity-wrap" for="productQuantity">
+                                Quantity
+                                <input class="quantity-input" id="productQuantity"
+                                       type="number" name="quantity" min="1" max="99"
+                                       value="1" inputmode="numeric" required>
+                            </label>
+                            <button class="add-btn" type="submit">
+                                <span aria-hidden="true">&#43;</span> Add to Cart
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="share-row">
+                        <button type="button" class="outline-btn" id="shareButton">
+                            <span aria-hidden="true">&#8599;</span> Share product
+                        </button>
+                        <button type="button" class="outline-btn" id="copyLinkButton">
+                            <span aria-hidden="true">&#9635;</span> Copy link
+                        </button>
+                    </div>
+
+                    <div class="micro-trust">
+                        <div class="micro-trust-item">
+                            <span class="symbol" aria-hidden="true">&#9672;</span>
+                            <strong>Clear pricing</strong>
+                            Listed price shown upfront
+                        </div>
+                        <div class="micro-trust-item">
+                            <span class="symbol" aria-hidden="true">&#9639;</span>
+                            <strong>Photo gallery</strong>
+                            View available product photos
+                        </div>
+                        <div class="micro-trust-item">
+                            <span class="symbol" aria-hidden="true">&#9825;</span>
+                            <strong>Your shortlist</strong>
+                            Save favourites to your account
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-grid" aria-label="Shopping information">
+            <div class="info-card">
+                <div class="info-icon" aria-hidden="true">&#8377;</div>
+                <div>
+                    <strong>Price clarity</strong>
+                    <span>See current price and listed discount before adding to your cart.</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon" aria-hidden="true">&#9825;</div>
+                <div>
+                    <strong>Save for later</strong>
+                    <span>Save favourites to your account when signed in.</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-icon" aria-hidden="true">&#9635;</div>
+                <div>
+                    <strong>Order review</strong>
+                    <span>Review cart and checkout details before confirming your order.</span>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="reviews-section" id="customer-reviews" aria-labelledby="reviewsHeading">
+            <div class="reviews-head">
+                <div>
+                    <div class="eyebrow">Real customer feedback</div>
+                    <h2 id="reviewsHeading">Ratings &amp; Reviews</h2>
+                </div>
+                <div class="review-summary">
+                    <strong>{{ average_rating|floatformat:1 }}</strong> / 5
+                    <div>{{ review_count }} approved review{{ review_count|pluralize }}</div>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="review-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% for review in reviews %}
+                <article class="review-card">
+                    <div class="review-stars" aria-label="{{ review.rating }} out of 5 stars">&#9733; {{ review.rating }} / 5
+                    </div>
+                    <h3>{{ review.title|escape }}</h3>
+                    <div class="review-body">{{ review.body|linebreaksbr }}</div>
+                    <div class="review-meta">
+                        Verified purchase &#183; {{ review.created_at|date:"d M Y" }}
+                    </div>
+                </article>
+            {% empty %}
+                <p class="review-note">No approved reviews yet. Verified customer feedback will appear here after moderation.</p>
+            {% endfor %}
+
+            {% if can_review %}
+                <form class="review-form" method="post"
+                      action="{% url 'india_store:review_add' product.id %}">
+                    {% csrf_token %}
+                    <h3>{% if user_review %}Update your review{% else %}Share your experience{% endif %}</h3>
+                    <p class="review-note">Only customers with a delivered order can submit a review. Updated reviews go through approval again.</p>
+
+                    <label for="reviewRating">Your rating</label>
+                    <select id="reviewRating" name="rating" required>
+                        <option value="">Choose stars</option>
+                        <option value="5"{% if user_review.rating == 5 %} selected{% endif %}>&#9733;&#9733;&#9733;&#9733;&#9733; &#8212; Excellent</option>
+                        <option value="4"{% if user_review.rating == 4 %} selected{% endif %}>&#9733;&#9733;&#9733;&#9733;&#9734; &#8212; Very good</option>
+                        <option value="3"{% if user_review.rating == 3 %} selected{% endif %}>&#9733;&#9733;&#9733;&#9734;&#9734; &#8212; Good</option>
+                        <option value="2"{% if user_review.rating == 2 %} selected{% endif %}>&#9733;&#9733;&#9734;&#9734;&#9734; &#8212; Fair</option>
+                        <option value="1"{% if user_review.rating == 1 %} selected{% endif %}>&#9733;&#9734;&#9734;&#9734;&#9734; &#8212; Poor</option>
+                    </select>
+
+                    <label for="reviewTitle">Review title</label>
+                    <input id="reviewTitle" name="title" type="text" maxlength="120"
+                           value="{% if user_review %}{{ user_review.title|escape }}{% endif %}"
+                           required placeholder="Summarise your experience">
+
+                    <label for="reviewBody">Your review</label>
+                    <textarea id="reviewBody" name="body" minlength="10" maxlength="3000"
+                              required placeholder="What did you like or dislike?">{% if user_review %}{{ user_review.body|escape }}{% endif %}</textarea>
+
+                    <button class="add-btn" type="submit" style="margin-top:13px;">
+                        Submit for approval
+                    </button>
+                </form>
+            {% elif is_authenticated %}
+                <p class="review-note">You can submit a verified review after your All India order is marked Delivered.</p>
+            {% else %}
+                <p class="review-note">To submit a verified review, sign in with the account used for a delivered All India order.</p>
+            {% endif %}
+        </section>
+
+<section class="related-section" aria-labelledby="relatedHeading">
+            <div class="section-head">
+                <div>
+                    <div class="eyebrow">A little more to explore</div>
+                    <h2 id="relatedHeading">More BYXOM finds</h2>
+                    <p>Discover other currently listed products from the collection.</p>
+                </div>
+                <a class="header-pill" style="color:#623c74;border-color:#dfcee6;background:white;"
+                   href="{% url 'india_store:home' %}">View all products &#8594;</a>
+            </div>
+
+            <div class="related-grid">
+                {% for related in related_products %}
+                    <a class="related-card" href="{% url 'india_store:product_detail' related.id %}">
+                        <div class="related-photo">
+                            {% if related.image %}
+                                <img src="{{ related.image.url }}" alt="{{ related.name|escape }}" loading="lazy">
+                            {% elif related.image_2 %}
+                                <img src="{{ related.image_2.url }}" alt="{{ related.name|escape }}" loading="lazy">
+                            {% elif related.image_3 %}
+                                <img src="{{ related.image_3.url }}" alt="{{ related.name|escape }}" loading="lazy">
+                            {% else %}
+                                <span class="related-placeholder">Photo coming soon</span>
+                            {% endif %}
+                        </div>
+                        <div class="related-body">
+                            <div class="related-cat">
+                                {% if related.category %}{{ related.category.name|escape }}{% else %}BYXOM PICK{% endif %}
+                            </div>
+                            <div class="related-title">{{ related.name|escape }}</div>
+                            <div>
+                                <span class="related-price">&#8377;{{ related.selling_price|floatformat:2 }}</span>
+                                {% if related.mrp and related.mrp > related.selling_price %}
+                                    <span class="related-mrp">&#8377;{{ related.mrp|floatformat:2 }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="related-open">View product &#8599;</div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="empty-related">More products will appear here when additional listings are active and available.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="last-festive-note">
+            <div class="ornament" aria-hidden="true">&#10022; &#9671; &#10022;</div>
+            <h2>A brighter kind of shopping.</h2>
+            <p>Find your festive favourite with BYXOM.<br>
+               Add it to your cart, review your order, and shop at your own pace.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a href="{% url 'india_store:home' %}">BYXOM All India Shopping</a>
+        <span>&#183; The Diwali Edit</span><br>
+        Product availability, prices and discounts are based on the current listing.
+    </footer>
+
+    <div class="mobile-buybar" aria-label="Quick add to cart">
+        <div class="mobile-price">
+            <small>Current listed price</small>
+            <strong>&#8377;{{ product.selling_price|floatformat:2 }}</strong>
+        </div>
+        <button type="button" class="mobile-add" id="mobileAddButton">&#43; Add to Cart</button>
+    </div>
+
+    <div class="zoom-modal" id="photoZoomModal" role="dialog" aria-modal="true" aria-label="Zoomed product image">
+        <button type="button" class="zoom-close" id="closeZoomButton" aria-label="Close image zoom">&#215;</button>
+        <img id="zoomedPhoto" src="" alt="">
+    </div>
+    <div class="toast" id="pageToast" role="status" aria-live="polite"></div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            const productId = "{{ product.pk }}";
+            const mainPhoto = document.getElementById("mainProductImage");
+            const wishlistButton = document.getElementById("wishlistButton");
+            const wishlistHeart = document.getElementById("wishlistHeart");
+            const wishlistText = document.getElementById("wishlistText");
+            const toast = document.getElementById("pageToast");
+            const zoomModal = document.getElementById("photoZoomModal");
+            const zoomedPhoto = document.getElementById("zoomedPhoto");
+            let toastTimer;
+
+            function showToast(message) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add("show");
+                window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(function () {
+                    toast.classList.remove("show");
+                }, 2400);
+            }
+
+            document.querySelectorAll("[data-product-src]").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    if (!mainPhoto) return;
+                    mainPhoto.src = button.dataset.productSrc;
+                    mainPhoto.alt = button.dataset.productAlt || "";
+                    document.querySelectorAll("[data-product-src]").forEach(function (thumb) {
+                        thumb.classList.remove("active");
+                    });
+                    button.classList.add("active");
+                });
+            });
+
+            function openZoom() {
+                if (!mainPhoto || !mainPhoto.src || !zoomModal || !zoomedPhoto) return;
+                zoomedPhoto.src = mainPhoto.src;
+                zoomedPhoto.alt = mainPhoto.alt;
+                zoomModal.classList.add("open");
+                document.body.style.overflow = "hidden";
+                document.getElementById("closeZoomButton").focus();
+            }
+
+            function closeZoom() {
+                if (!zoomModal) return;
+                zoomModal.classList.remove("open");
+                document.body.style.overflow = "";
+            }
+
+            if (mainPhoto) {
+                mainPhoto.addEventListener("click", openZoom);
+                mainPhoto.tabIndex = 0;
+                mainPhoto.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openZoom();
+                    }
+                });
+            }
+            document.getElementById("closeZoomButton").addEventListener("click", closeZoom);
+            zoomModal.addEventListener("click", function (event) {
+                if (event.target === zoomModal) closeZoom();
+            });
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") closeZoom();
+            });
+
+            const productName = "{{ product.name|escapejs }}";
+            const productUrl = window.location.href;
+            const shareButton = document.getElementById("shareButton");
+            const copyButton = document.getElementById("copyLinkButton");
+
+            if (shareButton) {
+                shareButton.addEventListener("click", async function () {
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({ title: productName + " | BYXOM", text: "Take a look at this BYXOM product.", url: productUrl });
+                        } catch (error) {
+                            if (error && error.name !== "AbortError") showToast("Sharing was not available.");
+                        }
+                    } else {
+                        try {
+                            await navigator.clipboard.writeText(productUrl);
+                            showToast("Product link copied. Share it with friends!");
+                        } catch (error) {
+                            window.prompt("Copy this product link:", productUrl);
+                        }
+                    }
+                });
+            }
+
+            if (copyButton) {
+                copyButton.addEventListener("click", async function () {
+                    try {
+                        await navigator.clipboard.writeText(productUrl);
+                        showToast("Product link copied!");
+                    } catch (error) {
+                        window.prompt("Copy this product link:", productUrl);
+                    }
+                });
+            }
+
+            const mobileAddButton = document.getElementById("mobileAddButton");
+            const addToCartForm = document.getElementById("addToCartForm");
+            if (mobileAddButton && addToCartForm) {
+                mobileAddButton.addEventListener("click", function () {
+                    const quantity = document.getElementById("productQuantity");
+                    if (quantity && !quantity.reportValidity()) return;
+                    addToCartForm.requestSubmit();
+                });
+            }
+        })();
+    </script>
+
+<script id="byxom-coin-estimate">
+(function () {
+    "use strict";
+    var quantity = document.getElementById("productQuantity");
+    var estimate = document.getElementById("estimatedRewardCoins");
+    if (!quantity || !estimate) return;
+
+    var coinsPerUnit = Number("{{ product.reward_coins|default:0 }}");
+    function updateEstimate() {
+        var qty = Number.parseInt(quantity.value, 10);
+        if (!Number.isFinite(qty) || qty < 1) qty = 1;
+        estimate.textContent = String(Math.max(0, coinsPerUnit) * qty);
+    }
+    quantity.addEventListener("input", updateEstimate);
+    quantity.addEventListener("change", updateEstimate);
+    updateEstimate();
+})();
+</script>
+
+</body>
+</html>

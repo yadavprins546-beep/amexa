@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 
 <!DOCTYPE html>
 
@@ -10,7 +10,7 @@
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>AMEXA Delivery Partner</title>
+<title>BYXOM Delivery Partner</title>
 
 <style>
 
@@ -64,7 +64,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;ba
 </style>
 
 <style>
-/* AMEXA DIGITAL DASHBOARD — polished layout */
+/* BYXOM DIGITAL DASHBOARD — polished layout */
 html{scroll-behavior:smooth}
 body{font-size:14px;line-height:1.5}
 .layout{grid-template-columns:260px minmax(0,1fr)}
@@ -242,7 +242,7 @@ iframe{
 
 <aside class="side">
 
- <div class="brand">AMEXA<small>DELIVERY PARTNER</small></div>
+ <div class="brand">BYXOM<small>DELIVERY PARTNER</small></div>
 
  <nav class="nav">
 
@@ -288,7 +288,7 @@ iframe{
 
 <main class="main" id="dashboard">
 
- <div class="digital-head"><span>AMEXA · DELIVERY CONTROL CENTER</span><span class="system-live">SYSTEM LIVE</span></div>
+ <div class="digital-head"><span>BYXOM · DELIVERY CONTROL CENTER</span><span class="system-live">SYSTEM LIVE</span></div>
 
  <div class="top">
 
@@ -350,7 +350,7 @@ iframe{
 
  <section class="banners" id="offers">
 
-  <div class="banner festival"><h3>🎉 Festival Dhamaka</h3><p>Complete more deliveries during festival rush and unlock extra AMEXA earning opportunities.</p><strong>Extra Rewards</strong><span class="orb">🎁</span></div>
+  <div class="banner festival"><h3>🎉 Festival Dhamaka</h3><p>Complete more deliveries during festival rush and unlock extra BYXOM earning opportunities.</p><strong>Extra Rewards</strong><span class="orb">🎁</span></div>
 
   <div class="banner weekend"><h3>⚡ Weekend Booster</h3><p>Stay online during peak hours, accept quickly and improve your delivery performance.</p><strong>Earn More</strong><span class="orb">🪙</span></div>
 
@@ -365,12 +365,12 @@ iframe{
  data-order-status="{{ assignment.order.status }}"
  data-order="{{ assignment.order.order_number }}"
  data-started-ms="{{ assignment.timer_started_at_ms|default:'0' }}"
- data-shop="{{ assignment.order.shop.name|default:'AMEXA Store'|escape }}"
+ data-shop="{{ assignment.order.shop.name|default:'BYXOM Store'|escape }}"
  data-pickup="{{ assignment.order.shop.address|default:''|escape }}"
  data-amount="{{ assignment.order.total_amount }}"
  data-payment="{{ assignment.order.payment_method }}">
 
-  <div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">{{ assignment.status }}</span></div>
+  <div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"BYXOM Store" }}</div></div><span class="badge">{{ assignment.status }}</span></div>
 
   <div class="details">
 
@@ -514,7 +514,7 @@ iframe{
 
  {% for assignment in completed_assignments %}
 
- <div class="card"><div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"AMEXA Store" }}</div></div><span class="badge">Delivered ✓</span></div></div>
+ <div class="card"><div class="order-top"><div><div class="order-no">#{{ assignment.order.order_number }}</div><div class="shop">{{ assignment.order.shop.name|default:"BYXOM Store" }}</div></div><span class="badge">Delivered ✓</span></div></div>
 
  {% empty %}<div class="panel">No completed deliveries yet.</div>{% endfor %}
 
@@ -537,7 +537,7 @@ iframe{
         <button class="new-order-accept" id="newOrderAccept" type="button">✓ ACCEPT DELIVERY</button>
         <button class="new-order-reject" id="newOrderReject" type="button">✕ REJECT</button>
       </div>
-      <div class="new-order-hint">Accept karte hi existing AMEXA pickup/navigation flow continue hoga.</div>
+      <div class="new-order-hint">Accept karte hi existing BYXOM pickup/navigation flow continue hoga.</div>
     </div>
   </div>
 </div>
@@ -578,7 +578,7 @@ iframe{
    if(!card||!overlay)return;
    activeAlertCard=card;
    overlayNo.textContent="#"+(card.dataset.order||"--");
-   overlayShop.textContent=card.dataset.shop||"AMEXA Store";
+   overlayShop.textContent=card.dataset.shop||"BYXOM Store";
    overlayPickup.textContent=card.dataset.pickup||"Shop live location will open after accept.";
    overlayAmount.textContent="₹"+(card.dataset.amount||"0")+" · "+(card.dataset.payment||"");
    overlay.classList.add("show");
@@ -591,7 +591,7 @@ iframe{
 
  function setLabels(){buttons.forEach(b=>{b.innerHTML=enabled?"🔔 Alerts Enabled":"🔔 Enable Alerts"})}
 
- buttons.forEach(b=>b.onclick=function(){enabled=true;localStorage.setItem("amexaAlerts","1");audio();setLabels();chime();alertBox("Alerts enabled","AMEXA delivery alerts and assignment chime are active.",false)});
+ buttons.forEach(b=>b.onclick=function(){enabled=true;localStorage.setItem("amexaAlerts","1");audio();setLabels();chime();alertBox("Alerts enabled","BYXOM delivery alerts and assignment chime are active.",false)});
 
  if(ack)ack.onclick=function(){center.classList.remove("show");ackUntil=Date.now()+60000};setLabels();
 

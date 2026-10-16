@@ -1,11 +1,13 @@
-"""
-URL configuration for AMEXA project.
+﻿"""
+URL configuration for BYXOM project.
 """
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
+
 
 from customer.support_views import (
     help_support_view,
@@ -120,6 +122,7 @@ from customer.views import (
 
 urlpatterns = [
     path("api/v1/", include("api.urls")),
+    path("india/", include("india_store.urls")),
 
     # =====================================================
     # HOME
@@ -130,6 +133,22 @@ urlpatterns = [
         home,
         name="home",
     ),
+    path(
+        "minutes/",
+        home,
+        name="minutes_home",
+    ),
+    path(
+        "flights/",
+        TemplateView.as_view(template_name="customer/flights_coming_soon.html"),
+        name="flight_tickets",
+    ),
+    path(
+        "health/",
+        TemplateView.as_view(template_name="customer/health_coming_soon.html"),
+        name="health",
+    ),
+
 
     path(
         "search/",
@@ -167,7 +186,7 @@ urlpatterns = [
 
 
     # =====================================================
-    # ABOUT AMEXA
+    # ABOUT BYXOM
     # =====================================================
 
     path(
@@ -565,7 +584,7 @@ urlpatterns = [
 
 
     # =====================================================
-    # AMEXA ADMIN CONTROL CENTER
+    # BYXOM ADMIN CONTROL CENTER
     # =====================================================
 
     path(

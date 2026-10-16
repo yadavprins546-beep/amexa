@@ -1,4 +1,6 @@
-﻿from django.conf import settings
+import logging
+
+from django.conf import settings
 import razorpay
 import random
 from datetime import datetime, time, timedelta
@@ -13,6 +15,8 @@ from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.utils import timezone
+
+from india_store.finance_services import record_customer_payment
 
 from .forms import (
     AddressForm,
@@ -90,7 +94,20 @@ from .models import (
 
 
 # =========================================================
-# AMEXA BUSINESS RULES
+logger = logging.getLogger(__name__)
+
+
+def _record_finance_payment_safely(payment):
+    try:
+        record_customer_payment(payment)
+    except Exception:
+        logger.exception(
+            "Finance sync failed for Payment id=%s",
+            payment.pk,
+        )
+
+
+# BYXOM BUSINESS RULES
 # Later admin settings / database config me move kar sakte hain.
 # =========================================================
 
@@ -104,7 +121,7 @@ TAX_RATE = Decimal("0.00")
 
 
 # =========================================================
-# AMEXA ADMIN CONTROL CENTER
+# BYXOM ADMIN CONTROL CENTER
 # Read-only operational dashboard; all changes still use
 # Django Admin's protected model pages.
 # =========================================================
@@ -180,7 +197,7 @@ def admin_control_center_view(request):
     )
 
     # =====================================================
-    # AMEXA OPS ANALYTICS V1
+    # BYXOM OPS ANALYTICS V1
     # =====================================================
 
     today_shop_orders = Order.objects.filter(
@@ -862,7 +879,7 @@ def _create_multi_shop_order_from_cart(
 
         created_orders = []
 
-        # Coupon + AMEXA Coins discount ko shop-wise proportionally allocate karna.
+        # Coupon + BYXOM Coins discount ko shop-wise proportionally allocate karna.
         total_order_discount = discount_amount + coin_discount
         allocated_discount = Decimal("0.00")
         group_discounts = []
@@ -1103,7 +1120,7 @@ def _product_search_q(query):
 # 5 KM SERVICE RADIUS + SHOP-FIRST EXPERIENCE
 # =========================================================
 
-def home(request):
+def home(request, template_name="customer/home.html"):
     query = request.GET.get("q", "").strip()
     selected_shop_slug = request.GET.get("shop", "").strip()
 
@@ -1524,7 +1541,7 @@ def home(request):
     )
 
     # =====================================================
-    # 10) AMEXA WALLET / COINS
+    # 10) BYXOM WALLET / COINS
     # =====================================================
     wallet = None
     coin_balance = 0
@@ -1569,7 +1586,7 @@ def home(request):
 
     return render(
         request,
-        "customer/home.html",
+        template_name,
         context,
     )
 
@@ -1825,7 +1842,7 @@ def _referrer_from_link_code(code):
 
 
 def _login_destination(user):
-    """Send every AMEXA account to its own app after login."""
+    """Send every BYXOM account to its own app after login."""
     role = getattr(user, "role", "CUSTOMER")
 
     if user.is_superuser or (user.is_staff and role == "ADMIN"):
@@ -1907,7 +1924,7 @@ def login_view(request):
             # for the same phone number. get_or_create() internally calls
             # get(), which crashes with MultipleObjectsReturned.
             #
-            # So AMEXA login safely reuses the oldest matching account.
+            # So BYXOM login safely reuses the oldest matching account.
             # A new account is created only when this phone does not exist.
             existing_users = (
                 User.objects
@@ -2037,7 +2054,7 @@ def login_view(request):
 
                     messages.success(
                         request,
-                        f"Welcome to AMEXA, {user.name}!"
+                        f"Welcome to BYXOM, {user.name}!"
                     )
 
                     return redirect(_login_destination(user))
@@ -3050,7 +3067,7 @@ def checkout_view(request):
     )
 
     # =====================================================
-    # AMEXA COINS
+    # BYXOM COINS
     # 1 Coin = â‚¹1, usable only against product value.
     # =====================================================
     expire_wallet_coins(request.user)
@@ -3274,7 +3291,7 @@ def checkout_view(request):
         payment_method = "COD"
 
     # Online payment -> Razorpay.
-    # Actual AMEXA order is created only after payment verification.
+    # Actual BYXOM order is created only after payment verification.
     if payment_method != "COD":
         request.session["amexa_pending_payment"] = {
             "address_id": address_id,
@@ -3285,7 +3302,7 @@ def checkout_view(request):
         return redirect("razorpay_start")
 
     # =====================================================
-    # AMEXA COINS REDEMPTION
+    # BYXOM COINS REDEMPTION
     # =====================================================
 
     try:
@@ -3921,7 +3938,7 @@ def monthly_pack_add_to_cart_view(
 
 # =========================================================
 # CUSTOMER ORDER OWNERSHIP HELPER
-# Phone is AMEXA customer identity. This also safely supports
+# Phone is BYXOM customer identity. This also safely supports
 # old development accounts where the same phone was duplicated.
 # =========================================================
 
@@ -4192,7 +4209,7 @@ def order_tracking_data_view(request, order_number):
 
         rider_name = (
             assignment.delivery_partner.name
-            or "AMEXA Rider"
+            or "BYXOM Rider"
         )
 
         rider_phone = (
@@ -4228,7 +4245,7 @@ def order_tracking_data_view(request, order_number):
                 "name": (
                     order.shop.name
                     if order.shop
-                    else "AMEXA Store"
+                    else "BYXOM Store"
                 ),
                 "latitude": shop_lat,
                 "longitude": shop_lon,
@@ -4920,7 +4937,7 @@ def delivery_live_tracking_view(request, order_number):
         context,
     )
 # =========================================================
-# ABOUT AMEXA
+# ABOUT BYXOM
 # =========================================================
 
 def about_view(request):
@@ -5206,7 +5223,7 @@ def delivery_onboarding_view(request, step=1):
 
             messages.success(
                 request,
-                "Your profile was submitted for AMEXA verification.",
+                "Your profile was submitted for BYXOM verification.",
             )
             return redirect("delivery_verification_status")
 
@@ -6285,7 +6302,7 @@ def shopkeeper_pick_item_view(request, order_number, picking_item_id):
     """
     Legacy compatibility endpoint.
 
-    AMEXA shopkeeper picking is UPC-only now. This route is kept so old
+    BYXOM shopkeeper picking is UPC-only now. This route is kept so old
     bookmarks/templates do not 404, but it is not allowed to change
     picked_quantity. Exact quantity can only change through
     shopkeeper_pick_scan_view after a valid product barcode scan.
@@ -7891,7 +7908,7 @@ def delivery_dashboard_view(request):
                 request,
                 "Claim submitted successfully."
                 if form_type == "claim"
-                else "Help request submitted. AMEXA Support will review it.",
+                else "Help request submitted. BYXOM Support will review it.",
             )
             return redirect("delivery_dashboard")
 
@@ -7960,7 +7977,7 @@ def delivery_dashboard_view(request):
 
     # ---------------------------------------------------------
     # Earnings overview.
-    # Existing AMEXA rule: â‚¹15 delivery payout per completed shop order.
+    # Existing BYXOM rule: â‚¹15 delivery payout per completed shop order.
     # ---------------------------------------------------------
     now = timezone.now()
     today_start = now.replace(
@@ -8355,6 +8372,7 @@ def delivery_assignment_action_view(request, assignment_id):
                             "updated_at",
                         ]
                     )
+                    _record_finance_payment_safely(payment)
 
             messages.success(
                 request,
@@ -8466,7 +8484,7 @@ def razorpay_start_view(request):
             "amount": amount_paise,
             "currency": "INR",
             "receipt": (
-                f"AMEXA-{request.user.pk}-"
+                f"BYXOM-{request.user.pk}-"
                 f"{timezone.now().strftime('%y%m%d%H%M%S')}"
             ),
         })
@@ -8561,7 +8579,7 @@ def razorpay_verify_view(request):
 
         status = gateway_payment.get("status")
 
-        # Ensure money is captured before fulfilling the AMEXA order.
+        # Ensure money is captured before fulfilling the BYXOM order.
         if status == "authorized":
             try:
                 gateway_payment = client.payment.capture(
@@ -8588,7 +8606,7 @@ def razorpay_verify_view(request):
         return redirect("checkout")
 
     # Same Razorpay payment response dobara aaye to
-    # duplicate AMEXA order create na ho.
+    # duplicate BYXOM order create na ho.
     existing_payment = (
         Payment.objects
         .filter(
@@ -8772,6 +8790,8 @@ def razorpay_verify_view(request):
         ]
     )
 
+    _record_finance_payment_safely(payment)
+
     Order.objects.filter(
         master_order=master_order
     ).update(
@@ -8796,5 +8816,3 @@ def razorpay_verify_view(request):
         )
 
     return redirect("orders")
-
-

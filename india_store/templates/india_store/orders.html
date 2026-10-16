@@ -1,0 +1,391 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My All India Orders | BYXOM</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f7f5; color: #222; font-family: Arial, sans-serif; }
+header { padding: 18px 5%; background: #171717; color: white; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+header a { color: white; }
+main { max-width: 900px; margin: 28px auto; padding: 0 16px; }
+.order-card { background: white; border: 1px solid #e6e6e0; border-radius: 12px; padding: 18px; margin: 14px 0; }
+.order-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.order-number { overflow-wrap: anywhere; }
+.meta { color: #666; font-size: 13px; line-height: 1.7; }
+.status { display: inline-block; padding: 6px 10px; border-radius: 20px; background: #f1eee7; font-size: 12px; font-weight: 700; }
+.total { font-weight: 700; font-size: 18px; margin: 12px 0; }
+a { color: #79420a; font-weight: 700; }
+.empty { background: white; padding: 28px; border-radius: 12px; text-align: center; }
+
+/* BYXOM-MY-ORDERS-REWARDS-RETURNS-V1 */
+.order-card {
+    padding: clamp(16px, 3vw, 24px) !important;
+    margin: 17px 0 !important;
+    border: 1px solid #eee0d2 !important;
+    box-shadow: 0 8px 24px rgba(66,32,25,.045);
+    transition: box-shadow .18s ease, border-color .18s ease;
+}
+.order-card:hover {
+    border-color: #e0c6a0 !important;
+    box-shadow: 0 12px 30px rgba(66,32,25,.075);
+}
+.order-top { align-items: center; }
+.order-number { color: #37151b; font-size: 14px; line-height: 1.5; }
+.order-card > .status { background: #fff4d8; color: #73531b; }
+.order-card .meta { color: #786a68; }
+.order-insights {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+    margin: 16px 0;
+}
+.order-insight {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 13px;
+    border: 1px solid #eee4d9;
+    border-radius: 12px;
+    background: #fffdf9;
+}
+.insight-label {
+    color: #987126;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+.insight-value {
+    color: #3a2630;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.coins-value { color: #28734d; }
+.insight-note {
+    color: #81736e;
+    font-size: 10px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+.order-gift-note {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    margin: 10px 0;
+    border: 1px solid #ead6a6;
+    border-radius: 12px;
+    background: linear-gradient(135deg,#fffdf5,#fff8e8);
+    color: #805817;
+}
+.order-gift-note strong,
+.order-gift-note small { display: block; }
+.order-gift-note strong { font-size: 12px; overflow-wrap: anywhere; }
+.order-gift-note small { margin-top: 4px; font-size: 10px; color: #796a59; }
+.delivery-date { margin: 8px 0 14px; }
+.order-card .total {
+    margin: 14px 0;
+    color: #8d1725;
+    font-size: 21px;
+    letter-spacing: -.3px;
+}
+.order-card > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 15px;
+    border-radius: 10px;
+    background: linear-gradient(110deg,#761624,#a92232);
+    color: #fffaf0;
+    font-size: 12px;
+    text-decoration: none;
+}
+@media (max-width: 560px) {
+    .order-insights { grid-template-columns: 1fr; }
+    .order-number { font-size: 12px; }
+    .order-card .total { font-size: 19px; }
+}
+
+</style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+<header>
+<strong>BYXOM &#10022; My All India Orders</strong>
+<a href="{% url 'india_store:home' %}">Continue shopping</a>
+<a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+<main>
+<h1>My All India Orders</h1>
+<p>Check your order status, payment status and order details here.</p>
+
+{% if orders %}
+    {% for order in orders %}
+    <article class="order-card">
+        <div class="order-top">
+            <strong class="order-number">{{ order.order_number|escape }}</strong>
+            <span class="status">{{ order.get_status_display }}</span>
+        </div>
+        <p class="meta">Placed: {{ order.created_at|date:"d M Y, h:i A" }}</p>
+        <p class="meta">
+            Payment: {{ order.get_payment_method_display }} &#183; {{ order.get_payment_status_display }}
+        </p>
+        <section class="order-insights" aria-label="Order rewards and returns">
+            <div class="order-insight">
+                <span class="insight-label">BYXOM COINS</span>
+                {% if coins_enabled %}
+                    {% if order.reward_record.coins_awarded_at %}
+                        <strong class="insight-value coins-value">
+                            {{ order.reward_record.coins_awarded }} coins credited
+                        </strong>
+                        <span class="insight-note">
+                            {{ order.reward_record.coins_awarded_at|date:"d M Y" }}
+                        </span>
+                    {% elif order.status == "Delivered" %}
+                        <strong class="insight-value">Reward not recorded yet</strong>
+                        <span class="insight-note">Please check order details or contact support.</span>
+                    {% else %}
+                        <strong class="insight-value">Earn after delivery</strong>
+                        <span class="insight-note">Coins are credited after confirmed delivery.</span>
+                    {% endif %}
+                {% else %}
+                    <strong class="insight-value">Rewards currently paused</strong>
+                {% endif %}
+            </div>
+
+            <div class="order-insight">
+                <span class="insight-label">RETURN STATUS</span>
+                {% for return_request in order.return_requests.all|slice:":1" %}
+                    <strong class="insight-value">{{ return_request.get_status_display }}</strong>
+                    <span class="insight-note">
+                        {{ return_request.quantity }} item(s) · {{ return_request.created_at|date:"d M Y" }}
+                    </span>
+                {% empty %}
+                    {% if order.status == "Delivered" %}
+                        <strong class="insight-value">No request submitted</strong>
+                        <span class="insight-note">
+                            Check order details for return eligibility within {{ return_window_days }} days of recorded delivery.
+                        </span>
+                    {% else %}
+                        <strong class="insight-value">Available after delivery</strong>
+                        <span class="insight-note">Return eligibility depends on delivery date and policy.</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if order.reward_record.gift_name %}
+            <div class="order-gift-note">
+                <span aria-hidden="true">&#10022;</span>
+                <span>
+                    <strong>{{ order.reward_record.gift_name|escape }}</strong>
+                    <small>Gift status: {{ order.reward_record.get_gift_status_display }}</small>
+                </span>
+            </div>
+        {% endif %}
+
+        {% if order.delivered_at %}
+            <p class="meta delivery-date">
+                Delivered: {{ order.delivered_at|date:"d M Y, h:i A" }}
+            </p>
+        {% endif %}
+
+        <div class="total">Total: &#8377;{{ order.total_amount|floatformat:2 }}</div>
+        <a href="{% url 'india_store:order_detail' order.order_number %}">View order details</a>
+    </article>
+    {% endfor %}
+{% else %}
+    <div class="empty">
+        <h2>No All India orders yet</h2>
+        <p>When you place an order, its status will appear here.</p>
+        <a href="{% url 'india_store:home' %}">Browse All India Shopping</a>
+    </div>
+{% endif %}
+</main>
+</body>
+</html>

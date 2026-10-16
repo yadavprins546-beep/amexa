@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure Payment | BYXOM</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f7f5; color: #222; font-family: Arial, sans-serif; }
+main { max-width: 620px; margin: 40px auto; padding: 0 16px; }
+.panel { background: white; border: 1px solid #e6e6e0; border-radius: 14px; padding: 22px; }
+button, .link { display: inline-block; padding: 12px 16px; border-radius: 9px; font-weight: 700; text-decoration: none; }
+button { border: 0; background: #171717; color: white; cursor: pointer; }
+.link { color: #79420a; }
+.small { color: #666; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.amount { font-size: 28px; font-weight: 800; margin: 12px 0; }
+.notice { margin: 14px 0; padding: 12px; border-radius: 8px; background: #f3f0e7; }
+</style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+<main>
+<div class="panel">
+    <strong>BYXOM &#10022; Secure All India Payment</strong>
+    <h1>Complete your payment</h1>
+    <p>Order reference: <strong>{{ order.order_number|escape }}</strong></p>
+    <div class="amount">&#8377;{{ order.total_amount|floatformat:2 }}</div>
+    <p class="small">Your order is still unpaid until Razorpay confirms capture. Do not close the browser immediately after approving payment.</p>
+
+    <div id="payment-status" class="notice" role="status">
+        Opening the secure Razorpay payment window?
+    </div>
+
+    <button id="open-payment" type="button">Open Razorpay Checkout</button>
+    <p>
+        <a class="link" href="{% url 'india_store:order_detail' order.order_number %}">View order status</a>
+        <a class="link" href="{% url 'india_store:cart' %}">Return to cart</a>
+    </p>
+</div>
+</main>
+
+<div id="razorpay-config"
+     data-key="{{ razorpay_key_id }}"
+     data-order-id="{{ gateway_order_id }}"
+     data-amount="{{ amount_paise }}"
+     data-order-number="{{ order.order_number }}"
+     data-name="{{ customer_name }}"
+     data-email="{{ customer_email }}"
+     data-mobile="{{ customer_mobile }}">
+</div>
+
+<form id="razorpay-verify-form" method="post" action="{% url 'india_store:payment_verify' %}" hidden>
+    {% csrf_token %}
+    <input type="hidden" name="order_number" value="{{ order.order_number }}">
+    <input type="hidden" name="razorpay_payment_id">
+    <input type="hidden" name="razorpay_order_id">
+    <input type="hidden" name="razorpay_signature">
+</form>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+    const config = document.getElementById("razorpay-config");
+    const form = document.getElementById("razorpay-verify-form");
+    const statusBox = document.getElementById("payment-status");
+    const openButton = document.getElementById("open-payment");
+
+    if (!window.Razorpay) {
+        statusBox.textContent = "Razorpay Checkout did not load. Check your internet connection and retry.";
+        return;
+    }
+
+    const options = {
+        key: config.dataset.key,
+        amount: Number(config.dataset.amount),
+        currency: "INR",
+        name: "BYXOM",
+        description: "All India order " + config.dataset.orderNumber,
+        order_id: config.dataset.orderId,
+        prefill: {
+            name: config.dataset.name,
+            email: config.dataset.email,
+            contact: config.dataset.mobile
+        },
+        theme: { color: "#171717" },
+        handler: function (response) {
+            form.querySelector('[name="razorpay_payment_id"]').value = response.razorpay_payment_id || "";
+            form.querySelector('[name="razorpay_order_id"]').value = response.razorpay_order_id || "";
+            form.querySelector('[name="razorpay_signature"]').value = response.razorpay_signature || "";
+            statusBox.textContent = "Verifying payment securely with BYXOM...";
+            openButton.disabled = true;
+            form.submit();
+        },
+        modal: {
+            ondismiss: function () {
+                statusBox.textContent = "Payment window closed. The order remains unpaid unless gateway verification completes.";
+            }
+        }
+    };
+
+    const razorpayCheckout = new Razorpay(options);
+    razorpayCheckout.on("payment.failed", function () {
+        statusBox.textContent = "Payment did not complete. The order remains unpaid; check My All India Orders for its status.";
+        openButton.disabled = false;
+    });
+
+    openButton.addEventListener("click", function () {
+        statusBox.textContent = "Opening Razorpay Checkout...";
+        razorpayCheckout.open();
+    });
+
+    // Show the payment window once on page load.
+    razorpayCheckout.open();
+})();
+</script>
+</body>
+</html>

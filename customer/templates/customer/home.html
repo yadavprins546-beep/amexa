@@ -10,7 +10,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>AMEXA | Smart Local Shopping</title>
+    <title>BYXOM | Smart Local Shopping</title>
 
     <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
 
@@ -74,7 +74,7 @@
 
         body::before{
 
-            content:"AMEXA";
+            content:"BYXOM";
 
             position:fixed;
 
@@ -1161,7 +1161,7 @@
 
     
         /* =========================================================
-           AMEXA MOBILE APP FIT FIX
+           BYXOM MOBILE APP FIT FIX
            Mobile-first sizing for 320px–480px screens
         ========================================================= */
 
@@ -1987,7 +1987,109 @@
             }
         }
 
-    </style>
+
+/* BYXOM service navigation: only inserted into the four requested pages. */
+.byxom-servicebar-wrap {
+    flex: 1 1 440px;
+    min-width: 0;
+    max-width: 720px;
+    margin: 0 10px;
+}
+.byxom-servicebar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid var(--byxom-bar-border, #e4dce9);
+    border-radius: 14px;
+    background: var(--byxom-bar-bg, #fff);
+    box-shadow: 0 5px 18px rgba(25, 13, 35, .06);
+}
+.byxom-service-link {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 10px;
+    border: 1px solid var(--byxom-link-border, #e7e1ec);
+    border-radius: 10px;
+    color: var(--byxom-link-ink, #33243d);
+    background: var(--byxom-link-bg, #f7f5f8);
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.byxom-service-icon { font-size: 17px; line-height: 1; }
+.byxom-service-link:hover,
+.byxom-service-link:focus-visible {
+    border-color: var(--byxom-active-border, #c9b4d8);
+    outline: 2px solid transparent;
+}
+.byxom-service-link.active {
+    color: var(--byxom-active-ink, #2a1b35);
+    border-color: var(--byxom-active-border, #edc15e);
+    background: var(--byxom-active-bg, #f8cf76);
+}
+@media (max-width: 800px) {
+    .top .byxom-servicebar-wrap {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+        margin: 10px 0 0;
+    }
+    .byxom-servicebar-wrap { max-width: none; }
+    .byxom-service-link { padding: 8px 5px; font-size: 11px; }
+}
+@media (max-width: 600px) {
+    .header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px;
+    }
+    .shell > header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px 0 0;
+    }
+    .byxom-servicebar { gap: 4px; padding: 5px; }
+    .byxom-service-link {
+        flex-direction: column;
+        gap: 5px;
+        min-height: 53px;
+        padding: 7px 2px;
+        font-size: 10px;
+        white-space: normal;
+        text-align: center;
+    }
+    .byxom-service-icon { font-size: 16px; }
+}
+@media (max-width: 350px) {
+    .byxom-servicebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .byxom-service-link { flex-direction: row; font-size: 11px; }
+}
+
+.top { flex-wrap: wrap; }
+.top .byxom-servicebar-wrap {
+    --byxom-bar-bg: rgba(5, 13, 30, .94);
+    --byxom-bar-border: #26344b;
+}
+.top .byxom-service-link {
+    --byxom-link-bg: #101c30;
+    --byxom-link-ink: #eaf2ff;
+    --byxom-link-border: #263852;
+    --byxom-active-bg: linear-gradient(110deg, #149cff, #6738ff);
+    --byxom-active-ink: #ffffff;
+    --byxom-active-border: #4e76ff;
+}
+
+</style>
 
 </head>
 
@@ -2005,13 +2107,22 @@
 
             <div>
 
-                <div class="brand-name">AMEXA</div>
+                <div class="brand-name">BYXOM</div>
 
                 <div class="brand-sub">SMART • LOCAL • FAST</div>
 
             </div>
 
         </a>
+
+<div class="byxom-servicebar-wrap">
+<nav class="byxom-servicebar" aria-label="BYXOM services">
+<a class="byxom-service-link" href="{% url 'india_store:home' %}"><span class="byxom-service-icon" aria-hidden="true">&#128722;</span><span>Shopping</span></a>
+<a class="byxom-service-link active" href="{% url 'home' %}" aria-current="page"><span class="byxom-service-icon" aria-hidden="true">&#9889;</span><span>Local Fast</span></a>
+<a class="byxom-service-link" href="{% url 'health' %}"><span class="byxom-service-icon" aria-hidden="true">&#9829;</span><span>Health</span></a>
+<a class="byxom-service-link" href="{% url 'flight_tickets' %}"><span class="byxom-service-icon" aria-hidden="true">&#9992;</span><span>Travel</span></a>
+</nav>
+</div>
 
         <div class="top-actions">
 
@@ -2032,16 +2143,16 @@
             </button>
 
             {% if request.user.is_authenticated %}
-            <a href="{% url 'profile' %}#walletPanel" class="wallet-chip" aria-label="Open AMEXA Coins Wallet">
+            <a href="{% url 'profile' %}#walletPanel" class="wallet-chip" aria-label="Open BYXOM Coins Wallet">
                 <span class="wallet-coin">🪙</span>
                 <span class="wallet-home-balance">{{ coin_balance|default:0 }}</span>
                 <span class="wallet-text">
                     <b>{{ coin_balance|default:0 }} Coins</b>
-                    <small>AMEXA Wallet</small>
+                    <small>BYXOM Wallet</small>
                 </span>
             </a>
             {% else %}
-            <a href="{% url 'login' %}" class="wallet-chip" aria-label="Login to AMEXA Wallet">
+            <a href="{% url 'login' %}" class="wallet-chip" aria-label="Login to BYXOM Wallet">
                 <span class="wallet-coin">🪙</span>
                 <span class="wallet-home-balance">0</span>
                 <span class="wallet-text">
@@ -2147,7 +2258,7 @@
 
                         <img
                             src="{{ banner.image.url }}"
-                            alt="{{ banner.title|default:'AMEXA Banner' }}"
+                            alt="{{ banner.title|default:'BYXOM Banner' }}"
                             class="dynamic-banner-photo"
                             loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
 
@@ -2185,7 +2296,7 @@
             <div class="slide slide1 active">
 
                 <div class="slide-content">
-                    <div class="slide-label">AMEXA SMART SHOPPING ⚡</div>
+                    <div class="slide-label">BYXOM SMART SHOPPING ⚡</div>
                     <h2>Shop from your <span class="highlight">nearby store</span></h2>
                     <p>
                         Choose a local shop, see its products together and add everything you need without confusion.
@@ -2331,7 +2442,7 @@
 
                 <div class="range-note">
 
-                    AMEXA is showing only stores inside the 5 km delivery service radius to keep pickup and rider travel practical.
+                    BYXOM is showing only stores inside the 5 km delivery service radius to keep pickup and rider travel practical.
 
                 </div>
 
@@ -2339,9 +2450,19 @@
 
                 <div class="location-empty">
 
-                    <strong>No active AMEXA store found within 5 km.</strong>
+                    <strong>No nearby BYXOM store found.</strong>
 
-                    <span>Try refreshing your location or add a closer delivery address.</span>
+                    <span>Choose another delivery location, or browse our all-India shopping collection.</span>
+                <div style="margin-top:12px;">
+                    <a href="{% url 'location_picker' %}"
+                       style="display:inline-block;background:#d71920;color:#fff;padding:10px 15px;border-radius:8px;font-weight:700;margin:4px;">
+                        Change Location
+                    </a>
+                    <a href="{% url 'india_store:home' %}"
+                       style="display:inline-block;background:#171717;color:#fff;padding:10px 15px;border-radius:8px;font-weight:700;margin:4px;">
+                        Shop All India
+                    </a>
+                </div>
 
                 </div>
 
@@ -2351,9 +2472,19 @@
 
             <div class="location-empty">
 
-                <strong>Use your current location to find deliverable stores.</strong>
+                <strong>Choose a delivery location to find nearby stores.</strong>
 
-                <span>AMEXA will show only stores within 5 km.</span>
+                <span>Nearby delivery depends on active stores within 5 km. You can also browse the all-India collection.</span>
+                <div style="margin-top:12px;">
+                    <a href="{% url 'location_picker' %}"
+                       style="display:inline-block;background:#d71920;color:#fff;padding:10px 15px;border-radius:8px;font-weight:700;margin:4px;">
+                        Choose Delivery Location
+                    </a>
+                    <a href="{% url 'india_store:home' %}"
+                       style="display:inline-block;background:#171717;color:#fff;padding:10px 15px;border-radius:8px;font-weight:700;margin:4px;">
+                        Shop All India
+                    </a>
+                </div>
 
                 <div style="margin-top:12px;">
 
@@ -2667,7 +2798,17 @@
 
             <div class="empty-card">
 
-                Use current location and select a store within 5 km to start shopping.
+                Choose your delivery location to browse nearby local products.
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <a href="{% url 'location_picker' %}"
+                       style="display:inline-block;background:#d71920;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700;">
+                        Choose Location
+                    </a>
+                    <a href="{% url 'india_store:home' %}"
+                       style="display:inline-block;background:#171717;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700;">
+                        Shop All India
+                    </a>
+                </div>
 
             </div>
 
@@ -2785,7 +2926,7 @@
 
                 <div class="monthly-copy">
 
-                    <div class="slide-label">AMEXA MONTHLY</div>
+                    <div class="slide-label">BYXOM MONTHLY</div>
 
                     <h3>📦 Monthly Grocery Pack</h3>
 
@@ -2808,7 +2949,7 @@
                         </a>
 
                         <a href="{% url 'monthly_pack_create' %}" class="monthly-create-btn">
-                            ＋ Create Pack
+                            + Create Pack
                         </a>
                     </div>
 
@@ -2979,7 +3120,7 @@
 
             <div class="promo">
 
-                <h3>🛒 One AMEXA Cart</h3>
+                <h3>🛒 One BYXOM Cart</h3>
 
                 <p>
 
@@ -3005,7 +3146,7 @@
 
         <div class="offer-text">
 
-            <strong>AMEXA Deals:</strong>
+            <strong>BYXOM Deals:</strong>
 
             Discounted products are shown from real product prices and MRP.
 
@@ -3023,7 +3164,7 @@
 
     <div class="notification-head">
 
-        <h3>🔔 AMEXA Updates</h3>
+        <h3>🔔 BYXOM Updates</h3>
 
         <button type="button" class="close-notification" onclick="toggleNotifications()">×</button>
 
@@ -3065,7 +3206,7 @@
 
             <div class="notice-title">Your cart</div>
 
-            <div class="notice-text">You have {{ cart_count|default:0 }} item(s) in your AMEXA cart.</div>
+            <div class="notice-text">You have {{ cart_count|default:0 }} item(s) in your BYXOM cart.</div>
 
         </div>
 

@@ -1,5 +1,5 @@
 {% extends "customer/base.html" %}
-{% block title %}Set Delivery Location | AMEXA{% endblock %}
+{% block title %}Set Delivery Location | BYXOM{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
@@ -9,7 +9,7 @@
   <div class="loc-head"><div><h1>📍 Exact Delivery Location</h1><p>Pin ko ghar / gate ke exact point par set karo.</p></div><a class="back" href="{% url 'home' %}">← Home</a></div>
   <div class="loc-card">
     <div id="locationMap"></div>
-    <div id="gpsStatus" class="status">Map ready. “Use My Current Location” dabao ya pin drag karo.</div>
+    <div id="gpsStatus" class="status">Map ready. "Use My Current Location" dabao ya pin drag karo.</div>
     <div class="address-preview"><small>CURRENT ADDRESS / MAP RESULT</small><b id="addressPreview">{{ saved_address_text|default:"Exact location select karo" }}</b></div>
     <div class="coords" id="coordsText">--</div>
     <div class="buttons">
@@ -81,7 +81,7 @@
     }).addTo(map);
 
     marker.bindTooltip(
-        "AMEXA Delivery Pin",
+        "BYXOM Delivery Pin",
         {
             permanent: true,
             direction: "top",

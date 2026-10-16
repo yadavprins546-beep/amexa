@@ -1,0 +1,5 @@
+<a href="{% url 'india_store:notifications' %}"
+   aria-label="Order notifications{% if unread_count %}, {{ unread_count }} unread{% endif %}"
+   style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">
+   &#128276; Notifications{% if unread_count %}<span style="display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#a52720;color:#fff;font-size:10px;">{{ unread_count }}</span>{% endif %}
+</a>

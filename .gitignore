@@ -8,3 +8,5 @@ staticfiles/
 .DS_Store
 .vscode/
 .github/agents/
+
+customer/templates/customer_BYXOM_BACKUP_14SEP/

@@ -1,0 +1,569 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All India Cart | BYXOM</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #f7f7f5;
+            color: #202020;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            padding: 18px 5%;
+            background: #171717;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        header a { color: white; }
+        main { max-width: 900px; margin: 28px auto; padding: 0 16px; }
+        .cart-item {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: white;
+            border: 1px solid #e7e7e2;
+            border-radius: 12px;
+        }
+        .cart-photo {
+            width: 92px;
+            height: 92px;
+            flex: 0 0 92px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f1f1ed;
+        }
+        .details { flex: 1; min-width: 0; }
+        .price { margin-top: 8px; font-weight: 700; }
+        .remove button {
+            padding: 8px 12px;
+            border: 1px solid #b42318;
+            border-radius: 8px;
+            background: white;
+            color: #b42318;
+            cursor: pointer;
+        }
+        .checkout-button {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 12px 18px;
+            border-radius: 9px;
+            background: #171717;
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .shipping-note { color: #795719; font-size: 12px; }
+        .qty-form {
+            display: flex;
+            align-items: end;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .qty-form label { display: grid; gap: 5px; color: #555; }
+        .qty-form input {
+            width: 76px;
+            padding: 8px;
+            border: 1px solid #d7d7d0;
+            border-radius: 7px;
+        }
+        .qty-form button {
+            padding: 8px 12px;
+            border: 0;
+            border-radius: 7px;
+            background: #171717;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .summary {
+            background: white;
+            border: 1px solid #e7e7e2;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 18px;
+        }
+        .notice { padding: 10px 0; color: #386641; }
+        .empty {
+            padding: 28px;
+            border-radius: 12px;
+            background: white;
+            text-align: center;
+        }
+        .back-link { color: #79420a; font-weight: 700; }
+        @media (max-width: 520px) {
+            .cart-item { align-items: flex-start; flex-wrap: wrap; }
+            .cart-photo { width: 76px; height: 76px; flex-basis: 76px; }
+            .remove { width: 100%; }
+        }
+
+
+/* BYXOM-CART-FLOW-POLISH-V1 */
+.cart-item {
+    align-items: flex-start !important;
+    padding: clamp(14px, 2.5vw, 22px) !important;
+    gap: 17px !important;
+    border-color: #eee0d2 !important;
+    border-radius: 17px !important;
+    box-shadow: 0 8px 23px rgba(66,32,25,.045);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.cart-item:hover {
+    border-color: #dfc59a !important;
+    box-shadow: 0 10px 28px rgba(66,32,25,.075);
+}
+.cart-photo {
+    object-fit: contain !important;
+    padding: 7px;
+    border: 1px solid #f1e7dc;
+    background: linear-gradient(140deg,#fffdf8,#faf4ed) !important;
+}
+.details > strong {
+    display: block;
+    color: #37151b;
+    font-size: 15px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.details .price {
+    color: #786a68;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.cart-coin-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 7px 10px;
+    border: 1px solid #eddcb3;
+    border-radius: 999px;
+    background: #fff9e9;
+    color: #795719;
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+.cart-summary-head {
+    padding-bottom: 13px;
+    border-bottom: 1px solid #eee3d9;
+}
+.cart-summary-eyebrow {
+    color: #9a762e;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+.cart-summary-head h2 {
+    margin: 5px 0;
+    color: #37151b;
+    font-size: 23px;
+    letter-spacing: -.5px;
+}
+.cart-summary-head p {
+    margin: 0;
+    color: #786a68;
+    font-size: 12px;
+}
+.cart-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1e8df;
+    color: #756761;
+    font-size: 13px;
+}
+.cart-summary-row strong {
+    color: #281d20;
+    font-weight: 850;
+    text-align: right;
+}
+.cart-subtotal-row {
+    font-size: 15px;
+}
+.cart-subtotal-row strong {
+    color: #8d1725;
+    font-size: 20px;
+}
+.cart-estimated-rewards {
+    display: flex;
+    gap: 11px;
+    margin-top: 15px;
+    padding: 13px;
+    border: 1px solid #ead6a6;
+    border-radius: 13px;
+    background: linear-gradient(135deg,#fffdf5,#fff8e8);
+}
+.cart-reward-symbol {
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #f3e5bd;
+    color: #805817;
+}
+.cart-estimated-rewards strong {
+    color: #805817;
+    font-size: 13px;
+}
+.cart-estimated-rewards p {
+    margin: 4px 0 0;
+    color: #796a59;
+    font-size: 11px;
+    line-height: 1.6;
+}
+.summary .shipping-note {
+    margin: 14px 0;
+    line-height: 1.65;
+}
+.summary .checkout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px 18px;
+    border-radius: 11px;
+    background: linear-gradient(110deg,#761624,#a92232);
+    color: #fffaf0;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(118,22,36,.15);
+}
+.cart-continue-link {
+    display: block;
+    margin-top: 13px;
+    color: #79420a;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+}
+.remove button {
+    border-radius: 9px;
+    background: #fff8f6;
+    font-size: 12px;
+    font-weight: 750;
+}
+.qty-form input { min-height: 40px; }
+.qty-form button { min-height: 40px; }
+@media (min-width: 820px) {
+    main { max-width: 1040px !important; }
+    .summary { padding: 24px !important; }
+}
+@media (max-width: 520px) {
+    .cart-item { gap: 12px !important; }
+    .details > strong { font-size: 13px; }
+    .remove { display: flex; justify-content: flex-end; }
+    .summary .checkout-button { min-height: 48px; }
+}
+    </style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+<header>
+    <strong>BYXOM &#10022; All India Cart</strong>
+    <a href="{% url 'india_store:home' %}">Continue shopping</a>
+    <a href="{% url 'india_store:orders' %}">My Orders</a>
+<a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+<main>
+    <h1>Your All India Cart</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="notice">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if items %}
+        {% for item in items %}
+            <article class="cart-item">
+                {% if item.product.image %}
+                    <img class="cart-photo" src="{{ item.product.image.url }}"
+                         alt="{{ item.product.name|escape }}">
+                {% elif item.product.image_2 %}
+                    <img class="cart-photo" src="{{ item.product.image_2.url }}"
+                         alt="{{ item.product.name|escape }}">
+                {% elif item.product.image_3 %}
+                    <img class="cart-photo" src="{{ item.product.image_3.url }}"
+                         alt="{{ item.product.name|escape }}">
+                {% else %}
+                    <div class="cart-photo"></div>
+                {% endif %}
+
+                <div class="details">
+                    <strong>{{ item.product.name|escape }}</strong>
+                    <form method="post" action="{% url 'india_store:cart_update' item.id %}" class="qty-form">
+                        {% csrf_token %}
+                        <label>Quantity
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" required>
+                        </label>
+                        <button type="submit">Update</button>
+                    </form>
+                    <div class="price">
+                        &#8377;{{ item.price|floatformat:2 }} each
+                        &#183; Line total: &#8377;{{ item.line_total|floatformat:2 }}
+                    </div>
+
+                    {% if coins_enabled and item.product.reward_coins > 0 %}
+                        <div class="cart-coin-note">
+                            <span aria-hidden="true">&#10022;</span>
+                            Earn {{ item.product.reward_coins }} coin{{ item.product.reward_coins|pluralize }}
+                            per unit after delivery
+                        </div>
+                    {% endif %}
+                </div>
+
+                <form class="remove" method="post"
+                      action="{% url 'india_store:cart_remove' item.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Remove</button>
+                </form>
+            </article>
+        {% endfor %}
+
+        <section class="summary" aria-labelledby="cartSummaryHeading">
+            <div class="cart-summary-head">
+                <div class="cart-summary-eyebrow">YOUR BAG</div>
+                <h2 id="cartSummaryHeading">Order summary</h2>
+                <p>Review your quantities before continuing to checkout.</p>
+            </div>
+
+            <div class="cart-summary-row">
+                <span>Total units</span>
+                <strong>{{ cart_item_count }}</strong>
+            </div>
+            <div class="cart-summary-row cart-subtotal-row">
+                <span>Subtotal</span>
+                <strong>&#8377;{{ subtotal|floatformat:2 }}</strong>
+            </div>
+
+            {% if coins_enabled and estimated_coins_total > 0 %}
+                <div class="cart-estimated-rewards">
+                    <span class="cart-reward-symbol" aria-hidden="true">&#10022;</span>
+                    <div>
+                        <strong>Estimated {{ estimated_coins_total }} coins</strong>
+                        <p>Based on the products and quantities in your cart. Coins are credited only after successful delivery.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <p class="shipping-note">
+                Delivery fee is currently &#8377;0 in this local prototype. Actual shipping charges must be configured before launch.
+            </p>
+
+            <a class="checkout-button" href="{% url 'india_store:checkout' %}">
+                Proceed to Checkout <span aria-hidden="true">&#8594;</span>
+            </a>
+            <a class="cart-continue-link" href="{% url 'india_store:home' %}">
+                Continue shopping
+            </a>
+        </section>
+    {% else %}
+        <div class="empty">
+            <h2>Your cart is empty</h2>
+            <p>Add an available product from BYXOM All India Shopping.</p>
+            <a class="back-link" href="{% url 'india_store:home' %}">Browse products</a>
+        </div>
+    {% endif %}
+</main>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AMEXA Delivery Partner | Profile</title>
+<title>BYXOM Delivery Partner | Profile</title>
 
 <style>
 *{box-sizing:border-box}
@@ -140,7 +140,7 @@ a{text-decoration:none;color:inherit}
 <div class="wrap">
 
   <div class="topbar">
-    <div class="brand">AMEXA<small>DELIVERY PARTNER ACCOUNT</small></div>
+    <div class="brand">BYXOM<small>DELIVERY PARTNER ACCOUNT</small></div>
     <a class="back" href="{% url 'delivery_dashboard' %}">← Dashboard</a>
   </div>
 
@@ -169,7 +169,7 @@ a{text-decoration:none;color:inherit}
           <span class="badge warn">{{ profile.verification_status|default:"PENDING" }}</span>
         {% endif %}
 
-        <span class="badge">AMEXA DELIVERY</span>
+        <span class="badge">BYXOM DELIVERY</span>
       </div>
     </div>
 
@@ -250,7 +250,7 @@ a{text-decoration:none;color:inherit}
         <a href="{% url 'delivery_dashboard' %}#claims"><span class="ico">📄</span><div>Claims & Issues</div></a>
         <a href="{% url 'terms_conditions' %}"><span class="ico">📜</span><div>Terms & Conditions</div></a>
         <a href="{% url 'privacy_policy' %}"><span class="ico">🔐</span><div>Privacy Policy</div></a>
-        <a href="{% url 'about' %}"><span class="ico">ℹ️</span><div>About AMEXA</div></a>
+        <a href="{% url 'about' %}"><span class="ico">ℹ️</span><div>About BYXOM</div></a>
         <a href="{% url 'delivery_dashboard' %}"><span class="ico">📍</span><div>Location / Availability</div></a>
       </div>
 

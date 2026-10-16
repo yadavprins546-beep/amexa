@@ -1,80 +1,80 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Privacy Policy | AMEXA</title>
+    <title>Privacy Policy | BYXOM</title>
 
     <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        body{
-            font-family:Arial, Helvetica, sans-serif;
-            background:#07111f;
-            color:#ffffff;
-            min-height:100vh;
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #07111f;
+            color: #ffffff;
+            min-height: 100vh;
         }
 
-        a{
-            color:inherit;
-            text-decoration:none;
+        a {
+            color: inherit;
+            text-decoration: none;
         }
 
-        .page{
-            width:min(100%, 760px);
-            margin:auto;
-            padding-bottom:50px;
+        .page {
+            width: min(100%, 760px);
+            margin: auto;
+            padding-bottom: 50px;
         }
 
-        .topbar{
-            position:sticky;
-            top:0;
-            z-index:20;
-            display:flex;
-            align-items:center;
-            gap:12px;
-            padding:16px;
-            background:rgba(7,17,31,.95);
-            backdrop-filter:blur(14px);
-            border-bottom:1px solid rgba(255,255,255,.08);
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(7, 17, 31, .95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
         }
 
-        .back{
-            width:42px;
-            height:42px;
-            display:grid;
-            place-items:center;
-            border-radius:14px;
-            background:#111d31;
-            border:1px solid rgba(255,255,255,.08);
-            font-size:22px;
-            font-weight:900;
+        .back {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: #111d31;
+            border: 1px solid rgba(255, 255, 255, .08);
+            font-size: 22px;
+            font-weight: 900;
         }
 
-        .topbar h1{
-            font-size:18px;
-            font-weight:900;
+        .topbar h1 {
+            font-size: 18px;
+            font-weight: 900;
         }
 
-        .hero{
-            margin:16px;
-            padding:24px 20px;
-            border-radius:24px;
+        .hero {
+            margin: 16px;
+            padding: 24px 20px;
+            border-radius: 24px;
 
             background:
                 radial-gradient(
                     circle at 90% 10%,
-                    rgba(0,219,255,.18),
+                    rgba(0, 219, 255, .18),
                     transparent 30%
                 ),
                 radial-gradient(
                     circle at 10% 100%,
-                    rgba(154,60,255,.22),
+                    rgba(154, 60, 255, .22),
                     transparent 35%
                 ),
                 linear-gradient(
@@ -83,63 +83,73 @@
                     #31146a
                 );
 
-            border:1px solid rgba(255,255,255,.10);
+            border: 1px solid rgba(255, 255, 255, .10);
         }
 
-        .hero-icon{
-            width:54px;
-            height:54px;
-            display:grid;
-            place-items:center;
-            border-radius:18px;
-            background:rgba(255,255,255,.10);
-            font-size:27px;
-            margin-bottom:14px;
+        .hero-icon {
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .10);
+            font-size: 27px;
+            margin-bottom: 14px;
         }
 
-        .hero h2{
-            font-size:24px;
-            margin-bottom:8px;
+        .hero h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
-        .hero p{
-            color:#d7dfef;
-            font-size:13px;
-            line-height:1.65;
+        .hero p {
+            color: #d7dfef;
+            font-size: 13px;
+            line-height: 1.65;
         }
 
-        .section{
-            margin:16px;
-            padding:18px;
-            border-radius:20px;
-            background:#0e192b;
-            border:1px solid rgba(255,255,255,.08);
+        .section {
+            margin: 16px;
+            padding: 18px;
+            border-radius: 20px;
+            background: #0e192b;
+            border: 1px solid rgba(255, 255, 255, .08);
         }
 
-        .section h3{
-            font-size:15px;
-            margin-bottom:10px;
+        .section h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
         }
 
-        .section p{
-            color:#bdc8da;
-            font-size:12px;
-            line-height:1.75;
+        .section p {
+            color: #bdc8da;
+            font-size: 12px;
+            line-height: 1.75;
         }
 
-        .section ul{
-            margin-top:10px;
-            padding-left:18px;
-            color:#bdc8da;
-            font-size:12px;
-            line-height:1.75;
+        .section ul {
+            margin-top: 10px;
+            padding-left: 18px;
+            color: #bdc8da;
+            font-size: 12px;
+            line-height: 1.75;
         }
 
-        .updated{
-            margin:16px;
-            text-align:center;
-            color:#8190a8;
-            font-size:11px;
+        .contact-email {
+            margin-top: 12px;
+        }
+
+        .contact-email a {
+            color: #67d7ff;
+            text-decoration: underline;
+            word-break: break-word;
+        }
+
+        .updated {
+            margin: 16px;
+            text-align: center;
+            color: #8190a8;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -150,9 +160,8 @@
 
     <header class="topbar">
 
-        <a href="{% url 'profile' %}"
-           class="back">
-            ‹
+        <a href="{% url 'profile' %}" class="back">
+            &larr;
         </a>
 
         <h1>Privacy Policy</h1>
@@ -163,13 +172,13 @@
     <section class="hero">
 
         <div class="hero-icon">
-            🔐
+            &#128274;
         </div>
 
         <h2>Your privacy matters</h2>
 
         <p>
-            AMEXA respects your privacy and is committed to protecting
+            BYXOM respects your privacy and is committed to protecting
             your personal information while providing local shopping
             and delivery services.
         </p>
@@ -182,7 +191,7 @@
         <h3>1. Information We Collect</h3>
 
         <p>
-            When you use AMEXA, we may collect information required
+            When you use BYXOM, we may collect information required
             to provide our services.
         </p>
 
@@ -203,7 +212,7 @@
         <h3>2. How We Use Your Information</h3>
 
         <p>
-            We use your information to provide and improve AMEXA services,
+            We use your information to provide and improve BYXOM services,
             including account login, nearby store discovery, order processing,
             delivery, customer support and service improvements.
         </p>
@@ -216,7 +225,7 @@
         <h3>3. Location Information</h3>
 
         <p>
-            AMEXA may request your location to show nearby stores,
+            BYXOM may request your location to show nearby stores,
             confirm delivery availability and help delivery partners
             deliver orders to the correct location.
         </p>
@@ -242,9 +251,9 @@
         <h3>5. Sharing of Information</h3>
 
         <p>
-            AMEXA may share limited information with shops,
+            BYXOM may share limited information with shops,
             delivery partners and service providers only when
-            required to complete an order or provide AMEXA services.
+            required to complete an order or provide BYXOM services.
         </p>
 
         <p style="margin-top:10px;">
@@ -273,8 +282,8 @@
         <h3>7. OTP and Account Access</h3>
 
         <p>
-            AMEXA may use OTP verification for account access.
-            Never share your OTP with anyone claiming to be from AMEXA.
+            BYXOM may use OTP verification for account access.
+            Never share your OTP with anyone claiming to be from BYXOM.
         </p>
 
     </section>
@@ -285,7 +294,7 @@
         <h3>8. Customer Choices</h3>
 
         <p>
-            Customers may contact AMEXA support regarding their account,
+            Customers may contact BYXOM support regarding their account,
             personal information, delivery address or privacy-related concerns.
         </p>
 
@@ -297,7 +306,7 @@
         <h3>9. Changes to This Policy</h3>
 
         <p>
-            AMEXA may update this Privacy Policy as the platform,
+            BYXOM may update this Privacy Policy as the platform,
             services or legal requirements change.
         </p>
 
@@ -310,14 +319,29 @@
 
         <p>
             If you have questions regarding this Privacy Policy,
-            please contact AMEXA through the Help & Support section.
+            please contact BYXOM through the Help &amp; Support section
+            or by using the email address below.
+        </p>
+
+        <p class="contact-email">
+            <strong>Developer Contact Email:</strong><br>
+            <a href="mailto:yadavprins546@gmail.com">
+                yadavprins546@gmail.com
+            </a>
+        </p>
+
+        <p class="contact-email">
+            <strong>Grievance Contact Email:</strong><br>
+            <a href="mailto:yadavprins546@gmail.com">
+                yadavprins546@gmail.com
+            </a>
         </p>
 
     </section>
 
 
     <div class="updated">
-        AMEXA Privacy Policy
+        BYXOM Privacy Policy
     </div>
 
 </div>

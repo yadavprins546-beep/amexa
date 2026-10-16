@@ -1,0 +1,948 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order {{ order.order_number }} | BYXOM</title>
+<style>
+* { box-sizing:border-box; }
+body { margin:0; background:#f7f7f5; color:#222; font-family:Arial,sans-serif; }
+header { background:#171717; color:white; padding:18px 5%; }
+main { max-width:800px; margin:28px auto; padding:0 16px; }
+.panel { background:white; padding:18px; margin:14px 0; border:1px solid #e6e6e0; border-radius:12px; }
+.line { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid #eee; }
+
+.notice { padding: 12px; margin: 12px 0; border-radius: 8px; background: #f1eee7; }
+.cancel-form { margin-top: 16px; padding: 14px; border: 1px solid #ead2ce; border-radius: 10px; background: #fffafa; }
+.cancel-form p { font-size: 13px; color: #70423c; }
+.cancel-form button { padding: 10px 14px; border: 0; border-radius: 8px; background: #a52720; color: white; font-weight: 700; cursor: pointer; }
+
+
+.india-status-timeline {
+    display: grid;
+    gap: 14px;
+    margin: 18px 0;
+    padding: 16px;
+    border-radius: 10px;
+    background: #faf9f6;
+}
+.tracking-step {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #85857e;
+    font-size: 14px;
+}
+.tracking-dot {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
+    border: 2px solid #c9c9c0;
+    border-radius: 50%;
+    background: white;
+}
+.tracking-step.is-done {
+    color: #28734d;
+    font-weight: 600;
+}
+.tracking-step.is-done .tracking-dot {
+    background: #28734d;
+    border-color: #28734d;
+}
+.tracking-step.is-current {
+    color: #171717;
+    font-weight: 700;
+}
+.tracking-step.is-current .tracking-dot {
+    outline: 3px solid #e8d8bb;
+}
+.order-status-cancelled {
+    margin: 16px 0;
+    padding: 14px;
+    border: 1px solid #ebc7c2;
+    border-radius: 10px;
+    background: #fff6f5;
+}
+.order-status-cancelled p {
+    margin-bottom: 0;
+}
+
+
+.shipment-tracking {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid #d9e6d8;
+    border-radius: 10px;
+    background: #f7fbf6;
+    overflow-wrap: anywhere;
+}
+.shipment-tracking h3 { margin-top: 0; }
+.tracking-note { font-size: 12px; color: #626b60; }
+
+a { color:#79420a; font-weight:700; }
+
+/* BYXOM-ORDER-CHECKOUT-REFINE-V1 */
+:root { --byxom-red:#8d1725; --byxom-gold:#d7ad59; --byxom-ink:#281d20; }
+body {
+    background: radial-gradient(ellipse at top left, #fff4e1 0, transparent 32rem), #fbf8f5;
+    color: var(--byxom-ink);
+    line-height: 1.6;
+}
+header {
+    background: linear-gradient(110deg, #3a1018, #751624) !important;
+    align-items: center;
+    box-shadow: 0 8px 25px rgba(57,15,23,.12);
+}
+main { max-width: 900px; padding-bottom: 48px; }
+main > h1 { letter-spacing: -.035em; color: #37151b; }
+.panel {
+    padding: clamp(16px, 3vw, 25px) !important;
+    border: 1px solid #eee0d2 !important;
+    border-radius: 17px !important;
+    box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.panel h2 { color: #40171e; letter-spacing: -.02em; }
+.line { align-items: flex-start; gap: 16px; overflow-wrap: anywhere; }
+.line strong { text-align: right; }
+.payment-summary {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid #eddfcc;
+    border-radius: 11px;
+    background: #fffaf1;
+    overflow-wrap: anywhere;
+}
+.payment-note {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff5e2;
+    border: 1px solid #f0ddb6;
+    color: #674616;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.payment-note-success {
+    background: #eef9f1;
+    border-color: #cce8d3;
+    color: #22643b;
+}
+.payment-note-warning {
+    background: #fff3f0;
+    border-color: #f0d0c8;
+    color: #8b2920;
+}
+.india-status-timeline { border: 1px solid #eee0d2; }
+.tracking-step { line-height: 1.45; }
+.shipment-tracking { border-radius: 13px; }
+.cancel-form { border-radius: 13px; }
+button, .cancel-form button { transition: filter .15s ease, transform .15s ease; }
+button:hover, .cancel-form button:hover { filter: brightness(1.07); }
+@media (max-width: 600px) {
+    header { padding: 15px 16px !important; }
+    main { margin-top: 19px; }
+    .panel { margin: 12px 0; }
+    .line { gap: 10px; }
+    .india-status-timeline { padding: 13px; }
+}
+
+
+/* BYXOM-PHONE-CONFIRM-ORDER-DETAIL-V1 */
+.supplier-flow-note {
+    margin: 16px 0;
+    padding: 16px 18px;
+    border: 1px solid #dfc8e7;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #fffaf0, #fbf5ff);
+    color: #39234b;
+    line-height: 1.65;
+}
+.supplier-flow-note strong { display: block; margin-bottom: 5px; }
+.supplier-flow-note p { margin: 0; }
+
+</style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* BYXOM-RETURN-REWARDS-V1 */
+.byxom-rewards-panel {
+    border-color: #e8d5bc !important;
+    background: linear-gradient(145deg, #fffdf8, #fff8eb) !important;
+}
+.return-form {
+    display: grid;
+    gap: 10px;
+    margin: 12px 0 18px;
+    padding: 17px;
+    border: 1px solid #edd8c6;
+    border-radius: 14px;
+    background: #fffaf5;
+}
+.return-form h3 { margin: 0; }
+.return-form p { margin: 0 0 4px; }
+.return-form label { font-weight: 750; font-size: 14px; }
+.return-form input, .return-form textarea {
+    width: 100%;
+    font: inherit;
+}
+.return-form button {
+    justify-self: start;
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(110deg, #761624, #a92232);
+    color: #fffaf0;
+}
+.return-history {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid #e8e0d7;
+    border-radius: 11px;
+    background: #fff;
+    overflow-wrap: anywhere;
+}
+.return-history p { margin: 6px 0 0; }
+.return-history-note, .return-window-note {
+    color: #786a68;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+.return-window-note {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff5e9;
+}
+@media (max-width: 600px) {
+    .return-form button { width: 100%; }
+}
+
+</style>
+
+
+<style id="BYXOM-ORDER-DETAIL-PREMIUM-V2">
+:root {
+  --od-green: #177447;
+  --od-green-dark: #105b38;
+  --od-ink: #202b25;
+  --od-muted: #6c7871;
+  --od-border: #e1eae4;
+  --od-soft: #f5faf6;
+  --od-gold: #bd8b35;
+}
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at 5% 0%, rgba(45,145,88,.09), transparent 28rem),
+    #f4f8f5 !important;
+  color: var(--od-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.65;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 17px clamp(16px, 5vw, 54px) !important;
+  background: linear-gradient(110deg, #123f2b, #177447) !important;
+  border-bottom: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 8px 26px rgba(18,75,44,.14);
+}
+header > strong {
+  font-size: 17px;
+  letter-spacing: -.25px;
+}
+header a { text-decoration: none; }
+main {
+  width: min(1000px, calc(100% - 32px)) !important;
+  max-width: 1000px !important;
+  margin: 30px auto !important;
+  padding-bottom: 50px !important;
+}
+main > h1 {
+  margin: 0 0 18px !important;
+  color: var(--od-ink) !important;
+  font-size: clamp(27px, 4vw, 36px) !important;
+  font-weight: 900;
+  letter-spacing: -.9px !important;
+}
+main > h1::before {
+  content: "BYXOM  /  ORDER CENTRE";
+  display: block;
+  margin-bottom: 8px;
+  color: var(--od-green);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+main > .panel {
+  margin: 16px 0 !important;
+  padding: clamp(17px, 3vw, 27px) !important;
+  overflow: hidden;
+  background: #fff !important;
+  border: 1px solid var(--od-border) !important;
+  border-radius: 19px !important;
+  box-shadow: 0 9px 28px rgba(27,67,43,.055);
+}
+.panel h2 {
+  margin-top: 0;
+  color: var(--od-ink) !important;
+  font-size: clamp(19px, 3vw, 23px);
+  font-weight: 850;
+  letter-spacing: -.45px;
+}
+.panel h3 {
+  color: var(--od-ink);
+  font-size: 16px;
+  font-weight: 850;
+}
+.panel > p:first-child {
+  margin-bottom: 4px;
+  color: var(--od-muted);
+  font-size: 12px;
+}
+.panel > p:first-child + h2 {
+  display: inline-block;
+  max-width: 100%;
+  margin: 2px 0 14px;
+  padding: 8px 12px;
+  overflow-wrap: anywhere;
+  background: var(--od-soft);
+  border: 1px dashed #bdd8c6;
+  border-radius: 10px;
+  color: var(--od-green-dark) !important;
+  font-size: clamp(17px, 3vw, 23px);
+}
+.panel > p:nth-of-type(2) {
+  margin: 5px 0 10px;
+  color: var(--od-muted);
+}
+.panel > p:nth-of-type(2) strong {
+  display: inline-block;
+  padding: 5px 10px;
+  border: 1px solid #cce5d4;
+  border-radius: 999px;
+  background: #edf8f0;
+  color: var(--od-green-dark);
+  font-size: 12px;
+}
+.supplier-flow-note {
+  margin: 15px 0 !important;
+  padding: 18px 20px !important;
+  border: 1px solid #cfe5d6 !important;
+  border-left: 4px solid var(--od-green) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(135deg, #f3fbf5, #fff) !important;
+  box-shadow: 0 6px 18px rgba(27,67,43,.04);
+  color: #244b34 !important;
+}
+.supplier-flow-note strong {
+  margin-bottom: 5px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.supplier-flow-note p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.india-status-timeline {
+  display: grid;
+  gap: 9px !important;
+  margin: 18px 0 !important;
+  padding: 18px !important;
+  border: 1px solid var(--od-border) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(145deg, #f8fbf8, #f1f7f3) !important;
+}
+.tracking-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  gap: 12px !important;
+  color: #8a958e !important;
+  font-size: 13px !important;
+  line-height: 1.5;
+}
+.tracking-dot {
+  position: relative;
+  z-index: 1;
+  width: 15px !important;
+  height: 15px !important;
+  flex: 0 0 15px !important;
+  border: 2px solid #c5d2c9 !important;
+  background: #fff;
+}
+.tracking-step.is-done {
+  color: var(--od-green) !important;
+  font-weight: 800 !important;
+}
+.tracking-step.is-done .tracking-dot {
+  border-color: var(--od-green) !important;
+  background: var(--od-green) !important;
+}
+.tracking-step.is-current {
+  color: var(--od-ink) !important;
+  font-weight: 900 !important;
+}
+.tracking-step.is-current .tracking-dot {
+  outline: 4px solid #dcefe2;
+}
+.payment-summary, .payment-note {
+  margin-top: 14px;
+  padding: 14px 15px !important;
+  border: 1px solid #dce9df !important;
+  border-radius: 13px !important;
+  background: #f4faf5 !important;
+  color: #315541;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.payment-note-success {
+  background: #eaf8ee !important;
+  border-color: #c8e8d1 !important;
+  color: #1b6a39 !important;
+}
+.payment-note-warning {
+  background: #fff4ef !important;
+  border-color: #f0d1c7 !important;
+  color: #8b2920 !important;
+}
+.shipment-tracking {
+  margin: 16px 0 !important;
+  padding: 17px !important;
+  border: 1px solid #cfe7d6 !important;
+  border-radius: 15px !important;
+  background: linear-gradient(135deg, #f4fbf5, #fff) !important;
+}
+.tracking-note, .return-history-note, .return-window-note {
+  color: var(--od-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.order-status-cancelled {
+  padding: 16px !important;
+  border: 1px solid #f0ceca !important;
+  border-radius: 14px !important;
+  background: #fff5f3 !important;
+  color: #872f27;
+}
+.cancel-form {
+  padding: 16px !important;
+  border: 1px solid #efd9d5 !important;
+  border-radius: 14px !important;
+  background: #fffaf9 !important;
+}
+.cancel-form button {
+  min-height: 43px;
+  padding: 11px 16px !important;
+  border-radius: 10px !important;
+  background: #a8322a !important;
+  color: white !important;
+  font-weight: 850;
+}
+.byxom-rewards-panel {
+  border-color: #ebdfc3 !important;
+  background: linear-gradient(145deg, #fffdf7, #fff9e9) !important;
+}
+.byxom-rewards-panel h2::before {
+  content: "✦ ";
+  color: var(--od-gold);
+}
+.panel .line {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf1ed;
+  overflow-wrap: anywhere;
+}
+.panel .line:last-of-type { border-bottom-color: transparent; }
+.panel .line > span { color: var(--od-muted); }
+.panel .line > strong {
+  max-width: 60%;
+  text-align: right;
+  color: var(--od-ink);
+}
+.panel hr {
+  margin: 18px 0;
+  border: 0;
+  border-top: 1px solid #e9e1d2;
+}
+.return-form {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 20px !important;
+  padding: 18px !important;
+  border: 1px solid #dce8df !important;
+  border-radius: 15px !important;
+  background: #f8fbf8 !important;
+}
+.return-form h3 { margin: 0; }
+.return-form p { margin: 0 0 4px; color: var(--od-muted); font-size: 13px; }
+.return-form label { font-size: 13px; font-weight: 800; }
+.return-form input, .return-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #d7e4da;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+.return-form input:focus, .return-form textarea:focus {
+  outline: 3px solid rgba(23,116,71,.13);
+  border-color: var(--od-green);
+}
+.return-form button {
+  min-height: 45px;
+  padding: 11px 16px !important;
+  border: 0;
+  border-radius: 11px !important;
+  background: var(--od-green) !important;
+  color: #fff !important;
+  font-weight: 850;
+}
+.return-history {
+  margin: 12px 0 !important;
+  padding: 14px !important;
+  border: 1px solid #e1eae3 !important;
+  border-radius: 13px !important;
+  background: #fbfdfb !important;
+}
+main > p a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  margin: 4px 8px 0 0;
+  padding: 10px 14px;
+  border: 1px solid #cfe3d5;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--od-green-dark) !important;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 850;
+}
+main > p a:hover { background: #eef8f0; }
+button, a { -webkit-tap-highlight-color: transparent; }
+a:focus-visible, button:focus-visible {
+  outline: 3px solid #b5dfc3;
+  outline-offset: 3px;
+}
+@media (max-width: 650px) {
+  header { padding: 15px 12px !important; }
+  header > strong { font-size: 15px; }
+  main {
+    width: calc(100% - 22px) !important;
+    margin: 21px auto !important;
+  }
+  main > .panel { padding: 16px !important; border-radius: 15px !important; }
+  .supplier-flow-note { padding: 15px !important; }
+  .india-status-timeline { padding: 14px !important; }
+  .panel .line { gap: 10px; }
+  .panel .line > strong { max-width: 58%; }
+  .return-form button, .cancel-form button { width: 100%; }
+  main > p a { margin-bottom: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+<header><strong>BYXOM &#10022; Order Confirmation</strong><a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+<main>
+<h1>Order details</h1>
+{% if order.status == "Pending" %}
+<section class="supplier-flow-note" role="status">
+<strong>Order request received</strong>
+<p>Our team will call to confirm product availability, the listed price and delivery details. No supplier order is placed until you agree during the call.</p>
+</section>
+{% elif order.status == "Confirmed" %}
+<section class="supplier-flow-note" role="status">
+<strong>Phone confirmation recorded</strong>
+<p>Your confirmation has been recorded. The team is arranging the supplier order; processing starts after the supplier order reference is saved.</p>
+</section>
+{% elif order.status == "Processing" %}
+<section class="supplier-flow-note" role="status">
+<strong>Supplier order registered</strong>
+<p>Your order is being prepared. Shipment updates will appear when dispatch is confirmed.</p>
+</section>
+{% endif %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="notice">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="panel">
+<p>Your order number:</p><h2>{{ order.order_number }}</h2>
+<p>Status: <strong>{{ order.get_status_display }}</strong></p>
+{% if order.courier_name or order.tracking_number %}
+<div class="shipment-tracking">
+    <h3>Shipment Tracking</h3>
+    {% if order.courier_name %}
+        <p>Courier: <strong>{{ order.courier_name|escape }}</strong></p>
+    {% endif %}
+    {% if order.tracking_number %}
+        <p>Tracking Number: <strong>{{ order.tracking_number|escape }}</strong></p>
+    {% endif %}
+    <p class="tracking-note">Use the tracking number with the courier's official tracking service.</p>
+</div>
+{% endif %}
+
+{% if order.status == "Cancelled" %}
+<div class="order-status-cancelled">
+    <strong>Order cancelled</strong>
+    <p>This order has been cancelled.</p>
+</div>
+{% else %}
+<div class="india-status-timeline" aria-label="Order tracking progress">
+    <div class="tracking-step is-done {% if order.status == 'Pending' %}is-current{% endif %}">
+        <span class="tracking-dot"></span><span>Order placed</span>
+    </div>
+    <div class="tracking-step {% if order.status == 'Confirmed' or order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}is-done{% endif %} {% if order.status == 'Confirmed' %}is-current{% endif %}">
+        <span class="tracking-dot"></span><span>Order confirmed</span>
+    </div>
+    <div class="tracking-step {% if order.status == 'Processing' or order.status == 'Shipped' or order.status == 'Delivered' %}is-done{% endif %} {% if order.status == 'Processing' %}is-current{% endif %}">
+        <span class="tracking-dot"></span><span>Processing</span>
+    </div>
+    <div class="tracking-step {% if order.status == 'Shipped' or order.status == 'Delivered' %}is-done{% endif %} {% if order.status == 'Shipped' %}is-current{% endif %}">
+        <span class="tracking-dot"></span><span>Shipped</span>
+    </div>
+    <div class="tracking-step {% if order.status == 'Delivered' %}is-done is-current{% endif %}">
+        <span class="tracking-dot"></span><span>Delivered</span>
+    </div>
+</div>
+{% endif %}
+
+{% if order.status == "Pending" and order.payment_status == "Pending" %}
+<p class="payment-summary">Payment and collection details will be confirmed by the BYXOM team during the phone call.</p>
+{% else %}
+<p class="payment-summary">Payment method: <strong>{{ order.get_payment_method_display }}</strong> <span aria-hidden="true">&#183;</span> Payment status: <strong>{{ order.get_payment_status_display }}</strong></p>
+{% endif %}
+
+{% if order.status == "Pending" and order.payment_method == "COD" and order.payment_status == "Pending" %}
+<form method="post" action="{% url 'india_store:order_cancel' order.order_number %}" class="cancel-form">
+    {% csrf_token %}
+    <p>This COD order is still pending. You can cancel it here.</p>
+    <button type="submit">Cancel Order</button>
+</form>
+{% endif %}
+
+</div>
+<div class="panel byxom-rewards-panel">
+<h2>BYXOM Rewards &amp; Returns</h2>
+{% if reward %}
+    <div class="line">
+        <span>Delivery coins</span>
+        <strong>
+            {% if reward.coins_awarded_at %}
+                {{ reward.coins_awarded }} coins credited
+            {% elif order.status == "Delivered" %}
+                Reward processing status not recorded yet
+            {% else %}
+                Coins are calculated after confirmed delivery
+            {% endif %}
+        </strong>
+    </div>
+    {% if reward.coins_awarded_at %}
+        <p class="return-history-note">
+            Reward recorded on {{ reward.coins_awarded_at|date:"d M Y, H:i" }}.
+        </p>
+    {% endif %}
+    <div class="line">
+        <span>Diwali gift status</span>
+        <strong>{{ reward.get_gift_status_display }}</strong>
+    </div>
+    {% if reward.gift_name %}
+        <p><strong>{{ reward.gift_name|escape }}</strong></p>
+        {% if reward.gift_description %}
+            <p>{{ reward.gift_description|escape }}</p>
+        {% endif %}
+        {% if reward.gift_shipped_at %}
+            <p class="return-history-note">
+                Gift status date: {{ reward.gift_shipped_at|date:"d M Y" }}.
+            </p>
+        {% endif %}
+    {% else %}
+        <p class="return-history-note">
+            Gift details appear here when a gift campaign applies to this order.
+        </p>
+    {% endif %}
+{% else %}
+    <p>Where enabled, product coins are calculated after successful delivery.</p>
+    <p class="return-history-note">
+        No reward record has been created for this order yet.
+    </p>
+{% endif %}
+<hr>
+<p>Return window: up to
+<strong>{{ return_window_days }} days after recorded delivery</strong>,
+subject to order eligibility and BYXOM policy.</p>
+</div>
+
+<div class="panel">
+<h2>Delivery address</h2>
+<strong>{{ order.shipping_full_name|default:order.address.full_name|escape }}</strong><br>
+{{ order.shipping_mobile|default:order.address.mobile|escape }}<br>
+{{ order.shipping_address_line|default:order.address.address_line|escape }},
+{{ order.shipping_city|default:order.address.city|escape }},
+{{ order.shipping_state|default:order.address.state|escape }} &mdash; {{ order.shipping_pincode|default:order.address.pincode|escape }}
+</div>
+<div class="panel">
+<h2>Items</h2>
+{% for row in item_rows %}
+{% with item=row.item %}
+<div class="line">
+    <span>{{ item.product_name|escape }} &times; {{ item.quantity }}</span>
+    <strong>&#8377;{{ item.line_total|floatformat:2 }}</strong>
+</div>
+
+{% if row.requests %}
+<div class="return-history">
+    <strong>Return history</strong>
+    {% for return_request in row.requests %}
+        <p>
+            {{ return_request.get_status_display }} &mdash;
+            {{ return_request.quantity }} item(s) &mdash;
+            {{ return_request.created_at|date:"d M Y" }}
+        </p>
+        {% if return_request.admin_note %}
+            <p class="return-history-note">
+                BYXOM note: {{ return_request.admin_note|escape }}
+            </p>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if row.can_return %}
+<form method="post"
+      action="{% url 'india_store:return_request' order.order_number item.id %}"
+      class="return-form">
+    {% csrf_token %}
+    <h3>Request a return</h3>
+    <p>Choose the quantity and explain why you want to return this item.</p>
+
+    <label for="return-quantity-{{ item.id }}">
+        Quantity (up to {{ row.remaining_quantity }} remaining item(s))
+    </label>
+    <input id="return-quantity-{{ item.id }}" type="number" name="quantity"
+           min="1" max="{{ row.remaining_quantity }}" value="1" required>
+
+    <label for="return-reason-{{ item.id }}">Return reason</label>
+    <textarea id="return-reason-{{ item.id }}" name="reason" rows="3"
+              minlength="3" maxlength="1000"
+              placeholder="Describe the reason for your return" required></textarea>
+
+    <button type="submit">Submit return request</button>
+</form>
+{% elif row.return_message %}
+    <p class="return-window-note">{{ row.return_message }}</p>
+{% endif %}
+{% endwith %}
+{% endfor %}
+<div class="line"><span>Subtotal</span><strong>&#8377;{{ order.subtotal|floatformat:2 }}</strong></div>
+<div class="line"><span>Delivery fee</span><strong>&#8377;{{ order.delivery_fee|floatformat:2 }}</strong></div>
+<div class="line"><strong>Total</strong><strong>&#8377;{{ order.total_amount|floatformat:2 }}</strong></div>
+{% if order.payment_status == "Paid" %}
+    <p class="payment-note payment-note-success">Payment has been verified for this order.</p>
+{% elif order.payment_method == "COD" %}
+    <p class="payment-note">Payment is due at delivery. Current status: {{ order.get_payment_status_display }}.</p>
+{% elif order.payment_status == "Pending" %}
+    <p class="payment-note">Online payment is awaiting verification. Do not pay again if you have already completed the payment; check the latest order status first.</p>
+{% elif order.payment_status == "Failed" %}
+    <p class="payment-note payment-note-warning">Payment is marked failed. Check your payment/order status before trying again.</p>
+{% elif order.payment_status == "Refunded" %}
+    <p class="payment-note">This order's payment is marked refunded.</p>
+{% endif %}
+</div>
+<p><a href="{% url 'india_store:orders' %}">My All India Orders</a></p>
+<p><a href="{% url 'india_store:home' %}">Continue All India Shopping</a></p>
+</main>
+</body>
+</html>

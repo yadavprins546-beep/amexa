@@ -83,7 +83,7 @@ def expire_wallet_coins(user):
                 coins=expired_total,
                 balance_after=wallet.coin_balance,
                 remaining_coins=0,
-                description="AMEXA Coins expired after 3 months",
+                description="BYXOM Coins expired after 3 months",
             )
 
     return expired_total
@@ -165,7 +165,7 @@ def redeem_coins(
         now = timezone.now()
 
         if wallet.coin_balance < requested:
-            raise ValueError("Not enough AMEXA Coins.")
+            raise ValueError("Not enough BYXOM Coins.")
 
         lots = list(
             WalletTransaction.objects
@@ -180,7 +180,7 @@ def redeem_coins(
         )
 
         if sum(lot.remaining_coins for lot in lots) < requested:
-            raise ValueError("Not enough valid AMEXA Coins.")
+            raise ValueError("Not enough valid BYXOM Coins.")
 
         left = requested
 
@@ -211,7 +211,7 @@ def redeem_coins(
             balance_after=wallet.coin_balance,
             master_order=master_order,
             description=description
-            or f"₹{requested} discount using AMEXA Coins",
+            or f"₹{requested} discount using BYXOM Coins",
             remaining_coins=0,
         )
 

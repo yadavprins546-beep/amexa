@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ shop.name }} | AMEXA</title>
+    <title>{{ shop.name }} | BYXOM</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
 </head>
@@ -26,7 +26,7 @@
                 <div class="product-grid">
                     {% for product in products %}
                         <article class="product-card">
-                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" />{% else %}<div class="image-placeholder">AMEXA</div>{% endif %}
+                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" />{% else %}<div class="image-placeholder">BYXOM</div>{% endif %}
                             <div class="product-card-body">
                                 <h3>{{ product.name }}</h3>
                                 <p class="subtle">{{ product.category.name }}</p>

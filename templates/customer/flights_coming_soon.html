@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#21132f">
+<title>BYXOM Travel | Flight Tickets</title>
+<style>
+* { box-sizing:border-box; }
+:root {
+  --ink:#261834; --plum:#21132f; --gold:#f6cc72; --muted:#776b80; --line:#e8e0eb;
+}
+body {
+  margin:0; min-height:100vh; color:var(--ink);
+  background:radial-gradient(ellipse at 8% 15%,#e5edf9,transparent 34%),#f8f7fa;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.shell { width:min(1040px,calc(100% - 32px)); margin:auto; }
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:22px 0; border-bottom:1px solid var(--line);
+}
+.brand { color:var(--plum); font-size:25px; font-weight:950; letter-spacing:2px; text-decoration:none; }
+.brand span { color:#a46b12; }
+.tag { color:#6e567b; background:#eee7f3; border-radius:999px; padding:8px 12px; font-size:10px; font-weight:900; letter-spacing:1px; }
+main { padding:40px 0 55px; }
+.hero {
+  display:grid; grid-template-columns:1.1fr .9fr; align-items:center; gap:24px;
+  padding:clamp(24px,5vw,54px); color:#fffaf0;
+  border:1px solid #493455; border-radius:26px; overflow:hidden;
+  background:radial-gradient(circle at 85% 10%,#526b91,transparent 30%),linear-gradient(130deg,#21132f,#273f60);
+  box-shadow:0 20px 55px rgba(30,30,70,.12);
+}
+.eyebrow { color:var(--gold); font-size:10px; font-weight:900; letter-spacing:2px; text-transform:uppercase; }
+h1 { margin:15px 0; font-size:clamp(35px,5vw,54px); letter-spacing:-1.7px; line-height:1.08; }
+p { line-height:1.8; }
+.copy { color:#d5deed; font-size:14px; max-width:490px; }
+.status { display:inline-block; padding:10px 13px; margin-top:12px; border:1px solid #8095b5; border-radius:10px; color:#fff0bf; font-size:11px; font-weight:850; }
+.art { min-height:210px; display:grid; place-items:center; position:relative; }
+.orbit { position:absolute; width:220px; height:145px; border-radius:50%; border:1px solid #8da3c1; transform:rotate(-25deg); }
+.orbit.two { width:180px; height:115px; border-color:#f6cc72; transform:rotate(35deg); }
+.plane { position:relative; display:grid; place-items:center; width:112px; height:112px; border-radius:32px; transform:rotate(-7deg); background:linear-gradient(145deg,#f8e5c2,#9db2d2); color:#273f60; font-size:44px; box-shadow:0 15px 35px #13091f66; }
+.steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; margin-top:19px; }
+.step { padding:20px; background:white; border:1px solid var(--line); border-radius:16px; }
+.number { display:grid; place-items:center; width:33px; height:33px; border-radius:10px; color:#4b365f; background:#eee7f3; font-size:12px; font-weight:900; }
+h2 { margin:12px 0 7px; font-size:16px; }
+.step p { margin:0; color:var(--muted); font-size:12px; line-height:1.7; }
+.label { display:inline-block; margin-top:12px; color:#715b80; font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:1px; }
+.bottom { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-top:25px; }
+.bottom p { color:var(--muted); font-size:12px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; padding:13px 18px; border-radius:999px; background:var(--plum); color:white; text-decoration:none; font-size:12px; font-weight:850; }
+footer { border-top:1px solid var(--line); padding:18px 0 24px; color:#8b8193; font-size:11px; }
+@media(max-width:720px) {
+  .hero { grid-template-columns:1fr; gap:0; }
+  .art { min-height:180px; }
+  .orbit { width:180px; height:120px; }
+  .orbit.two { width:145px; height:95px; }
+  .plane { width:90px; height:90px; border-radius:25px; font-size:36px; }
+  .steps { grid-template-columns:1fr; }
+  .step { padding:17px; }
+}
+
+/* BYXOM service navigation: only inserted into the four requested pages. */
+.byxom-servicebar-wrap {
+    flex: 1 1 440px;
+    min-width: 0;
+    max-width: 720px;
+    margin: 0 10px;
+}
+.byxom-servicebar {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid var(--byxom-bar-border, #e4dce9);
+    border-radius: 14px;
+    background: var(--byxom-bar-bg, #fff);
+    box-shadow: 0 5px 18px rgba(25, 13, 35, .06);
+}
+.byxom-service-link {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 10px;
+    border: 1px solid var(--byxom-link-border, #e7e1ec);
+    border-radius: 10px;
+    color: var(--byxom-link-ink, #33243d);
+    background: var(--byxom-link-bg, #f7f5f8);
+    text-decoration: none;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.byxom-service-icon { font-size: 17px; line-height: 1; }
+.byxom-service-link:hover,
+.byxom-service-link:focus-visible {
+    border-color: var(--byxom-active-border, #c9b4d8);
+    outline: 2px solid transparent;
+}
+.byxom-service-link.active {
+    color: var(--byxom-active-ink, #2a1b35);
+    border-color: var(--byxom-active-border, #edc15e);
+    background: var(--byxom-active-bg, #f8cf76);
+}
+@media (max-width: 800px) {
+    .top .byxom-servicebar-wrap {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+        margin: 10px 0 0;
+    }
+    .byxom-servicebar-wrap { max-width: none; }
+    .byxom-service-link { padding: 8px 5px; font-size: 11px; }
+}
+@media (max-width: 600px) {
+    .header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px;
+    }
+    .shell > header .byxom-servicebar-wrap {
+        flex-basis: 100%;
+        max-width: none;
+        margin: 8px 0 0;
+    }
+    .byxom-servicebar { gap: 4px; padding: 5px; }
+    .byxom-service-link {
+        flex-direction: column;
+        gap: 5px;
+        min-height: 53px;
+        padding: 7px 2px;
+        font-size: 10px;
+        white-space: normal;
+        text-align: center;
+    }
+    .byxom-service-icon { font-size: 16px; }
+}
+@media (max-width: 350px) {
+    .byxom-servicebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .byxom-service-link { flex-direction: row; font-size: 11px; }
+}
+
+.shell > header { flex-wrap: wrap; }
+.shell > header .byxom-servicebar-wrap {
+    flex-basis: 100%;
+    max-width: none;
+    width: 100%;
+    margin: 8px 0 0;
+}
+.shell > header .byxom-service-link {
+    --byxom-active-bg: #241434;
+    --byxom-active-ink: #fffaf0;
+    --byxom-active-border: #f6cc72;
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <a class="brand" href="{% url 'home' %}" aria-label="Back to BYXOM home">BY<span>X</span>OM</a>
+  <span class="tag">TRAVEL &#183; PREVIEW</span>
+<div class="byxom-servicebar-wrap">
+<nav class="byxom-servicebar" aria-label="BYXOM services">
+<a class="byxom-service-link" href="{% url 'india_store:home' %}"><span class="byxom-service-icon" aria-hidden="true">&#128722;</span><span>Shopping</span></a>
+<a class="byxom-service-link" href="{% url 'home' %}"><span class="byxom-service-icon" aria-hidden="true">&#9889;</span><span>Local Fast</span></a>
+<a class="byxom-service-link" href="{% url 'health' %}"><span class="byxom-service-icon" aria-hidden="true">&#9829;</span><span>Health</span></a>
+<a class="byxom-service-link active" href="{% url 'flight_tickets' %}" aria-current="page"><span class="byxom-service-icon" aria-hidden="true">&#9992;</span><span>Travel</span></a>
+</nav>
+</div>
+</header>
+<main>
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Your next journey, ahead</div>
+      <h1>Make room for somewhere new.</h1>
+      <p class="copy">BYXOM Travel is being prepared as a future flight-ticket destination. The booking provider and secure booking/payment workflow have not been connected yet.</p>
+      <span class="status">COMING SOON &#183; BOOKING NOT LIVE</span>
+    </div>
+    <div class="art" aria-hidden="true">
+      <div class="orbit"></div><div class="orbit two"></div><div class="plane">&#9992;</div>
+    </div>
+  </section>
+  <section class="steps" aria-label="Future travel experience">
+    <article class="step">
+      <div class="number">01</div>
+      <h2>Explore flights</h2>
+      <p>A future search experience for comparing journey options.</p>
+      <span class="label">Planned concept</span>
+    </article>
+    <article class="step">
+      <div class="number">02</div>
+      <h2>Review your trip</h2>
+      <p>Trip and passenger details can be added after integration.</p>
+      <span class="label">Planned concept</span>
+    </article>
+    <article class="step">
+      <div class="number">03</div>
+      <h2>Secure booking</h2>
+      <p>Ticket issuance and payment confirmation need a verified provider.</p>
+      <span class="label">Before launch</span>
+    </article>
+  </section>
+  <div class="bottom">
+    <p>No flight search, ticket purchase or reservation is available on this page yet.</p>
+    <a class="btn" href="{% url 'home' %}">&#8592; Back to BYXOM Home</a>
+  </div>
+</main>
+<footer>BYXOM Travel &#183; Flight ticket preview</footer>
+</div>
+</body>
+</html>

@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "customer",
     "api",
+    "india_store",
 ]
 
 
@@ -292,3 +293,7 @@ import os
 
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+
+
+# BYXOM reselling: collect order request before phone confirmation.
+INDIA_ONLINE_CHECKOUT_ENABLED = False

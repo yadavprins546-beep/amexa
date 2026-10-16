@@ -10,7 +10,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Checkout | AMEXA</title>
+    <title>Checkout | BYXOM</title>
 
     <link rel="stylesheet" href="{% static 'customer/styles.css' %}">
 
@@ -64,7 +64,7 @@
 
         body::before{
 
-            content:"AMEXA";
+            content:"BYXOM";
 
             position:fixed;
 
@@ -872,7 +872,7 @@
 
     
         /* =========================================================
-           AMEXA CHECKOUT PREMIUM POLISH
+           BYXOM CHECKOUT PREMIUM POLISH
         ========================================================= */
         .panel,
         .summary-card,
@@ -1025,7 +1025,7 @@
         }
 
 
-        /* AMEXA COINS */
+        /* BYXOM COINS */
         .coins-box{
             margin-top:12px;
             padding:13px;
@@ -1532,7 +1532,7 @@
 
                 <div class="coins-box">
                     <div class="coins-head">
-                        <div class="coins-title">🪙 Use AMEXA Coins</div>
+                        <div class="coins-title">🪙 Use BYXOM Coins</div>
                         <div class="coins-balance">{{ available_coins|default:0 }} Coins</div>
                     </div>
                     <div class="coins-note">
@@ -1556,7 +1556,7 @@
                 </div>
 
                 <div class="bill-row coin-bill-row" id="coinDiscountRow" style="display:none;">
-                    <span>AMEXA Coins</span>
+                    <span>BYXOM Coins</span>
                     <strong id="coinDiscountText">− ₹0</strong>
                 </div>
 
@@ -1574,7 +1574,7 @@
 
                         🏪 This checkout contains {{ shop_count }} shops.
 
-                        AMEXA will create separate shop orders automatically,
+                        BYXOM will create separate shop orders automatically,
 
                         while you place the order once.
 
@@ -1650,7 +1650,7 @@
             row.style.display = "flex";
             text.textContent = "− ₹" + coins;
             saving.style.display = "block";
-            saving.textContent = "You will save ₹" + coins + " using " + coins + " AMEXA Coins.";
+            saving.textContent = "You will save ₹" + coins + " using " + coins + " BYXOM Coins.";
         }else{
             row.style.display = "none";
             saving.style.display = "none";

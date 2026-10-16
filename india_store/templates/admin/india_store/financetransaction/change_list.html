@@ -1,0 +1,76 @@
+{% extends "admin/change_list.html" %}
+
+{% block result_list %}
+<style>
+.byxom-finance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    margin: 18px 0 24px;
+}
+.byxom-finance-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-top: 4px solid #d71920;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+.byxom-in { border-top-color: #168044; }
+.byxom-out { border-top-color: #d71920; }
+.byxom-pending { border-top-color: #d6a63d; }
+.byxom-label { color: #666; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+.byxom-value { color: #171717; font-size: 23px; font-weight: 800; overflow-wrap: anywhere; }
+.byxom-note { color: #777; font-size: 11px; line-height: 1.5; margin-top: 9px; }
+.byxom-title { color: #171717; font-size: 19px; font-weight: 800; margin: 22px 0 5px; }
+.byxom-subtitle { color: #666; font-size: 12px; margin-bottom: 12px; }
+</style>
+
+<div class="byxom-title">BYXOM Finance Overview</div>
+<div class="byxom-subtitle">Recorded payments and outstanding balances</div>
+
+<div class="byxom-finance-grid">
+    <div class="byxom-finance-card byxom-in">
+        <div class="byxom-label">Verified Money In</div>
+        <div class="byxom-value">?{{ finance_summary.verified_incoming|floatformat:2 }}</div>
+        <div class="byxom-note">Successful, verified incoming transactions</div>
+    </div>
+    <div class="byxom-finance-card byxom-out">
+        <div class="byxom-label">Verified Money Out</div>
+        <div class="byxom-value">?{{ finance_summary.verified_outgoing|floatformat:2 }}</div>
+        <div class="byxom-note">Successful, verified outgoing transactions</div>
+    </div>
+    <div class="byxom-finance-card byxom-pending">
+        <div class="byxom-label">Pending Incoming</div>
+        <div class="byxom-value">?{{ finance_summary.pending_incoming|floatformat:2 }}</div>
+        <div class="byxom-note">Incoming transactions awaiting completion</div>
+    </div>
+    <div class="byxom-finance-card byxom-pending">
+        <div class="byxom-label">Pending Outgoing</div>
+        <div class="byxom-value">?{{ finance_summary.pending_outgoing|floatformat:2 }}</div>
+        <div class="byxom-note">Outgoing transactions awaiting completion</div>
+    </div>
+    <div class="byxom-finance-card byxom-pending">
+        <div class="byxom-label">Unverified Money In</div>
+        <div class="byxom-value">?{{ finance_summary.unverified_incoming|floatformat:2 }}</div>
+        <div class="byxom-note">Requires bank/gateway reconciliation</div>
+    </div>
+    <div class="byxom-finance-card byxom-pending">
+        <div class="byxom-label">Unverified Money Out</div>
+        <div class="byxom-value">?{{ finance_summary.unverified_outgoing|floatformat:2 }}</div>
+        <div class="byxom-note">Requires bank/gateway reconciliation</div>
+    </div>
+    <div class="byxom-finance-card byxom-pending">
+        <div class="byxom-label">Supplier/Seller Balance Due</div>
+        <div class="byxom-value">?{{ finance_summary.pending_payables|floatformat:2 }}</div>
+        <div class="byxom-note">Recorded outstanding payables</div>
+    </div>
+    <div class="byxom-finance-card">
+        <div class="byxom-label">Unverified Successful Records</div>
+        <div class="byxom-value">{{ finance_summary.unverified_successful_count }}</div>
+        <div class="byxom-note">Check against external payment evidence</div>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}

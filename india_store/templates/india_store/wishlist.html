@@ -1,0 +1,302 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#170d2b">
+  <title>My Wishlist | BYXOM</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; background:#faf7fc; color:#281738; font-family:Arial,Helvetica,sans-serif; }
+    .top { background:linear-gradient(110deg,#170d2b,#351345); color:#fff; padding:20px max(18px,calc((100% - 1120px)/2)); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; border-bottom:1px solid #76552e; }
+    .brand { color:#fff; font-size:26px; font-weight:950; letter-spacing:2px; text-decoration:none; }
+    .brand span { color:#f8ce72; }
+    .nav { display:flex; gap:10px; flex-wrap:wrap; }
+    .nav a { color:#fff0c8; border:1px solid #6b4d75; padding:10px 13px; border-radius:999px; font-size:12px; text-decoration:none; font-weight:bold; }
+    main { max-width:1120px; margin:28px auto; padding:0 18px 55px; }
+    .eyebrow { color:#a3752e; letter-spacing:2px; font-weight:900; font-size:10px; text-transform:uppercase; }
+    h1 { margin:8px 0; font-size:clamp(27px,4vw,37px); }
+    .sub { color:#85768e; font-size:13px; line-height:1.6; margin-bottom:23px; }
+    .messages { padding:12px 14px; background:#fff3d4; border:1px solid #f1d99b; border-radius:10px; margin:10px 0 18px; font-size:12px; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .card { overflow:hidden; background:#fff; border:1px solid #eee2f2; border-radius:16px; box-shadow:0 8px 28px rgba(41,16,59,.05); }
+    .photo { height:220px; display:grid; place-items:center; background:linear-gradient(145deg,#fff8e7,#fbf0fb); padding:14px; }
+    .photo img { width:100%; height:100%; object-fit:contain; }
+    .body { padding:16px; }
+    .cat { text-transform:uppercase; letter-spacing:1px; color:#9274a0; font-size:9px; font-weight:900; }
+    h2 { font-size:16px; line-height:1.4; margin:7px 0 12px; overflow-wrap:anywhere; }
+    .price { font-weight:950; font-size:19px; }
+    .mrp { color:#96889b; text-decoration:line-through; font-size:12px; margin-left:7px; }
+    .actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:15px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:38px; border:0; border-radius:9px; padding:9px 12px; font-size:11px; text-decoration:none; font-weight:850; cursor:pointer; }
+    .primary { background:linear-gradient(110deg,#42185a,#78306f); color:white; }
+    .secondary { border:1px solid #e5d6ea; color:#68457a; background:white; }
+    .unavailable { font-size:11px; color:#93621a; margin-top:12px; }
+    .empty { text-align:center; background:white; border:1px dashed #d8c5e1; border-radius:17px; padding:50px 20px; }
+    .empty .heart { font-size:42px; color:#b47ac2; }
+    .empty h2 { font-size:21px; }
+    .empty p { color:#86768e; font-size:13px; line-height:1.6; }
+    @media(max-width:800px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .photo { height:175px; } }
+    @media(max-width:520px) { .grid { grid-template-columns:1fr 1fr; gap:9px; } .body { padding:11px; } .photo { height:145px; padding:8px; } h2 { font-size:13px; } .price { font-size:15px; } .actions { gap:6px; } .btn { flex:1; padding:8px 7px; font-size:10px; } .top { padding:16px; } }
+  </style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{% url 'india_store:home' %}">BY<span>X</span>OM</a>
+    <nav class="nav">
+      <a href="{% url 'india_store:home' %}">Continue shopping</a>
+      <a href="{% url 'india_store:cart' %}">View cart</a>
+      <a href="{% url 'india_store:orders' %}">My orders</a>
+    </nav>
+  <a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+  <main>
+    <div class="eyebrow">Your personal collection &#183; BYXOM</div>
+    <h1>My Wishlist &#9825;</h1>
+    <div class="sub">Keep your favourite finds together. This wishlist is saved to your account.</div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="messages">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    {% if wishlist_items %}
+      <div class="grid">
+        {% for item in wishlist_items %}
+          <article class="card">
+            <div class="photo">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name|escape }}" loading="lazy">
+              {% elif item.product.image_2 %}
+                <img src="{{ item.product.image_2.url }}" alt="{{ item.product.name|escape }}" loading="lazy">
+              {% elif item.product.image_3 %}
+                <img src="{{ item.product.image_3.url }}" alt="{{ item.product.name|escape }}" loading="lazy">
+              {% else %}
+                <span>Photo not added</span>
+              {% endif %}
+            </div>
+            <div class="body">
+              <div class="cat">{% if item.product.category %}{{ item.product.category.name|escape }}{% else %}BYXOM pick{% endif %}</div>
+              <h2>{{ item.product.name|escape }}</h2>
+              <div>
+                <span class="price">&#8377;{{ item.product.selling_price|floatformat:2 }}</span>
+                {% if item.product.mrp and item.product.mrp > item.product.selling_price %}
+                  <span class="mrp">&#8377;{{ item.product.mrp|floatformat:2 }}</span>
+                {% endif %}
+              </div>
+              <div class="actions">
+                {% if item.product.listing_status == "active" and item.product.source_status == "available" %}
+                  <a class="btn primary" href="{% url 'india_store:product_detail' item.product.id %}">View product</a>
+                  <form method="post" action="{% url 'india_store:cart_add' item.product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button class="btn secondary" type="submit">Add to cart</button>
+                  </form>
+                {% else %}
+                  <div class="unavailable">Currently unavailable</div>
+                {% endif %}
+                <form method="post" action="{% url 'india_store:wishlist_toggle' item.product.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="wishlist">
+                  <button class="btn secondary" type="submit">Remove &#9825;</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <section class="empty">
+        <div class="heart">&#9825;</div>
+        <h2>Your wishlist is ready for favourites</h2>
+        <p>Explore All India Shopping and save the products you want to revisit.</p>
+        <a class="btn primary" href="{% url 'india_store:home' %}">Explore products &#8594;</a>
+      </section>
+    {% endif %}
+  </main>
+</body>
+</html>

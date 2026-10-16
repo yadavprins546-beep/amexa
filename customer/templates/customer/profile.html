@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Profile | AMEXA</title>
+<title>My Profile | BYXOM</title>
 
 <style>
 *{
@@ -613,7 +613,7 @@ button{
 
         <div class="top-title">
             <strong>My Profile</strong>
-            <span>AMEXA Account</span>
+            <span>BYXOM Account</span>
         </div>
 
         <a href="{% url 'home' %}" class="top-btn" aria-label="Home">🏠</a>
@@ -625,7 +625,7 @@ button{
 
             <div class="user-info">
                 <h1 class="user-name">
-                    {{ request.user.name|default:"AMEXA Customer" }}
+                    {{ request.user.name|default:"BYXOM Customer" }}
                 </h1>
 
                 <div class="user-phone">
@@ -658,7 +658,7 @@ button{
     <section class="section">
         <div class="section-head">
             <h2>⚡ Quick Actions</h2>
-            <p>Your most-used AMEXA features</p>
+            <p>Your most-used BYXOM features</p>
         </div>
 
         <div class="quick-grid">
@@ -694,7 +694,7 @@ button{
 
     <section class="section">
         <div class="section-head">
-            <h2>✨ My AMEXA</h2>
+            <h2>✨ My BYXOM</h2>
             <p>Shopping tools around your account</p>
         </div>
 
@@ -710,7 +710,7 @@ button{
                 <div class="menu-icon">🪙</div>
 
                 <div class="menu-copy">
-                    <div class="menu-title">AMEXA Coins</div>
+                    <div class="menu-title">BYXOM Coins</div>
                     <div class="menu-sub">
                         <span class="wallet-balance-small">
                             {{ wallet.coin_balance|default:0 }} coins
@@ -735,7 +735,7 @@ button{
                         </div>
 
                         <div class="wallet-note">
-                            Your AMEXA reward balance and recent coin activity.
+                            Your BYXOM reward balance and recent coin activity.
                         </div>
                     </div>
 
@@ -765,7 +765,7 @@ button{
                                 </div>
 
                                 <div class="wallet-tx-sub">
-                                    {{ tx.description|default:"AMEXA Coins transaction" }}
+                                    {{ tx.description|default:"BYXOM Coins transaction" }}
                                     · {{ tx.created_at|date:"d M Y, h:i A" }}
                                 </div>
                             </div>
@@ -842,7 +842,37 @@ button{
         </div>
     </section>
 
-    <section class="section">
+
+    <section class="section" style="margin-top:18px;">
+        <h3 style="margin:0 0 12px;font-size:17px;">BYXOM All India Shopping</h3>
+        <p style="margin:0 0 14px;color:#9aa4b8;font-size:12px;line-height:1.6;">
+            Your nationwide shopping, saved products and order history are linked to this account.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+            <a href="{% url 'india_store:home' %}"
+               style="display:block;padding:14px;border:1px solid #504060;border-radius:12px;background:#20162d;color:#fff;text-decoration:none;">
+                <strong style="display:block;margin-bottom:5px;">Shop All India</strong>
+                <span style="font-size:11px;color:#c9b8d7;">Browse nationwide products</span>
+            </a>
+            <a href="{% url 'india_store:orders' %}"
+               style="display:block;padding:14px;border:1px solid #504060;border-radius:12px;background:#20162d;color:#fff;text-decoration:none;">
+                <strong style="display:block;margin-bottom:5px;">All India Orders</strong>
+                <span style="font-size:11px;color:#c9b8d7;">View nationwide purchases</span>
+            </a>
+            <a href="{% url 'india_store:wishlist' %}"
+               style="display:block;padding:14px;border:1px solid #504060;border-radius:12px;background:#20162d;color:#fff;text-decoration:none;">
+                <strong style="display:block;margin-bottom:5px;">All India Wishlist</strong>
+                <span style="font-size:11px;color:#c9b8d7;">Open saved products</span>
+            </a>
+            <a href="{% url 'india_store:notifications' %}"
+               style="display:block;padding:14px;border:1px solid #d8b45b;border-radius:12px;background:#fff6dc;color:#3b204e;text-decoration:none;">
+                <strong style="display:block;margin-bottom:5px;">Order Notifications</strong>
+                <span style="font-size:11px;color:#765b35;">Order confirmation, shipping and delivery updates</span>
+            </a>
+        </div>
+    </section>
+
+<section class="section">
         <a href="{% url 'help_support' %}" class="help-card">
             <h3>💬 Need help?</h3>
             <p>Orders, delivery, payments, cancellations, refunds and FAQs.</p>
@@ -855,8 +885,8 @@ button{
             <a href="{% url 'about' %}" class="menu-item">
                 <div class="menu-icon">ℹ️</div>
                 <div class="menu-copy">
-                    <div class="menu-title">About AMEXA</div>
-                    <div class="menu-sub">Learn about AMEXA and our local shopping mission</div>
+                    <div class="menu-title">About BYXOM</div>
+                    <div class="menu-sub">Learn about BYXOM and our local shopping mission</div>
                 </div>
                 <div class="arrow">›</div>
             </a>
@@ -874,7 +904,7 @@ button{
                 <div class="menu-icon">📄</div>
                 <div class="menu-copy">
                     <div class="menu-title">Terms & Conditions</div>
-                    <div class="menu-sub">AMEXA customer service terms</div>
+                    <div class="menu-sub">BYXOM customer service terms</div>
                 </div>
                 <div class="arrow">›</div>
             </a>
@@ -882,11 +912,11 @@ button{
     </section>
 
     <a href="{% url 'logout' %}" class="logout">
-        🚪 Logout from AMEXA
+        🚪 Logout from BYXOM
     </a>
 
     <div class="footer">
-        AMEXA • SMART LOCAL SHOPPING
+        BYXOM • SMART LOCAL SHOPPING
     </div>
 </main>
 

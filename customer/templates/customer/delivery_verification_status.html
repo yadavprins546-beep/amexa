@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Status | AMEXA</title>
+    <title>Verification Status | BYXOM</title>
     <style>
         *{box-sizing:border-box}:root{--bg:#040914;--panel:#0c1729;--line:rgba(91,238,255,.16);--text:#f4fbff;--muted:#8fa3ba;--cyan:#5beeff;--green:#32efa2;--yellow:#ffd76c;--red:#ff6685}
         body{margin:0;min-height:100vh;display:grid;place-items:center;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 80% 0,rgba(37,113,255,.2),transparent 28%),radial-gradient(circle at 10% 70%,rgba(50,239,162,.08),transparent 24%),var(--bg)}
@@ -17,7 +17,7 @@
 </head>
 <body>
 <main class="page">
-    <div class="brand">AMEXA<small>DELIVERY PARTNER</small></div>
+    <div class="brand">BYXOM<small>DELIVERY PARTNER</small></div>
 
     <section class="card {% if profile.verification_status == 'PENDING' %}pending{% elif profile.verification_status == 'UNDER_REVIEW' %}review{% elif profile.verification_status == 'REJECTED' %}rejected{% elif profile.verification_status == 'BLOCKED' %}blocked{% else %}approved{% endif %}">
         <div class="hero">
@@ -27,19 +27,19 @@
 
             {% if profile.verification_status == 'PENDING' %}
                 <h1>Verification pending</h1>
-                <p>Your application reached AMEXA. The delivery dashboard will unlock after admin approval.</p>
+                <p>Your application reached BYXOM. The delivery dashboard will unlock after admin approval.</p>
             {% elif profile.verification_status == 'UNDER_REVIEW' %}
                 <h1>Application under review</h1>
-                <p>AMEXA is checking your personal details, documents and bank information.</p>
+                <p>BYXOM is checking your personal details, documents and bank information.</p>
             {% elif profile.verification_status == 'REJECTED' %}
                 <h1>Changes required</h1>
                 <p>Please correct the details mentioned below and submit your application again.</p>
             {% elif profile.verification_status == 'BLOCKED' %}
                 <h1>Partner account blocked</h1>
-                <p>You cannot access the delivery dashboard. Contact AMEXA Support for assistance.</p>
+                <p>You cannot access the delivery dashboard. Contact BYXOM Support for assistance.</p>
             {% else %}
                 <h1>Verification approved</h1>
-                <p>Your AMEXA Delivery Partner dashboard is ready.</p>
+                <p>Your BYXOM Delivery Partner dashboard is ready.</p>
             {% endif %}
 
             <span class="status-chip">{{ profile.get_verification_status_display|upper }}</span>

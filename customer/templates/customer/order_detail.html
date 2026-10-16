@@ -1,7 +1,7 @@
 {% extends 'customer/base.html' %}
 {% load static %}
 
-{% block title %}Live Order Tracking | AMEXA{% endblock %}
+{% block title %}Live Order Tracking | BYXOM{% endblock %}
 
 {% block content %}
 
@@ -498,7 +498,7 @@
                 {% if order.shop %}
                     {{ order.shop.name }}
                 {% else %}
-                    AMEXA Store
+                    BYXOM Store
                 {% endif %}
                 → {{ order.address.address_line }}, {{ order.address.city }}
             </p>
@@ -596,7 +596,7 @@
                     <div>
                         <div class="rider-name" id="riderName">
                             {% if delivery_assignment %}
-                                {{ delivery_assignment.delivery_partner.name|default:"AMEXA Rider" }}
+                                {{ delivery_assignment.delivery_partner.name|default:"BYXOM Rider" }}
                             {% else %}
                                 Rider not assigned yet
                             {% endif %}
@@ -606,7 +606,7 @@
                             {% if delivery_assignment %}
                                 {{ delivery_assignment.status }}
                             {% else %}
-                                AMEXA will show rider details after assignment.
+                                BYXOM will show rider details after assignment.
                             {% endif %}
                         </div>
                     </div>
@@ -691,7 +691,7 @@
                             {% if order.shop %}
                                 {{ order.shop.name }}
                             {% else %}
-                                AMEXA Store
+                                BYXOM Store
                             {% endif %}
                         </strong>
                     </div>
@@ -858,7 +858,7 @@
 
     const customerIcon = L.divIcon({
         className: "",
-        html: `<div style="position:relative;width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#8150ff;border:3px solid #fff;box-shadow:0 8px 25px rgba(0,0,0,.28);font-size:20px;">📦<span style="position:absolute;top:-23px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:3px 6px;border-radius:999px;background:#081625;color:#fff;font-size:8px;font-weight:900;border:1px solid rgba(255,255,255,.14)">AMEXA Parcel</span></div>`,
+        html: `<div style="position:relative;width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#8150ff;border:3px solid #fff;box-shadow:0 8px 25px rgba(0,0,0,.28);font-size:20px;">📦<span style="position:absolute;top:-23px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:3px 6px;border-radius:999px;background:#081625;color:#fff;font-size:8px;font-weight:900;border:1px solid rgba(255,255,255,.14)">BYXOM Parcel</span></div>`,
         iconSize: [38,38],
         iconAnchor: [19,19]
     });
@@ -1018,7 +1018,7 @@
                 shopMarker,
                 shopLatLng,
                 shopIcon,
-                `<strong>${data.shop.name || "AMEXA Store"}</strong><br>Pickup store`
+                `<strong>${data.shop.name || "BYXOM Store"}</strong><br>Pickup store`
             );
         }
 
@@ -1037,7 +1037,7 @@
                 customerMarker,
                 customerLatLng,
                 customerIcon,
-                `<strong>📦 AMEXA Parcel</strong><br>${data.customer.address || "Exact delivery pin"}`
+                `<strong>📦 BYXOM Parcel</strong><br>${data.customer.address || "Exact delivery pin"}`
             );
         }
 
@@ -1060,7 +1060,7 @@
                 riderMarker,
                 riderLatLng,
                 riderIcon,
-                `<strong>${data.rider.name || "AMEXA Rider"}</strong><br>Live rider location`
+                `<strong>${data.rider.name || "BYXOM Rider"}</strong><br>Live rider location`
             );
 
             const riderLocationText =
@@ -1137,14 +1137,14 @@
 
         if (name) {
             name.innerText = rider.assigned
-                ? (rider.name || "AMEXA Rider")
+                ? (rider.name || "BYXOM Rider")
                 : "Rider not assigned yet";
         }
 
         if (sub) {
             sub.innerText = rider.assigned
                 ? (rider.status || "Assigned")
-                : "AMEXA will show rider details after assignment.";
+                : "BYXOM will show rider details after assignment.";
         }
 
         if (updated) {
@@ -1163,9 +1163,9 @@
 
     function secureCallRider() {
         alert(
-            "Secure masked calling needs an AMEXA virtual-number provider. " +
+            "Secure masked calling needs an BYXOM virtual-number provider. " +
             "Direct phone calling has been disabled here so your personal number " +
-            "is not intentionally exposed by AMEXA."
+            "is not intentionally exposed by BYXOM."
         );
     }
 
@@ -1223,7 +1223,7 @@
             updateMap(data);
         }
         catch (error) {
-            console.error("AMEXA live tracking error:", error);
+            console.error("BYXOM live tracking error:", error);
 
             const riderLocationText =
                 document.getElementById("riderLocationText");

@@ -1,6 +1,6 @@
 {% extends "customer/shopkeeper_base.html" %}
 
-{% block title %}Rider Handover | AMEXA Shop{% endblock %}
+{% block title %}Rider Handover | BYXOM Shop{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -25,7 +25,7 @@
     <section class="panel hero">
         <span class="badge green">✓ PICKING COMPLETE</span>
         <h1>Rider Handover</h1>
-        <p>Order #{{ order.order_number }} exact quantity ke saath packed hai. Parcel sirf neeche dikh rahe assigned AMEXA rider ko handover karein.</p>
+        <p>Order #{{ order.order_number }} exact quantity ke saath packed hai. Parcel sirf neeche dikh rahe assigned BYXOM rider ko handover karein.</p>
         <div class="order-check">
             Packed units: <b>{{ task.picked_units }}/{{ task.required_units }}</b> •
             Picking status: <b>{{ task.get_status_display }}</b>
@@ -43,7 +43,7 @@
 
             <div class="rider-name">
                 <h2>{{ assignment.delivery_partner.name }}</h2>
-                <p>AMEXA Delivery Partner</p>
+                <p>BYXOM Delivery Partner</p>
                 <span class="badge">{{ assignment.status }}</span>
             </div>
 

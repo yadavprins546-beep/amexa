@@ -1,0 +1,304 @@
+{% load india_notifications %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#170d2b">
+<title>Search Products | BYXOM</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#faf7fc;color:#281738}
+a{color:inherit}.top{background:linear-gradient(110deg,#170d2b,#351345);color:white}
+.topin{max-width:1150px;margin:auto;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-size:27px;font-weight:950;letter-spacing:2px;text-decoration:none}.brand span{color:#f8ce72}
+nav{display:flex;gap:9px;flex-wrap:wrap}nav a{color:#fff0c8;text-decoration:none;border:1px solid #73547c;border-radius:22px;padding:9px 12px;font-size:12px}
+main{max-width:1150px;margin:26px auto;padding:0 18px 50px}.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a3752e;font-weight:bold}
+h1{font-size:clamp(26px,4vw,36px);margin:8px 0}.sub{font-size:13px;color:#85768e;margin-bottom:22px}
+.panel{background:white;border:1px solid #eee2f2;border-radius:16px;padding:17px;margin-bottom:24px}
+.filters{display:grid;grid-template-columns:2fr repeat(4,minmax(100px,1fr)) auto;gap:10px;align-items:end}
+label{display:flex;flex-direction:column;gap:6px;font-size:10px;color:#725e7f;font-weight:bold}
+input,select{width:100%;min-width:0;min-height:42px;border:1px solid #e4d7e9;border-radius:8px;padding:9px;background:#fff;color:#311e41}
+.btn{min-height:42px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;padding:10px 14px;font-size:11px;font-weight:bold;text-decoration:none;cursor:pointer}
+.primary{background:linear-gradient(105deg,#3d1755,#78306f);color:white}.secondary{background:white;border:1px solid #e3d5ea;color:#67467a}
+.results{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:20px 0 14px;flex-wrap:wrap}.results h2{margin:5px 0;font-size:22px}.count{font-size:12px;color:#85768e}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{min-width:0;overflow:hidden;background:white;border:1px solid #eee2f2;border-radius:14px;box-shadow:0 7px 24px #29103b0a}
+.photo{height:190px;padding:12px;display:grid;place-items:center;background:linear-gradient(145deg,#fff8e7,#fbf0fb)}
+.photo img{width:100%;height:100%;object-fit:contain}.body{padding:12px}.cat{color:#9378a1;font-size:9px;font-weight:bold;text-transform:uppercase}
+.name{font-size:13px;font-weight:bold;line-height:1.4;min-height:36px;margin:7px 0}.price{font-size:17px;font-weight:950}.mrp{font-size:11px;color:#95879a;text-decoration:line-through;margin-left:6px}.off{font-size:10px;color:#087443;font-weight:bold}
+.actions{display:flex;gap:7px;margin-top:12px}.actions .btn{flex:1;padding:9px 6px}
+.empty{text-align:center;background:white;padding:38px;border:1px dashed #d8c5e1;border-radius:16px}.empty p{font-size:12px;color:#86768e}
+.pages{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:25px}.pages span{font-size:11px;color:#85768e}
+@media(max-width:950px){.filters{grid-template-columns:repeat(3,minmax(0,1fr))}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){main{padding:0 12px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.query{grid-column:1/-1}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.photo{height:145px;padding:8px}.body{padding:9px}.name{font-size:11px}.price{font-size:14px}.actions{flex-wrap:wrap}.actions .btn{font-size:10px}}
+
+/* BYXOM-CATALOG-IMAGE-FALLBACK-V1 */
+.byxom-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 150px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 12px;
+    text-align: center;
+    overflow: hidden;
+    color: #39234b;
+    background:
+        radial-gradient(ellipse at 15% 15%, rgba(255,255,255,.95), transparent 48%),
+        linear-gradient(145deg, #fff7df 0%, #f8e9f5 52%, #ece7ff 100%);
+    border: 1px solid rgba(90, 55, 110, .10);
+}
+.byxom-placeholder-mark {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #452052, #8c4f98);
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    box-shadow: 0 8px 20px rgba(69, 32, 82, .18);
+}
+.byxom-image-placeholder strong {
+    max-width: 100%;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.byxom-image-placeholder small {
+    max-width: 210px;
+    color: #75677d;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+</style>
+
+<style id="BYXOM-ALL-PAGES-PREMIUM-V1">
+:root {
+  --byxom-red: #8d1725;
+  --byxom-deep: #3a1018;
+  --byxom-gold: #e9bd68;
+  --byxom-ink: #281d20;
+  --byxom-muted: #786a68;
+  --byxom-border: #eee0d2;
+  --byxom-cream: #fffaf3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(233,189,104,.13), transparent 30rem),
+    #fbf8f5 !important;
+  color: var(--byxom-ink) !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(110deg, var(--byxom-deep), #751624) !important;
+  color: #fff8e9 !important;
+  border-bottom: 1px solid rgba(233,189,104,.42);
+  box-shadow: 0 8px 26px rgba(57,15,23,.12);
+  align-items: center;
+}
+header a {
+  text-decoration: none;
+  transition: opacity .18s ease, background .18s ease;
+}
+header a:hover { opacity: .88; }
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 1120px !important;
+  margin: 30px auto !important;
+  padding-bottom: 44px !important;
+}
+h1, h2, h3 {
+  color: #37151b;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+h1 { font-size: clamp(26px, 4vw, 38px); }
+p { line-height: 1.7; }
+a { color: var(--byxom-red); }
+main > .panel,
+.panel,
+.order-card,
+.empty,
+.summary,
+.card,
+.product-card,
+.product-panel,
+.review-card,
+.notice,
+.address-option {
+  border-color: var(--byxom-border) !important;
+  border-radius: 16px !important;
+}
+.panel, .order-card, .summary, .product-panel, .review-card {
+  background: #fff !important;
+  box-shadow: 0 8px 26px rgba(66,32,25,.045);
+}
+.empty {
+  background: #fffdf8 !important;
+  padding: clamp(22px, 4vw, 38px);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select, textarea {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid #e5d7cb !important;
+  border-radius: 10px !important;
+  background: #fffdfa !important;
+  color: #321f21 !important;
+  font: inherit;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid rgba(141,23,37,.16);
+  border-color: var(--byxom-red) !important;
+}
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--byxom-red);
+}
+button, .btn, .checkout-button, input[type="submit"] {
+  border-radius: 10px !important;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+button:hover, .btn:hover, .checkout-button:hover,
+input[type="submit"]:hover {
+  filter: brightness(1.05);
+}
+button:focus-visible, a:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(233,189,104,.8);
+  outline-offset: 3px;
+}
+.btn.primary, button.primary, .checkout-button,
+button[type="submit"], input[type="submit"] {
+  background: linear-gradient(110deg, #761624, #a92232);
+  color: #fffaf0;
+  border-color: #8d1725;
+}
+.btn.secondary {
+  background: #fff !important;
+  color: var(--byxom-red) !important;
+  border: 1px solid #e8d5c8 !important;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom-color: #f1e8df !important;
+  overflow-wrap: anywhere;
+}
+.line > strong { text-align: right; }
+.price, .selling-price, .total {
+  color: var(--byxom-red);
+  font-weight: 850;
+}
+.mrp {
+  color: #968680;
+  text-decoration: line-through;
+}
+.notice {
+  padding: 13px 15px;
+  background: #fff7e8;
+  border: 1px solid #eedab1;
+  color: #654516;
+  overflow-wrap: anywhere;
+}
+.status, .badge {
+  border-radius: 999px;
+  font-weight: 800;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 11px;
+  text-align: left;
+  border-bottom: 1px solid #f0e5dc;
+}
+th { color: #6e4240; background: #fff7ee; }
+img { max-width: 100%; }
+.pages, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+hr { border: 0; border-top: 1px solid #eee0d2; }
+@media (max-width: 650px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 20px auto !important;
+    padding-bottom: 30px !important;
+  }
+  header { gap: 10px; }
+  .panel, .order-card, .summary { padding: 14px !important; }
+  .line { gap: 9px; }
+  .line > span { min-width: 0; overflow-wrap: anywhere; }
+  .actions { gap: 7px; }
+  .actions > *, .actions .btn { min-width: 0; }
+  button, .btn, .checkout-button { max-width: 100%; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+
+</head>
+<body>
+<header class="top"><div class="topin">
+<a class="brand" href="{% url 'india_store:home' %}">BY<span>X</span>OM</a>
+<nav><a href="{% url 'india_store:home' %}">Home</a><a href="{% url 'india_store:wishlist' %}">Wishlist</a><a href="{% url 'india_store:cart' %}">Cart</a><a href="{% url 'india_store:orders' %}">My Orders</a></nav>
+</div><a href="{% url 'profile' %}" aria-label="Open BYXOM My Account" style="display:inline-flex;align-items:center;justify-content:center;gap:7px;margin:8px;padding:9px 13px;border:1px solid #d8b45b;border-radius:999px;background:#fff6dc;color:#3b204e;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;">&#128100; My Account</a>
+{% india_notifications_link %}
+</header>
+<main>
+<div class="eyebrow">BYXOM &#10022; All India Shopping</div>
+<h1>Find your next favourite.</h1>
+<p class="sub">Search products, filter by category and budget, and sort your results.</p>
+<section class="panel"><form method="get" action="{% url 'india_store:search' %}">
+<div class="filters">
+<label class="query">Search<input type="search" name="q" value="{{ query|escape }}" maxlength="100" placeholder="Product, description or category"></label>
+<label>Category<select name="category"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.slug|escape }}"{% if selected_category == c.slug %} selected{% endif %}>{{ c.name|escape }}</option>{% endfor %}</select></label>
+<label>Min price &#8377;<input type="number" min="0" step="0.01" name="min_price" value="{{ min_price|escape }}" placeholder="No minimum"></label>
+<label>Max price &#8377;<input type="number" min="0" step="0.01" name="max_price" value="{{ max_price|escape }}" placeholder="No maximum"></label>
+<label>Sort<select name="sort"><option value="newest"{% if sort == "newest" %} selected{% endif %}>Newest</option><option value="price-low"{% if sort == "price-low" %} selected{% endif %}>Price low to high</option><option value="price-high"{% if sort == "price-high" %} selected{% endif %}>Price high to low</option><option value="featured"{% if sort == "featured" %} selected{% endif %}>Featured</option></select></label>
+<button class="btn primary" type="submit">Apply</button>
+</div></form></section>
+<div class="results"><div><div class="eyebrow">Your results</div><h2>{% if query %}Results for &ldquo;{{ query|escape }}&rdquo;{% else %}Available products{% endif %}</h2></div><div class="count">{{ result_count }} products &#183; Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div></div>
+{% if products %}
+<section class="grid">{% for product in products %}
+<article class="card"><a href="{% url 'india_store:product_detail' product.id %}" style="display:block;text-decoration:none">
+<div class="photo">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name|escape }}" loading="lazy">{% elif product.image_2 %}<img src="{{ product.image_2.url }}" alt="{{ product.name|escape }}" loading="lazy">{% elif product.image_3 %}<img src="{{ product.image_3.url }}" alt="{{ product.name|escape }}" loading="lazy">{% else %}<div class="byxom-image-placeholder" role="img"
+     aria-label="{{ product.name|escape }} product photo pending verification">
+    <span class="byxom-placeholder-mark">B</span>
+    <strong>{{ product.name|escape }}</strong>
+    <small>Exact product photo pending verification</small>
+</div>{% endif %}</div>
+<div class="body"><div class="cat">{% if product.category %}{{ product.category.name|escape }}{% else %}BYXOM pick{% endif %}</div><div class="name">{{ product.name|escape }}</div><span class="price">&#8377;{{ product.selling_price|floatformat:2 }}</span>{% if product.mrp and product.mrp > product.selling_price %}<span class="mrp">?{{ product.mrp|floatformat:2 }}</span> <span class="off">{{ product.discount_percent }}% OFF</span>{% endif %}</div></a>
+<div class="body" style="padding-top:0"><div class="actions"><a class="btn secondary" href="{% url 'india_store:product_detail' product.id %}">Details</a><form method="post" action="{% url 'india_store:cart_add' product.id %}" style="flex:1">{% csrf_token %}<input type="hidden" name="quantity" value="1"><button class="btn primary" style="width:100%" type="submit">Add to cart</button></form></div></div>
+</article>{% endfor %}</section>
+{% if page_obj.paginator.num_pages > 1 %}<nav class="pages" aria-label="Pagination">
+{% if page_obj.has_previous %}<a class="btn secondary" href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.previous_page_number }}">&#8592; Previous</a>{% endif %}
+<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}<a class="btn primary" href="?q={{ query|urlencode }}&category={{ selected_category|urlencode }}&min_price={{ min_price|urlencode }}&max_price={{ max_price|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.next_page_number }}">Next &#8594;</a>{% endif %}
+</nav>{% endif %}
+{% else %}<section class="empty"><strong>No matching available products.</strong><p>Try a different keyword or widen your price range.</p><a class="btn primary" href="{% url 'india_store:search' %}">Clear filters</a></section>{% endif %}
+</main></body></html>

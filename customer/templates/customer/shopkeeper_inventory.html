@@ -1,5 +1,5 @@
 {% extends "customer/shopkeeper_base.html" %}
-{% block title %}Inventory | AMEXA Shop{% endblock %}
+{% block title %}Inventory | BYXOM Shop{% endblock %}
 {% block extra_head %}
 <style>
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.search{display:flex;flex:1;min-width:220px}.search input{width:100%;min-height:41px;padding:10px 12px;border:1px solid var(--line);border-radius:11px 0 0 11px;color:var(--text);background:#091322;outline:0}.search button{border-radius:0 11px 11px 0}.products{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.product{padding:13px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(14,27,46,.95),rgba(7,14,27,.98))}.product-top{display:flex;gap:11px}.photo{width:64px;height:64px;flex:0 0 64px;border-radius:13px;object-fit:cover;background:#111c2c}.photo.empty{display:grid;place-items:center;padding:0;font-size:20px}.product h3{margin:2px 0 4px;font-size:11px}.product small{display:block;color:var(--muted);font-size:7px;line-height:1.5}.stock{margin-left:auto;text-align:right}.stock b{display:block;font:1000 18px ui-monospace}.stock span{font-size:7px;color:var(--muted)}details{margin-top:11px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px}summary{cursor:pointer;color:var(--cyan);font-size:8px;font-weight:900}.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:9px}.mini-grid .field{margin:0}.mini-grid .field input,.mini-grid .field select{min-height:36px;padding:7px;font-size:8px}.full{grid-column:1/-1}.record{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.record:first-of-type{border:0}.record small{display:block;color:var(--muted);font-size:7px;margin-top:3px}@media(max-width:720px){.products{grid-template-columns:1fr}}
@@ -15,7 +15,7 @@
 </section>
 <div class="tools">
     <form class="search" method="get"><input name="q" value="{{ query }}" placeholder="Search product or barcode"><button class="btn" type="submit">Search</button></form>
-    <a class="btn primary" href="{% url 'shopkeeper_product_add' %}">＋ Scan / Add Product</a>
+    <a class="btn primary" href="{% url 'shopkeeper_product_add' %}">+ Scan / Add Product</a>
 </div>
 <section class="products">
 {% for product in products %}

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#050a14">
-    <title>AMEXA Admin Control Center</title>
+    <title>BYXOM Admin Control Center</title>
     <style>
         *{box-sizing:border-box}
         :root{--bg:#050914;--panel:#0b1423;--panel2:#101d30;--line:rgba(118,225,255,.13);--text:#f5fbff;--muted:#8297ad;--cyan:#6ae6ff;--green:#35e9a2;--yellow:#ffd36b;--red:#ff6685;--blue:#7196ff;--purple:#b58cff}
@@ -21,7 +21,7 @@
         .table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;white-space:nowrap}.table th{padding:0 10px 10px;text-align:left;color:#60768d;font-size:7px;text-transform:uppercase;letter-spacing:.7px}.table td{padding:11px 10px;border-top:1px solid rgba(255,255,255,.055);font-size:9px}.table td strong{font-size:9px}.table td small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.badge{display:inline-flex;padding:5px 7px;border-radius:999px;font-size:7px;font-weight:950;text-transform:uppercase}.status-pending,.status-confirmed,.status-preparing{color:var(--yellow);background:rgba(255,211,107,.08)}.status-out-for-delivery{color:var(--cyan);background:rgba(106,230,255,.08)}.status-delivered,.status-approved{color:var(--green);background:rgba(53,233,162,.08)}.status-cancelled,.status-rejected,.status-blocked{color:var(--red);background:rgba(255,102,133,.08)}
         .queue{display:grid;gap:8px}.queue-item{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.022)}.avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;color:#03130e;background:linear-gradient(135deg,var(--green),var(--cyan));font-size:12px;font-weight:1000}.queue-item b{display:block;font-size:9px}.queue-item small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.queue-empty{padding:18px;text-align:center;color:var(--muted);font-size:9px}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quick{min-height:74px;padding:12px;border:1px solid rgba(255,255,255,.065);border-radius:13px;background:rgba(255,255,255,.025);transition:.2s}.quick:hover{transform:translateY(-2px);border-color:rgba(106,230,255,.18)}.quick i{display:block;font-style:normal;font-size:16px}.quick b{display:block;margin-top:8px;font-size:9px}.quick small{display:block;margin-top:3px;color:var(--muted);font-size:7px}.support-item{padding:10px 0;border-top:1px solid rgba(255,255,255,.055)}.support-item:first-of-type{border-top:0}.support-item b{font-size:9px}.support-item p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.4}.support-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:#596f85;font-size:7px}
 
-        /* AMEXA BUSINESS ANALYTICS V1 */
+        /* BYXOM BUSINESS ANALYTICS V1 */
         .biz-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
         .biz-card{padding:15px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(16,29,48,.9),rgba(7,15,28,.96))}
         .biz-card span{display:block;color:var(--muted);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px}
@@ -54,7 +54,7 @@
 <body>
 <div class="layout">
     <aside class="sidebar">
-        <div class="brand">AMEXA<small>ADMIN CONTROL CENTER</small></div>
+        <div class="brand">BYXOM<small>ADMIN CONTROL CENTER</small></div>
         <div class="live"><i></i> SYSTEM OPERATIONAL</div>
         <div class="nav-label">OVERVIEW</div>
         <nav class="nav">
@@ -70,7 +70,7 @@
             <a href="{% url 'admin:customer_settlement_changelist' %}"><span class="icon">↗</span>Settlements</a>
             <a href="{% url 'admin:customer_customeruser_changelist' %}"><span class="icon">◎</span>Users</a>
         </nav>
-        <div class="sidebar-foot"><b>{{ request.user.name|default:request.user.email }}</b><small>AMEXA Administrator</small></div>
+        <div class="sidebar-foot"><b>{{ request.user.name|default:request.user.email }}</b><small>BYXOM Administrator</small></div>
     </aside>
 
     <main class="main">
@@ -97,7 +97,7 @@
         </section>
 
 
-        <!-- AMEXA BUSINESS ANALYTICS V1 -->
+        <!-- BYXOM BUSINESS ANALYTICS V1 -->
 
         <section class="biz-metrics">
             <article class="biz-card">
@@ -106,12 +106,12 @@
             </article>
 
             <article class="biz-card">
-                <span>Today's AMEXA Earning</span>
+                <span>Today's BYXOM Earning</span>
                 <b>?{{ today_amexa_earning|floatformat:0 }}</b>
             </article>
 
             <article class="biz-card">
-                <span>Total AMEXA Earning</span>
+                <span>Total BYXOM Earning</span>
                 <b>?{{ total_amexa_earning|floatformat:0 }}</b>
             </article>
 
@@ -245,8 +245,8 @@
         <article class="panel" style="margin-bottom:16px">
             <div class="panel-head">
                 <div>
-                    <h2>Shop Earnings & AMEXA Revenue</h2>
-                    <p>Shop-wise sales, payable amount and AMEXA earning</p>
+                    <h2>Shop Earnings & BYXOM Revenue</h2>
+                    <p>Shop-wise sales, payable amount and BYXOM earning</p>
                 </div>
                 <a class="link" href="{% url 'admin:customer_settlement_changelist' %}">
                     Settlements ?
@@ -260,7 +260,7 @@
                             <th>Shop</th>
                             <th>Sales</th>
                             <th>Shop Payable</th>
-                            <th>AMEXA Earning</th>
+                            <th>BYXOM Earning</th>
                             <th>Settlements</th>
                         </tr>
                     </thead>
@@ -323,7 +323,7 @@
                 <article class="panel">
                     <div class="panel-head"><div><h2>Quick Actions</h2><p>Frequently used controls</p></div></div>
                     <div class="quick-grid">
-                        <a class="quick" href="{% url 'admin:customer_product_add' %}"><i>＋</i><b>Add Product</b><small>Create inventory item</small></a>
+                        <a class="quick" href="{% url 'admin:customer_product_add' %}"><i>+</i><b>Add Product</b><small>Create inventory item</small></a>
                         <a class="quick" href="{% url 'admin:customer_shop_add' %}"><i>▤</i><b>Add Shop</b><small>Register local seller</small></a>
                         <a class="quick" href="{% url 'admin:customer_deliveryassignment_add' %}"><i>⌖</i><b>Assign Rider</b><small>Dispatch an order</small></a>
                         <a class="quick" href="{% url 'admin:customer_category_add' %}"><i>◇</i><b>Add Category</b><small>Organize products</small></a>

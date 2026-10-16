@@ -1,0 +1,138 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3faf6">
+  <title>Order Request Received | BYXOM</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --green:#14794b;--green-dark:#0b5735;--mint:#e6f6ed;
+      --ink:#17251d;--muted:#69776f;--line:#dcebe1;--orange:#d97732;
+    }
+    body{
+      margin:0;min-height:100vh;padding:24px;
+      display:grid;place-items:center;
+      background:radial-gradient(circle at 10% 5%,#e5f6eb 0,transparent 35%),
+                 linear-gradient(145deg,#f8fcf9,#eef7f1);
+      color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif;
+    }
+    .card{
+      width:min(100%,540px);overflow:hidden;background:#fff;
+      border:1px solid var(--line);border-radius:26px;
+      box-shadow:0 22px 65px rgba(18,76,45,.10);
+    }
+    .topline{height:6px;background:linear-gradient(90deg,#14794b,#50b77b,#f0a15d)}
+    .content{padding:clamp(24px,6vw,42px);text-align:center}
+    .brand{font-size:14px;font-weight:950;letter-spacing:2px;color:var(--green-dark)}
+    .check{
+      display:grid;place-items:center;width:82px;height:82px;margin:27px auto 20px;
+      border-radius:50%;background:var(--mint);border:1px solid #c9ead6;
+      color:var(--green);font-size:42px;font-weight:700;
+    }
+    h1{font-size:clamp(26px,5vw,35px);letter-spacing:-1px;line-height:1.15;margin:0}
+    .subtitle{max-width:390px;margin:13px auto 23px;color:var(--muted);font-size:15px;line-height:1.7}
+    .orderbox{
+      padding:16px;text-align:left;background:#f8fbf9;
+      border:1px solid var(--line);border-radius:15px;
+    }
+    .orderline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .orderline+.orderline{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+    .label{color:var(--muted);font-size:12px}
+    .value{text-align:right;font-size:13px;font-weight:800;overflow-wrap:anywhere}
+    .status{
+      display:inline-flex;align-items:center;gap:6px;padding:7px 10px;
+      border-radius:999px;background:#fff4e8;color:#9a511c;
+      font-size:12px;font-weight:800;
+    }
+    .callout{
+      margin:17px 0;padding:14px;text-align:left;border-left:3px solid var(--orange);
+      background:#fff8f0;border-radius:0 12px 12px 0;
+      color:#714b31;font-size:13px;line-height:1.65;
+    }
+    .countrow{display:flex;justify-content:center;align-items:center;gap:7px;margin-top:23px;color:var(--muted);font-size:12px}
+    #countdown{display:inline-grid;place-items:center;min-width:25px;height:25px;padding:0 5px;border-radius:8px;background:var(--mint);color:var(--green-dark);font-weight:900}
+    .track{height:5px;overflow:hidden;background:#eaf2ed;border-radius:99px;margin-top:11px}
+    .bar{height:100%;width:100%;background:linear-gradient(90deg,#14794b,#74c995);transform-origin:left;animation:shrink 5s linear forwards}
+    .detail-link{
+      display:flex;justify-content:center;align-items:center;min-height:49px;
+      width:100%;margin-top:19px;padding:12px 16px;border-radius:12px;
+      background:var(--green);color:#fff;text-decoration:none;font-weight:850;font-size:14px;
+    }
+    .detail-link:hover{background:var(--green-dark)}
+    .foot{margin:16px 0 0;color:#8a968f;font-size:11px;line-height:1.6}
+    @keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+    @media(max-width:420px){body{padding:12px}.content{padding:23px 18px}.orderline{gap:8px}.value{max-width:62%}}
+    @media(prefers-reduced-motion:reduce){.bar{animation:none;transform:scaleX(0)}}
+  </style>
+</head>
+<body>
+  <main class="card" id="order-success"
+        data-redirect-url="{% url 'india_store:order_detail' order_number=order.order_number %}">
+    <div class="topline"></div>
+    <div class="content">
+      <div class="brand">BYXOM <span aria-hidden="true">✦</span></div>
+      <div class="check" aria-hidden="true">✓</div>
+      <h1>Order request received!</h1>
+      <p class="subtitle">
+        Thank you for choosing BYXOM. Your request has been saved successfully.
+      </p>
+
+      <section class="orderbox" aria-label="Order request details">
+        <div class="orderline">
+          <span class="label">Request number</span>
+          <span class="value">{{ order.order_number|escape }}</span>
+        </div>
+        <div class="orderline">
+          <span class="label">Current order amount</span>
+          <span class="value">₹{{ order.total_amount|floatformat:2 }}</span>
+        </div>
+        <div class="orderline">
+          <span class="label">Request status</span>
+          <span class="status">● Pending confirmation</span>
+        </div>
+      </section>
+
+      <div class="callout">
+        <strong>What happens next?</strong><br>
+        The BYXOM team will call you to confirm product availability,
+        the final price and delivery details. This page confirms your request;
+        it does not mean supplier availability or final price is confirmed.
+      </div>
+
+      <div class="countrow" aria-live="polite">
+        Opening order details in <span id="countdown">5</span> seconds
+      </div>
+      <div class="track" aria-hidden="true"><div class="bar"></div></div>
+
+      <a class="detail-link" id="detail-link"
+         href="{% url 'india_store:order_detail' order_number=order.order_number %}">
+        View order details →
+      </a>
+      <p class="foot">You can open your order details now using the button above.</p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const root = document.getElementById("order-success");
+      const countdown = document.getElementById("countdown");
+      const target = root && root.dataset.redirectUrl;
+      if (!target) return;
+
+      let remaining = 5;
+      const tick = window.setInterval(function () {
+        remaining = Math.max(0, remaining - 1);
+        if (countdown) countdown.textContent = String(remaining);
+        if (remaining <= 0) window.clearInterval(tick);
+      }, 1000);
+
+      window.setTimeout(function () {
+        window.location.assign(target);
+      }, 5000);
+    })();
+  </script>
+</body>
+</html>
