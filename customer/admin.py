@@ -6,6 +6,7 @@ from .shop_wallet_services import pay_settlement_claim
 
 from .models import (
     AboutPage,
+    Banner,
     HelpSupport,
     BadInventoryRecord,
     PrivacyPolicy,
@@ -16,6 +17,8 @@ from .models import (
     Referral,
     Payment,
     MasterOrder,
+    MonthlyPack,
+    MonthlyPackItem,
     CouponUsage,
     CustomerSavedLocation,
     Coupon,
@@ -2978,3 +2981,40 @@ class SettlementClaimAdmin(admin.ModelAdmin):
             "REJECTED",
         )
 
+
+@admin.register(MonthlyPack)
+class MonthlyPackAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'name', 'user', 'shop', 'discount_type',
+        'discount_value', 'is_active', 'is_favorite', 'updated_at',
+    )
+    list_filter = ('discount_type', 'is_active', 'is_favorite')
+    search_fields = ('name', 'user__email')
+    list_editable = ('is_active', 'is_favorite')
+    readonly_fields = ('last_ordered_at', 'created_at', 'updated_at')
+    fields = (
+        'user', 'shop', 'name', 'description',
+        'discount_type', 'discount_value', 'is_active', 'is_favorite',
+        'last_ordered_at', 'created_at', 'updated_at',
+    )
+    list_per_page = 25
+
+
+@admin.register(MonthlyPackItem)
+class MonthlyPackItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'pack', 'product', 'quantity', 'added_at', 'updated_at')
+    search_fields = ('pack__name', 'pack__user__email', 'product__name')
+    readonly_fields = ('added_at', 'updated_at')
+    fields = ('pack', 'product', 'quantity', 'added_at', 'updated_at')
+    list_per_page = 25
+
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'is_active', 'display_order', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('title', 'link')
+    list_editable = ('is_active', 'display_order')
+    readonly_fields = ('created_at', 'updated_at')
+    fields = ('title', 'image', 'link', 'is_active', 'display_order', 'created_at', 'updated_at')
+    list_per_page = 25

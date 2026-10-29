@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ product.name|escape }} | BYXOM</title>
+<style>
+:root{color-scheme:light;--ink:#241c35;--muted:#766d83;--line:#ece5f1;--accent:#6a35b8}
+*{box-sizing:border-box}body{margin:0;background:#f8f6fb;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{background:#24143b;color:white;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header a{color:white;text-decoration:none;font-weight:800}.brand{font-size:23px;letter-spacing:-1px}
+main{max-width:1050px;margin:30px auto;padding:0 18px}
+.back{display:inline-block;margin-bottom:18px;color:var(--accent);font-weight:700;text-decoration:none}
+.product{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;background:white;border:1px solid var(--line);border-radius:22px;padding:clamp(18px,4vw,36px);box-shadow:0 12px 35px #24143b0a}
+.photo{min-height:300px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,#fff6df,#f4edfb);padding:18px}
+.photo img{width:100%;height:100%;max-height:430px;object-fit:contain}
+h1{font-size:clamp(25px,4vw,38px);line-height:1.15;margin:9px 0 14px}
+.category{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.price{font-size:28px;font-weight:900;margin:15px 0 6px}
+.mrp{color:#978ba0;text-decoration:line-through;margin-left:9px;font-size:14px}
+.stock{display:inline-block;margin:12px 0;padding:8px 11px;border-radius:24px;background:#e5f8ec;color:#17653a;font-size:12px;font-weight:800}
+.description{line-height:1.7;color:#594f66;white-space:pre-line}
+.related{margin-top:26px;background:white;border:1px solid var(--line);border-radius:18px;padding:20px}
+.related a{color:var(--accent);text-decoration:none;font-weight:700}
+@media(max-width:650px){.product{grid-template-columns:1fr;gap:18px}.photo{min-height:230px}main{margin-top:18px}}
+</style>
+</head>
+<body>
+<header><a class="brand" href="{% url 'india_store:home' %}">BYXOM</a>
+<nav><a href="{% url 'india_store:search' %}">All products</a> &nbsp; <a href="{% url 'india_store:cart' %}">Cart</a></nav>
+</header>
+<main>
+<a class="back" href="{% if product.category %}{% url 'india_store:category_detail' product.category.slug %}{% else %}{% url 'india_store:home' %}{% endif %}">← Back to shopping</a>
+<article class="product">
+  <div class="photo">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name|escape }}">
+    {% else %}<span>BYXOM product image</span>{% endif %}
+  </div>
+  <section>
+    {% if product.category %}<div class="category">{{ product.category.name|escape }}</div>{% endif %}
+    <h1>{{ product.name|escape }}</h1>
+    <div class="price">₹{{ product.selling_price|floatformat:2 }}
+      {% if product.mrp and product.mrp > product.selling_price %}<span class="mrp">₹{{ product.mrp|floatformat:2 }}</span>{% endif %}
+    </div>
+    <span class="stock">In stock: {{ product.stock }}</span>
+    {% if product.description %}<p class="description">{{ product.description|escape }}</p>{% else %}<p class="description">Product details will be updated by the BYXOM team.</p>{% endif %}
+    <p style="font-size:12px;color:#766d83;">This page displays BYXOM own-inventory details. Cart and checkout eligibility depend on the active purchase flow.</p>
+  </section>
+</article>
+{% if related_products %}
+<section class="related"><h2>More in this category</h2>
+{% for item in related_products %}
+<p><a href="{% url 'india_store:stock_product_detail' item.id %}">{{ item.name|escape }}</a> — ₹{{ item.selling_price|floatformat:2 }}</p>
+{% endfor %}
+</section>
+{% endif %}
+</main>
+</body>
+</html>

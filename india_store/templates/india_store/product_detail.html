@@ -961,6 +961,18 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
     .reward-coin-title { font-size: 13px; }
 }
 
+
+/* BYXOM-SHARED-DETAIL-STOCK-NOTE-V1 */
+.own-stock-note {
+    margin: 12px 0;
+    padding: 14px 16px;
+    border: 1px solid #cce9d6;
+    border-radius: 14px;
+    background: #f0fbf4;
+    color: #245a3b;
+    line-height: 1.65;
+    font-size: 13px;
+}
 </style>
 
 </head>
@@ -1086,7 +1098,8 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                         </div>
                         <h1>{{ product.name|escape }}</h1>
                     </div>
-                    <form method="post" action="{% url 'india_store:wishlist_toggle' product.id %}">
+                    {% if not is_own_inventory %}
+<form method="post" action="{% url 'india_store:wishlist_toggle' product.id %}">
                         {% csrf_token %}
                         <button type="submit"
                                 class="wishlist-btn{% if is_wishlisted %} saved{% endif %}"
@@ -1097,11 +1110,16 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                         </button>
                         <input type="hidden" name="next" value="detail">
                     </form>
+{% endif %}
                 </div>
 
                 <div class="badge-row">
                     <span class="badge">BYXOM PICK</span>
-                    {% if product.sale_badge_is_active and product.sale_badge_text %}
+                    {% if is_own_inventory %}
+                        {% if product.show_sale_badge and product.sale_badge_text %}
+                            <span class="badge sale">{{ product.sale_badge_text|escape }}</span>
+                        {% endif %}
+                    {% elif product.sale_badge_is_active and product.sale_badge_text %}
                         <span class="badge sale">{{ product.sale_badge_text|escape }}</span>
                     {% endif %}
                     {% if product.show_new_arrival_badge %}<span class="badge">NEW ARRIVAL</span>{% endif %}
@@ -1129,7 +1147,7 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                         <span class="selling-price">&#8377;{{ product.selling_price|floatformat:2 }}</span>
                         {% if product.mrp and product.mrp > product.selling_price %}
                             <span class="mrp">&#8377;{{ product.mrp|floatformat:2 }}</span>
-                            <span class="discount-pill">{{ product.discount_percent }}% OFF</span>
+                            {% if product.discount_percent %}<span class="discount-pill">{{ product.discount_percent }}% OFF</span>{% endif %}
                         {% endif %}
                     </div>
                     <div class="listed-price-note">
@@ -1175,14 +1193,20 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                 <div class="availability-strip">
                     <span class="availability-icon">&#10003;</span>
                     <span>
+                        {% if is_own_inventory %}
+                        <strong>Available in BYXOM stock</strong>
+                        Current listed quantity: {{ product.stock }} unit(s).
+                    {% else %}
                         <strong>Source marked as available</strong>
                         Availability is based on the current listing. Review your order details at checkout before placing the order.
+                    {% endif %}
                     </span>
                 </div>
 
                 <div class="purchase-area">
                     <div class="purchase-label">Make it yours</div>
-                    <form id="addToCartForm" method="post"
+                    {% if not is_own_inventory %}
+<form id="addToCartForm" method="post"
                           action="{% url 'india_store:cart_add' product.id %}">
                         {% csrf_token %}
                         <div class="buy-row">
@@ -1197,8 +1221,26 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                             </button>
                         </div>
                     </form>
+{% else %}
+<form id="addToCartForm" method="post"
+      action="{% url 'india_store:stock_cart_add' product.id %}">
+    {% csrf_token %}
+    <div class="buy-row">
+        <label class="quantity-wrap" for="productQuantity">
+            Quantity
+            <input class="quantity-input" id="productQuantity"
+                   type="number" name="quantity" min="1"
+                   max="{% if product.stock < 99 %}{{ product.stock }}{% else %}99{% endif %}"
+                   value="1" inputmode="numeric" required>
+        </label>
+        <button class="add-btn" type="submit" {% if product.stock < 1 %}disabled{% endif %}>
+            <span aria-hidden="true">&#43;</span> Add to Cart
+        </button>
+    </div>
+</form>
+{% endif %}
 
-                    <div class="share-row">
+<div class="share-row">
                         <button type="button" class="outline-btn" id="shareButton">
                             <span aria-hidden="true">&#8599;</span> Share product
                         </button>
@@ -1335,7 +1377,7 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
 
             <div class="related-grid">
                 {% for related in related_products %}
-                    <a class="related-card" href="{% url 'india_store:product_detail' related.id %}">
+                    <a class="related-card" href="{% if is_own_inventory %}{% url 'india_store:stock_product_detail' related.id %}{% else %}{% url 'india_store:product_detail' related.id %}{% endif %}">
                         <div class="related-photo">
                             {% if related.image %}
                                 <img src="{{ related.image.url }}" alt="{{ related.name|escape }}" loading="lazy">

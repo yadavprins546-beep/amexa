@@ -484,7 +484,7 @@ img { max-width: 100%; }
 <div class="panel">
 <h2>Order Summary</h2>
 {% for line in checkout_lines %}
-<div class="line"><span>{{ line.item.product.name|escape }} &times; {{ line.item.quantity }}</span><strong>&#8377;{{ line.line_total|floatformat:2 }}</strong></div>
+<div class="line"><span>{{ line.item.display_product.name|escape }} &times; {{ line.item.quantity }}</span><strong>&#8377;{{ line.line_total|floatformat:2 }}</strong></div>
 {% endfor %}
 <div class="line"><span>Subtotal</span><strong>&#8377;{{ subtotal|floatformat:2 }}</strong></div>
 <div class="line"><span>Delivery fee (prototype)</span><strong>&#8377;{{ delivery_fee|floatformat:2 }}</strong></div>

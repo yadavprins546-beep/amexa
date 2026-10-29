@@ -5,7 +5,9 @@ app_name = "india_store"
 
 urlpatterns = [
     path("", views.india_home, name="home"),
+    path("category/<slug:slug>/", views.india_category_detail_view, name="category_detail"),
     path("search/", views.india_search_view, name="search"),
+    path("stock-product/<int:product_id>/", views.india_stock_product_detail_view, name="stock_product_detail"),
     path(
         "product/<int:product_id>/",
         views.india_product_detail_view,
@@ -28,6 +30,11 @@ urlpatterns = [
         "cart/add/<int:product_id>/",
         views.india_cart_add_view,
         name="cart_add",
+    ),
+    path(
+        "cart/add-stock/<int:product_id>/",
+        views.india_stock_cart_add_view,
+        name="stock_cart_add",
     ),
     path(
         "cart/update/<int:item_id>/",

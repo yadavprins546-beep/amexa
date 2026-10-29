@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.db import IntegrityError, transaction
-from django.db.models import Avg, Q
+from django.db.models import Avg, Q, Sum
+from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -33,6 +34,7 @@ from .models import (
 )
 
 from .notifications import notify_order_status, notify_payment_success
+from .stock_services import reserve_stock_for_cart_items, reserve_stock_for_products, release_order_stock
 
 
 
@@ -41,6 +43,9 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum
 from .models import IndiaReturnRequest, IndiaShoppingSettings
+
+from customer.models import Banner as CustomerBanner
+
 
 def india_search_view(request):
     query = (request.GET.get("q") or "").strip()[:100]
@@ -52,6 +57,9 @@ def india_search_view(request):
     qs = (
         ResellingProduct.objects
         .filter(listing_status="active", source_status="available")
+        # BYXOM-DEMO-LISTING-SEARCH-GUARD-V1
+        .exclude(source_name__icontains="DEMO")
+        .exclude(description__icontains="DEMO PRODUCT")
         .filter(Q(category__is_active=True) | Q(category__isnull=True))
         .select_related("category")
     )
@@ -113,10 +121,47 @@ def india_search_view(request):
     })
 
 
+def india_category_detail_view(request, slug):
+    category = get_object_or_404(
+        IndiaCategory,
+        slug=slug,
+        is_active=True,
+    )
+
+    products = IndiaProduct.objects.filter(
+        category=category,
+        is_active=True,
+        stock__gt=0,
+    ).select_related("category").order_by("-is_featured", "-created_at")
+
+    reselling_products = ResellingProduct.objects.filter(
+        category=category,
+        listing_status="active",
+        source_status="available",
+    ).exclude(
+        source_name__icontains="DEMO"
+    ).exclude(
+        description__icontains="DEMO PRODUCT"
+    ).select_related("category").order_by(
+        "-is_featured", "-created_at"
+    )
+
+    return render(
+        request,
+        "india_store/category_detail.html",
+        {
+            "category": category,
+            "products": products,
+            "reselling_products": reselling_products,
+        },
+    )
+
+
 def india_home(request):
     categories = IndiaCategory.objects.filter(
-        is_active=True
-    )
+        is_active=True,
+        show_on_home=True,
+    ).order_by("sort_order", "name")
 
     products = IndiaProduct.objects.filter(
         is_active=True,
@@ -129,18 +174,96 @@ def india_home(request):
             listing_status="active",
             source_status="available",
         )
+        .exclude(source_name__icontains="DEMO")
+        .exclude(description__icontains="DEMO PRODUCT")
         .filter(
             Q(category__is_active=True) | Q(category__isnull=True)
         )
         .select_related("category")
-        .order_by("-is_featured", "-created_at")[:16]
+        .annotate(
+            sold_quantity=Coalesce(
+                Sum(
+                    "india_order_items__quantity",
+                    filter=Q(india_order_items__order__status="Delivered"),
+                ),
+                0,
+            )
+        )
+        .order_by("-sold_quantity", "-is_featured", "-created_at")[:16]
+    )
+
+    cart_count = 0
+    if request.user.is_authenticated:
+        cart_count = (
+            IndiaCartItem.objects.filter(cart__user=request.user)
+            .aggregate(total=Sum("quantity"))["total"] or 0
+        )
+
+    store_banners = (
+        CustomerBanner.objects.filter(is_active=True)
+        .exclude(image="")
+        .order_by("display_order", "-created_at")[:8]
     )
 
     context = {
         "categories": categories,
         "products": products,
         "reselling_products": reselling_products,
+        "store_banners": store_banners,
+        "cart_count": cart_count,
     }
+
+
+
+
+    festival_products = (
+
+        IndiaProduct.objects.filter(
+
+            is_active=True,
+
+            stock__gt=0,
+
+            category__is_active=True,
+
+        )
+
+        .filter(
+
+            Q(name__icontains="diwali")
+
+            | Q(name__icontains="festive")
+
+            | Q(name__icontains="diyas")
+
+            | Q(name__icontains="light")
+
+            | Q(name__icontains="decor")
+
+            | Q(name__icontains="gift")
+
+            | Q(description__icontains="diwali")
+
+            | Q(description__icontains="festive")
+
+            | Q(description__icontains="decor")
+
+            | Q(category__name__icontains="festive")
+
+            | Q(category__name__icontains="decor")
+
+            | Q(category__name__icontains="home")
+
+        )
+
+        .select_related("category")
+
+        .order_by("-created_at", "name")[:12]
+
+    )
+
+    context["festival_products"] = festival_products
+
 
     return render(
         request,
@@ -153,14 +276,14 @@ def india_home(request):
 def india_cart_view(request):
     cart = IndiaCart.objects.filter(user=request.user).first()
     items = (
-        cart.items.select_related("product").all()
+        cart.items.select_related("product", "own_product").all()
         if cart is not None
         else []
     )
     subtotal = cart.subtotal if cart is not None else 0
     cart_item_count = sum(int(item.quantity) for item in items)
     estimated_coins_total = sum(
-        max(0, int(item.product.reward_coins or 0)) * int(item.quantity)
+        max(0, int(getattr(item.display_product, "reward_coins", 0) or 0)) * int(item.quantity)
         for item in items
     )
     coins_enabled = IndiaShoppingSettings.get_settings().coins_enabled
@@ -188,6 +311,12 @@ def india_cart_add_view(request, product_id):
         listing_status="active",
         source_status="available",
     )
+    if (
+        "DEMO" in (product.source_name or "").upper()
+        or "DEMO PRODUCT" in (product.description or "").upper()
+    ):
+        messages.error(request, "This demo product is not available for ordering.")
+        return redirect("india_store:india_home")
 
     try:
         quantity = int(request.POST.get("quantity", 1))
@@ -224,9 +353,56 @@ def india_cart_add_view(request, product_id):
 
 @login_required
 @require_POST
+def india_stock_cart_add_view(request, product_id):
+    """Add a sellable BYXOM-owned IndiaProduct to the same customer cart."""
+    product = get_object_or_404(
+        IndiaProduct.objects.select_related("category"),
+        pk=product_id,
+        is_active=True,
+        stock__gt=0,
+        category__is_active=True,
+    )
+    if product.selling_price is None or product.selling_price <= 0:
+        messages.error(request, "This product does not have a valid selling price yet.")
+        return redirect("india_store:stock_product_detail", product_id=product_id)
+
+    try:
+        quantity = int(request.POST.get("quantity", 1))
+    except (TypeError, ValueError):
+        quantity = 1
+    quantity = max(1, min(quantity, 99))
+    if quantity > product.stock:
+        messages.error(request, f"Only {product.stock} unit(s) are currently available.")
+        return redirect("india_store:stock_product_detail", product_id=product_id)
+
+    cart, _ = IndiaCart.objects.get_or_create(user=request.user)
+    with transaction.atomic():
+        item = IndiaCartItem.objects.select_for_update().filter(
+            cart=cart, own_product=product
+        ).first()
+        new_quantity = min((item.quantity if item else 0) + quantity, 99)
+        if new_quantity > product.stock:
+            messages.error(request, f"Only {product.stock} unit(s) are currently available.")
+            return redirect("india_store:stock_product_detail", product_id=product_id)
+        if item is None:
+            IndiaCartItem.objects.create(
+                cart=cart, own_product=product, quantity=quantity,
+                price=product.selling_price,
+            )
+        else:
+            item.quantity = new_quantity
+            item.price = product.selling_price
+            item.save(update_fields=["quantity", "price", "updated_at"])
+
+    messages.success(request, f"{product.name} added to your All India Cart.")
+    return redirect("india_store:cart")
+
+
+@login_required
+@require_POST
 def india_cart_update_view(request, item_id):
     item = get_object_or_404(
-        IndiaCartItem.objects.select_related("product"),
+        IndiaCartItem.objects.select_related("product", "own_product"),
         pk=item_id,
         cart__user=request.user,
     )
@@ -241,8 +417,23 @@ def india_cart_update_view(request, item_id):
         messages.error(request, "Quantity must be at least 1.")
         return redirect("india_store:cart")
 
-    if item.product.listing_status != "active" or item.product.source_status != "available":
-        messages.error(request, "This product is currently unavailable. Remove it from your cart.")
+    product = item.display_product
+    if item.is_own_inventory:
+        available = (
+            product.is_active and product.category.is_active
+            and product.stock >= quantity and product.selling_price is not None
+            and product.selling_price > 0
+        )
+    else:
+        available = (
+            product.listing_status == "active"
+            and product.source_status == "available"
+            and "DEMO" not in (product.source_name or "").upper()
+            and "DEMO PRODUCT" not in (product.description or "").upper()
+            and product.selling_price is not None and product.selling_price > 0
+        )
+    if not available:
+        messages.error(request, "This product is currently unavailable or the requested quantity exceeds stock. Remove it or reduce the quantity.")
         return redirect("india_store:cart")
 
     if quantity > 99:
@@ -250,7 +441,7 @@ def india_cart_update_view(request, item_id):
         messages.warning(request, "Maximum quantity is 99.")
 
     item.quantity = quantity
-    item.price = item.product.selling_price
+    item.price = product.selling_price
     item.save(update_fields=["quantity", "price", "updated_at"])
     messages.success(request, "Cart quantity updated.")
     return redirect("india_store:cart")
@@ -264,7 +455,7 @@ def india_cart_remove_view(request, item_id):
         pk=item_id,
         cart__user=request.user,
     )
-    item_name = item.product.name
+    item_name = item.display_product.name
     item.delete()
 
     messages.success(request, f"{item_name} removed from your All India Cart.")
@@ -318,27 +509,20 @@ def india_checkout_view(request):
                 return redirect("india_store:cart")
 
             items = list(
-                cart.items.select_related("product").select_for_update()
+                cart.items.select_related("product", "own_product", "own_product__category").select_for_update()
             )
             if not items:
                 messages.info(request, "Your cart is empty.")
                 return redirect("india_store:cart")
 
-            if any(
-                item.product.listing_status != "active"
-                or item.product.source_status != "available"
-                or item.product.selling_price <= 0
-                for item in items
-            ):
-                messages.error(
-                    request,
-                    "A product is no longer available. Please review your cart.",
-                )
+            stock_pools, stock_error = reserve_stock_for_cart_items(items)
+            if stock_error:
+                messages.error(request, stock_error)
                 return redirect("india_store:cart")
 
             subtotal = sum(
                 (
-                    item.product.selling_price * item.quantity
+                    item.display_product.selling_price * item.quantity
                     for item in items
                 ),
                 Decimal("0.00"),
@@ -368,9 +552,14 @@ def india_checkout_view(request):
                 IndiaOrderItem.objects.create(
                     order=order,
                     product=item.product,
-                    product_name=item.product.name,
+                    own_product=item.own_product,
+                    product_name=item.display_product.name,
                     quantity=item.quantity,
-                    price=item.product.selling_price,
+                    price=item.display_product.selling_price,
+                    stock_pool=stock_pools[item.pk],
+                    stock_deducted=True,
+                    stock_restored=False,
+                    stock_deducted_at=timezone.now(),
                 )
 
 
@@ -383,11 +572,11 @@ def india_checkout_view(request):
             {"order": order},
         )
 
-    items = list(cart.items.select_related("product").all())
+    items = list(cart.items.select_related("product", "own_product").all())
     checkout_lines = [
         {
             "item": item,
-            "line_total": item.product.selling_price * item.quantity,
+            "line_total": item.display_product.selling_price * item.quantity,
         }
         for item in items
     ]
@@ -446,12 +635,14 @@ def india_order_cancel_view(request, order_number):
             order.status != "Pending"
             or order.payment_method != "COD"
             or order.payment_status != "Pending"
+            or bool((order.supplier_order_id or "").strip())
         ):
             messages.error(
                 request,
                 "This order can no longer be cancelled from your account.",
             )
         else:
+            release_order_stock(order)
             order.status = "Cancelled"
             order.save(update_fields=["status", "updated_at"])
             notify_order_status(order)
@@ -649,6 +840,15 @@ def india_razorpay_start_view(request):
         )
         return redirect("india_store:checkout")
 
+    # BYXOM-ONLINE-STOCK-RESERVATION-GUARD-V1
+    # Do not enable online checkout until pending/abandoned payment reservations
+    # can be reconciled safely with the gateway.
+    messages.info(
+        request,
+        "Online checkout remains paused while stock reservation and payment reconciliation are completed.",
+    )
+    return redirect("india_store:checkout")
+
     key_id = getattr(settings, "RAZORPAY_KEY_ID", "")
     key_secret = getattr(settings, "RAZORPAY_KEY_SECRET", "")
 
@@ -704,6 +904,9 @@ def india_razorpay_start_view(request):
             item.quantity >= 1
             and item.product.listing_status == "active"
             and item.product.source_status == "available"
+            # BYXOM-DEMO-PAYMENT-CART-GUARD-V1
+            and "DEMO" not in (item.product.source_name or "").upper()
+            and "DEMO PRODUCT" not in (item.product.description or "").upper()
             and item.product.selling_price is not None
             and item.product.selling_price > 0
             for item in cart_items
@@ -996,6 +1199,7 @@ def india_razorpay_verify_view(request):
         return redirect(detail_url, **detail_kwargs)
 
     already_paid = False
+    stock_reservation_error = None
 
     try:
         with transaction.atomic():
@@ -1023,6 +1227,41 @@ def india_razorpay_verify_view(request):
                     raise ValueError(
                         "This payment ID is already linked to another order."
                     )
+
+                # Reserve stock in the same transaction that marks payment paid.
+                order_items = list(
+                    locked_order.items.select_for_update().order_by("product_id")
+                )
+                if not order_items:
+                    stock_reservation_error = (
+                        "This order has no saved items; stock cannot be reserved."
+                    )
+                elif any(line.product_id is None or line.own_product_id is not None for line in order_items):
+                    stock_reservation_error = (
+                        "Online payment reconciliation currently supports legacy reseller orders only."
+                    )
+                else:
+                    stock_pools, stock_reservation_error = reserve_stock_for_products(
+                        [(line.product_id, line.quantity) for line in order_items]
+                    )
+
+                if stock_reservation_error:
+                    raise ValueError("STOCK_RESERVATION_FAILED")
+
+                reserved_at = timezone.now()
+                for line in order_items:
+                    line.stock_pool = stock_pools[line.product_id]
+                    line.stock_deducted = True
+                    line.stock_restored = False
+                    line.stock_deducted_at = reserved_at
+                    line.stock_restored_at = None
+                    line.save(update_fields=[
+                        "stock_pool",
+                        "stock_deducted",
+                        "stock_restored",
+                        "stock_deducted_at",
+                        "stock_restored_at",
+                    ])
 
                 locked_order.razorpay_payment_id = payment_id
                 locked_order.payment_status = "Paid"
@@ -1074,7 +1313,48 @@ def india_razorpay_verify_view(request):
             return redirect(detail_url, **detail_kwargs)
 
     except ValueError as error:
-        messages.error(request, str(error))
+        if stock_reservation_error:
+            # The DB transaction rolled back, so stock and local payment status
+            # remain unchanged. Try to return captured funds, but do not claim
+            # the refund is complete until Razorpay confirms it.
+            refunded_paise = int(gateway_payment.get("amount_refunded", 0) or 0)
+            if refunded_paise > 0:
+                messages.error(
+                    request,
+                    "Stock could not be reserved for this captured payment. "
+                    f"Razorpay already reports {refunded_paise} paise refunded; "
+                    f"do not issue another automatic refund. Reconcile payment "
+                    f"{payment_id} for order {order.order_number} in Razorpay.",
+                )
+            else:
+                try:
+                    refund_response = client.payment.refund(
+                        payment_id,
+                        {"amount": expected_paise},
+                    )
+                    refund_status = (
+                        refund_response.get("status", "unknown")
+                        if isinstance(refund_response, dict)
+                        else "unknown"
+                    )
+                    messages.error(
+                        request,
+                        "Stock could not be reserved, so this order remains unpaid "
+                        "locally and unconfirmed. A Razorpay refund request was sent "
+                        f"(gateway status: {refund_status}); this is not proof that "
+                        f"the refund is complete. Check Razorpay for payment "
+                        f"{payment_id} and order {order.order_number}.",
+                    )
+                except Exception:
+                    messages.error(
+                        request,
+                        "URGENT: Payment was captured but stock could not be reserved "
+                        "and the automatic refund request failed. Do not fulfil this "
+                        f"order. Check Razorpay payment {payment_id} for order "
+                        f"{order.order_number} and reconcile/refund manually.",
+                    )
+        else:
+            messages.error(request, str(error))
         return redirect(detail_url, **detail_kwargs)
 
     except Exception:
@@ -1131,6 +1411,13 @@ def india_product_detail_view(request, product_id):
         listing_status="active",
         source_status="available",
     )
+    if (
+        "DEMO" in (product.source_name or "").upper()
+        or "DEMO PRODUCT" in (product.description or "").upper()
+    ):
+        from django.http import Http404
+        raise Http404
+
     approved_reviews = (
         product.reviews.filter(is_approved=True)
         .select_related("user")
@@ -1156,6 +1443,7 @@ def india_product_detail_view(request, product_id):
         "india_store/product_detail.html",
         {
             "product": product,
+            "is_own_inventory": False,
             "coins_enabled": IndiaShoppingSettings.get_settings().coins_enabled,
             "reviews": approved_reviews[:20],
             "review_count": review_count,
@@ -1172,6 +1460,8 @@ def india_product_detail_view(request, product_id):
             "related_products": (
                 ResellingProduct.objects
                 .filter(listing_status="active", source_status="available")
+                .exclude(source_name__icontains="DEMO")
+                .exclude(description__icontains="DEMO PRODUCT")
                 .exclude(pk=product.pk)
                 .select_related("category")
                 .order_by("-is_featured", "-created_at")[:4]
@@ -1185,6 +1475,8 @@ def india_wishlist_view(request):
     wishlist_items = (
         IndiaWishlistItem.objects
         .filter(user=request.user)
+        .exclude(product__source_name__icontains="DEMO")
+        .exclude(product__description__icontains="DEMO PRODUCT")
         .select_related("product", "product__category")
     )
     return render(
@@ -1219,6 +1511,8 @@ def india_wishlist_toggle_view(request, product_id):
         elif (
             product.listing_status != "active"
             or product.source_status != "available"
+            or "DEMO" in (product.source_name or "").upper()
+            or "DEMO PRODUCT" in (product.description or "").upper()
         ):
             messages.error(request, "This product is not currently available to save.")
         else:
@@ -1353,3 +1647,47 @@ def india_notification_read_view(request, notification_id):
         notification.is_read = True
         notification.save(update_fields=["is_read"])
     return redirect("india_store:notifications")
+
+
+def india_stock_product_detail_view(request, product_id):
+    """Detail page for BYXOM's own IndiaProduct inventory."""
+    from django.shortcuts import get_object_or_404, render
+    from .models import IndiaProduct
+
+    product = get_object_or_404(
+        IndiaProduct.objects.select_related("category"),
+        pk=product_id,
+        is_active=True,
+        stock__gt=0,
+        category__is_active=True,
+    )
+
+    related_products = (
+        IndiaProduct.objects
+        .filter(
+            category=product.category,
+            is_active=True,
+            stock__gt=0,
+            category__is_active=True,
+        )
+        .exclude(pk=product.pk)
+        .order_by("name")[:8]
+    )
+
+    return render(
+        request,
+        "india_store/product_detail.html",
+        {
+            "product": product,
+            "is_own_inventory": True,
+            "coins_enabled": False,
+            "reviews": [],
+            "review_count": 0,
+            "average_rating": 0,
+            "can_review": False,
+            "user_review": None,
+            "is_authenticated": request.user.is_authenticated,
+            "is_wishlisted": False,
+            "related_products": related_products,
+        },
+    )

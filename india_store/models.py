@@ -11,16 +11,39 @@ from django.utils import timezone
 class IndiaCategory(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(max_length=140, unique=True)
+
+    icon = models.CharField(
+        max_length=80,
+        blank=True,
+        help_text="Optional emoji or icon name, e.g. ??",
+    )
     image = models.ImageField(
         upload_to="india/categories/",
         blank=True,
         null=True,
     )
+
+    banner_image = models.ImageField(
+        upload_to="india/category_banners/",
+        blank=True,
+        null=True,
+    )
+    banner_title = models.CharField(max_length=180, blank=True)
+    banner_subtitle = models.CharField(max_length=300, blank=True)
+
+    sort_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Lower numbers appear first.",
+    )
     is_active = models.BooleanField(default=True)
+    show_on_home = models.BooleanField(default=True)
+    coming_soon = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["sort_order", "name"]
+        verbose_name = "India Category"
         verbose_name_plural = "India Categories"
 
     def __str__(self):
@@ -76,6 +99,11 @@ class IndiaProduct(models.Model):
             return round(
                 (self.mrp - self.selling_price) * 100 / self.mrp
             )
+        return 0
+
+    @property
+    def reward_coins(self):
+        # Own-inventory items do not award coins unless a dedicated field is added.
         return 0
 
     @property
@@ -174,6 +202,34 @@ class ResellingProduct(models.Model):
     )
 
     stock_checked_at = models.DateTimeField(null=True, blank=True)
+
+    # BYXOM-owned stock physically counted in our own inventory.
+    inventory_quantity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Units physically held by BYXOM. Leave blank until counted.",
+    )
+    reorder_level = models.PositiveIntegerField(
+        default=5,
+        help_text="Admin low-stock alert threshold for BYXOM-owned inventory.",
+    )
+
+    # Quantity reported by the external supplier/source.
+    source_quantity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Supplier-reported available units. Leave blank if unknown.",
+    )
+    source_reorder_level = models.PositiveIntegerField(
+        default=5,
+        help_text="Admin alert threshold for supplier-reported stock.",
+    )
+    stock_check_notes = models.CharField(
+        max_length=300,
+        blank=True,
+        default="",
+        help_text="When/how supplier availability was checked, or relevant notes.",
+    )
 
     show_sale_badge = models.BooleanField(default=False)
     sale_badge_text = models.CharField(max_length=40, blank=True)
@@ -501,6 +557,15 @@ class IndiaCartItem(models.Model):
         ResellingProduct,
         on_delete=models.CASCADE,
         related_name="india_cart_items",
+        null=True,
+        blank=True,
+    )
+    own_product = models.ForeignKey(
+        IndiaProduct,
+        on_delete=models.CASCADE,
+        related_name="india_cart_items",
+        null=True,
+        blank=True,
     )
     quantity = models.PositiveIntegerField(
         default=1,
@@ -517,7 +582,27 @@ class IndiaCartItem(models.Model):
                 fields=["cart", "product"],
                 name="uniq_india_cart_product",
             ),
+            models.UniqueConstraint(
+                fields=["cart", "own_product"],
+                condition=models.Q(own_product__isnull=False),
+                name="uniq_india_cart_own_product",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(product__isnull=False, own_product__isnull=True)
+                    | models.Q(product__isnull=True, own_product__isnull=False)
+                ),
+                name="india_cart_item_exactly_one_product",
+            ),
         ]
+
+    @property
+    def display_product(self):
+        return self.own_product if self.own_product_id else self.product
+
+    @property
+    def is_own_inventory(self):
+        return self.own_product_id is not None
 
     @property
     def line_total(self):
@@ -526,7 +611,8 @@ class IndiaCartItem(models.Model):
         return self.quantity * self.price
 
     def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        product = self.display_product
+        return f"{product.name if product else 'Product'} x {self.quantity}"
 
 
 
@@ -656,10 +742,54 @@ class IndiaOrderItem(models.Model):
         ResellingProduct,
         on_delete=models.PROTECT,
         related_name="india_order_items",
+        null=True,
+        blank=True,
+    )
+    own_product = models.ForeignKey(
+        IndiaProduct,
+        on_delete=models.PROTECT,
+        related_name="india_order_items",
+        null=True,
+        blank=True,
     )
     product_name = models.CharField(max_length=200)
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    STOCK_POOL_CHOICES = [
+        ("byxom", "BYXOM Inventory"),
+        ("supplier", "Supplier-Reported Stock"),
+        ("own", "BYXOM India Product Stock"),
+        ("none", "Not Reserved"),
+    ]
+    stock_pool = models.CharField(
+        max_length=10,
+        choices=STOCK_POOL_CHOICES,
+        default="none",
+    )
+    stock_deducted = models.BooleanField(default=False)
+    stock_restored = models.BooleanField(default=False)
+    stock_deducted_at = models.DateTimeField(null=True, blank=True)
+    stock_restored_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(product__isnull=False, own_product__isnull=True)
+                    | models.Q(product__isnull=True, own_product__isnull=False)
+                ),
+                name="india_order_item_exactly_one_product",
+            ),
+        ]
+
+    @property
+    def display_product(self):
+        return self.own_product if self.own_product_id else self.product
+
+    @property
+    def is_own_inventory(self):
+        return self.own_product_id is not None
 
     @property
     def line_total(self):
@@ -958,6 +1088,25 @@ class IndiaReturnRequest(models.Model):
         default="REQUESTED",
     )
     admin_note = models.TextField(blank=True, default="")
+    refund_finance_transaction = models.OneToOneField(
+        "FinanceTransaction",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="india_return_refund",
+        help_text=(
+            "Select the successful, verified outgoing customer-refund "
+            "transaction that matches this return and order."
+        ),
+    )
+    refund_processed_at = models.DateTimeField(null=True, blank=True)
+    refund_verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_india_return_refunds",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
