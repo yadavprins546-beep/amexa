@@ -476,21 +476,21 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
     {% if items %}
         {% for item in items %}
             <article class="cart-item">
-                {% if item.product.image %}
-                    <img class="cart-photo" src="{{ item.product.image.url }}"
-                         alt="{{ item.product.name|escape }}">
-                {% elif item.product.image_2 %}
-                    <img class="cart-photo" src="{{ item.product.image_2.url }}"
-                         alt="{{ item.product.name|escape }}">
-                {% elif item.product.image_3 %}
-                    <img class="cart-photo" src="{{ item.product.image_3.url }}"
-                         alt="{{ item.product.name|escape }}">
+                {% if item.display_product.image %}
+                    <img class="cart-photo" src="{{ item.display_product.image.url }}"
+                         alt="{{ item.display_product.name|escape }}">
+                {% elif item.display_product.image_2 %}
+                    <img class="cart-photo" src="{{ item.display_product.image_2.url }}"
+                         alt="{{ item.display_product.name|escape }}">
+                {% elif item.display_product.image_3 %}
+                    <img class="cart-photo" src="{{ item.display_product.image_3.url }}"
+                         alt="{{ item.display_product.name|escape }}">
                 {% else %}
                     <div class="cart-photo"></div>
                 {% endif %}
 
                 <div class="details">
-                    <strong>{{ item.product.name|escape }}</strong>
+                    <strong>{{ item.display_product.name|escape }}</strong>
                     <form method="post" action="{% url 'india_store:cart_update' item.id %}" class="qty-form">
                         {% csrf_token %}
                         <label>Quantity
@@ -503,10 +503,10 @@ hr { border: 0; border-top: 1px solid #eee0d2; }
                         &#183; Line total: &#8377;{{ item.line_total|floatformat:2 }}
                     </div>
 
-                    {% if coins_enabled and item.product.reward_coins > 0 %}
+                    {% if coins_enabled and item.display_product.reward_coins > 0 %}
                         <div class="cart-coin-note">
                             <span aria-hidden="true">&#10022;</span>
-                            Earn {{ item.product.reward_coins }} coin{{ item.product.reward_coins|pluralize }}
+                            Earn {{ item.display_product.reward_coins }} coin{{ item.display_product.reward_coins|pluralize }}
                             per unit after delivery
                         </div>
                     {% endif %}

@@ -46,8 +46,8 @@ def grant_delivery_rewards(order):
 
             if ledger is None:
                 coins = sum(
-                    int(item.product.reward_coins or 0) * int(item.quantity)
-                    for item in locked_order.items.select_related("product").all()
+                    int(getattr(item.display_product, "reward_coins", 0) or 0) * int(item.quantity)
+                    for item in locked_order.items.select_related("product", "own_product").all()
                 )
 
                 if coins > 0:

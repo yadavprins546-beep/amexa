@@ -1,8 +1,9 @@
 
+from django import forms
 from django.contrib import admin, messages
 from decimal import Decimal
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import F, Q, Sum
 from django.utils import timezone
 
 from .models import (
@@ -11,6 +12,7 @@ from .models import (
     IndiaOrderNotification,
     IndiaProductReview,
     IndiaShoppingSettings,
+    IndiaWishlistItem,
     IndiaOrderReward,
     IndiaCoinTransaction,
     IndiaReturnRequest,
@@ -25,14 +27,43 @@ from .models import (
 
 from .notifications import notify_order_status
 from .rewards import grant_delivery_rewards
+from .stock_services import release_order_stock
 
 
 @admin.register(IndiaCategory)
 class IndiaCategoryAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "slug", "is_active")
-    list_filter = ("is_active",)
-    search_fields = ("name",)
+    list_display = (
+        "id",
+        "name",
+        "slug",
+        "sort_order",
+        "is_active",
+        "show_on_home",
+        "coming_soon",
+    )
+    list_filter = ("is_active", "show_on_home", "coming_soon")
+    search_fields = ("name", "slug", "banner_title")
     prepopulated_fields = {"slug": ("name",)}
+    list_editable = ("sort_order", "is_active", "show_on_home", "coming_soon")
+    ordering = ("sort_order", "name")
+    list_per_page = 25
+
+    fieldsets = (
+        ("Category Details", {
+            "fields": ("name", "slug", "icon", "image")
+        }),
+        ("Category Banner", {
+            "fields": ("banner_image", "banner_title", "banner_subtitle")
+        }),
+        ("Display Settings", {
+            "fields": ("sort_order", "is_active", "show_on_home", "coming_soon")
+        }),
+        ("System Information", {
+            "fields": ("created_at",),
+        }),
+    )
+    readonly_fields = ("created_at",)
+
 
 
 @admin.register(IndiaProduct)
@@ -108,12 +139,61 @@ class IndiaProductAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
 
+class ResellingStockSignalFilter(admin.SimpleListFilter):
+    title = "Stock signal"
+    parameter_name = "stock_signal"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("unknown", "Quantity not recorded"),
+            ("low", "At or below reorder level"),
+            ("ok", "Above reorder level"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "unknown":
+            return queryset.filter(
+                Q(fulfillment_method="byxom", inventory_quantity__isnull=True)
+                | Q(fulfillment_method="supplier", source_quantity__isnull=True)
+            )
+        if self.value() == "low":
+            return queryset.filter(
+                Q(
+                    fulfillment_method="byxom",
+                    inventory_quantity__isnull=False,
+                    inventory_quantity__lte=F("reorder_level"),
+                )
+                | Q(
+                    fulfillment_method="supplier",
+                    source_quantity__isnull=False,
+                    source_quantity__lte=F("source_reorder_level"),
+                )
+            )
+        if self.value() == "ok":
+            return queryset.filter(
+                Q(
+                    fulfillment_method="byxom",
+                    inventory_quantity__gt=F("reorder_level"),
+                )
+                | Q(
+                    fulfillment_method="supplier",
+                    source_quantity__gt=F("source_reorder_level"),
+                )
+            )
+        return queryset
+
+
 @admin.register(ResellingProduct)
 class ResellingProductAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
         "category",
+        "inventory_quantity",
+        "reorder_level",
+        "source_quantity",
+        "source_reorder_level",
+        "stock_signal_display",
         "sourcing_cost",
         "selling_price",
         "estimated_gross_margin",
@@ -129,6 +209,7 @@ class ResellingProductAdmin(admin.ModelAdmin):
         "category",
         "source_status",
         "fulfillment_method",
+        ResellingStockSignalFilter,
         "listing_status",
         "show_sale_badge",
         "is_featured",
@@ -149,6 +230,8 @@ class ResellingProductAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
     list_editable = (
+        "inventory_quantity",
+        "source_quantity",
         "source_status",
         "listing_status",
         "show_sale_badge",
@@ -173,6 +256,9 @@ class ResellingProductAdmin(admin.ModelAdmin):
                 "source_url",
                 "source_status",
                 "stock_checked_at",
+                "source_quantity",
+                "source_reorder_level",
+                "stock_check_notes",
                 "fulfillment_method",
             )
         }),
@@ -200,6 +286,9 @@ class ResellingProductAdmin(admin.ModelAdmin):
                 "show_trending_badge",
             )
         }),
+        ("BYXOM Inventory", {
+            "fields": ("inventory_quantity", "reorder_level")
+        }),
         ("Listing Status", {
             "fields": ("listing_status",)
         }),
@@ -208,6 +297,30 @@ class ResellingProductAdmin(admin.ModelAdmin):
             "classes": ("collapse",),
         }),
     )
+
+    @admin.display(description="Stock Signal")
+    def stock_signal_display(self, obj):
+        if obj.fulfillment_method == "supplier":
+            quantity = obj.source_quantity
+            threshold = obj.source_reorder_level
+            label = "Supplier"
+        else:
+            quantity = obj.inventory_quantity
+            threshold = obj.reorder_level
+            label = "BYXOM"
+
+        if quantity is None:
+            return f"{label}: NOT RECORDED"
+        if quantity <= threshold:
+            return f"{label}: LOW"
+        return f"{label}: OK"
+
+    def save_model(self, request, obj, form, change):
+        # Record when supplier stock details/status were manually checked.
+        supplier_fields = {"source_quantity", "source_status", "stock_check_notes"}
+        if obj.fulfillment_method == "supplier" and supplier_fields.intersection(form.changed_data):
+            obj.stock_checked_at = timezone.now()
+        super().save_model(request, obj, form, change)
 
     readonly_fields = (
         "created_at",
@@ -491,7 +604,7 @@ class FinanceTransactionAdmin(admin.ModelAdmin):
 class IndiaCartItemInline(admin.TabularInline):
     model = IndiaCartItem
     extra = 0
-    fields = ("product", "quantity", "price", "line_total", "created_at", "updated_at")
+    fields = ("product", "own_product", "quantity", "price", "line_total", "created_at", "updated_at")
     readonly_fields = ("price", "line_total", "created_at", "updated_at")
 
 
@@ -507,8 +620,34 @@ class IndiaCartAdmin(admin.ModelAdmin):
 class IndiaOrderItemInline(admin.TabularInline):
     model = IndiaOrderItem
     extra = 0
-    fields = ("product", "product_name", "quantity", "price", "line_total")
-    readonly_fields = ("product", "product_name", "quantity", "price", "line_total")
+    fields = (
+        "product", "own_product", "product_name", "quantity", "price", "line_total",
+        "stock_pool", "stock_deducted", "stock_restored",
+        "stock_deducted_at", "stock_restored_at",
+    )
+    readonly_fields = fields
+
+
+class IndiaStockBlockedFilter(admin.SimpleListFilter):
+    title = "stock reservation"
+    parameter_name = "stock_blocked"
+
+    def lookups(self, request, model_admin):
+        return (("blocked", "Blocked - needs stock review"),)
+
+    def queryset(self, request, queryset):
+        if self.value() != "blocked":
+            return queryset
+
+        active_statuses = ("Pending", "Confirmed", "Processing", "Shipped")
+        return queryset.filter(
+            status__in=active_statuses
+        ).filter(
+            Q(items__isnull=True)
+            | Q(items__stock_deducted=False)
+            | Q(items__stock_pool__in=("none", ""))
+            | Q(items__stock_restored=True)
+        ).distinct()
 
 
 @admin.register(IndiaOrder)
@@ -529,7 +668,14 @@ class IndiaOrderAdmin(admin.ModelAdmin):
         "delivered_at",
         "created_at",
     )
-    list_filter = ("status", "payment_method", "payment_status", "supplier_platform", "created_at")
+    list_filter = (
+        "status",
+        "payment_method",
+        "payment_status",
+        "supplier_platform",
+        "created_at",
+        IndiaStockBlockedFilter,
+    )
     search_fields = ("order_number", "user__email", "address__pincode", "supplier_order_id")
     readonly_fields = (
         "order_number",
@@ -577,11 +723,38 @@ class IndiaOrderAdmin(admin.ModelAdmin):
         self, request, queryset, source_status, target_status, label
     ):
         selected_count = queryset.count()
-        eligible = list(queryset.filter(status=source_status))
+
+        # BYXOM-ORDER-PAYMENT-GATE-V1
+        eligible_queryset = queryset.filter(status=source_status)
+        if target_status in ("Confirmed", "Processing", "Shipped", "Delivered"):
+            eligible_queryset = eligible_queryset.filter(
+                Q(
+                    payment_method="COD",
+                    payment_status__in=("Pending", "Paid"),
+                )
+                | Q(
+                    payment_method="ONLINE",
+                    payment_status="Paid",
+                )
+            )
+
+        eligible = list(eligible_queryset)
         changed_count = 0
+        stock_blocked_count = 0
 
         with transaction.atomic():
             for order in eligible:
+                # BYXOM-ORDER-STOCK-GATE-V1
+                if target_status in ("Confirmed", "Processing", "Shipped", "Delivered"):
+                    order_items = list(order.items.select_for_update().all())
+                    if not order_items or any(
+                        not item.stock_deducted
+                        or item.stock_pool not in ("byxom", "supplier", "own")
+                        or item.stock_restored
+                        for item in order_items
+                    ):
+                        stock_blocked_count += 1
+                        continue
                 order.status = target_status
                 if target_status == "Delivered":
                     order.delivered_at = order.delivered_at or timezone.now()
@@ -601,11 +774,18 @@ class IndiaOrderAdmin(admin.ModelAdmin):
                 level=messages.SUCCESS,
             )
 
+        if stock_blocked_count:
+            self.message_user(
+                request,
+                f"{stock_blocked_count} order(s) blocked: product items missing or stock reservation incomplete/restored.",
+                level=messages.ERROR,
+            )
+
         skipped_count = selected_count - changed_count
         if skipped_count:
             self.message_user(
                 request,
-                f"{skipped_count} order(s) skipped because their current status does not allow this transition.",
+                f"{skipped_count} order(s) skipped because status, payment, or stock checks did not allow this transition.",
                 level=messages.WARNING,
             )
 
@@ -639,9 +819,11 @@ class IndiaOrderAdmin(admin.ModelAdmin):
                     status="Pending",
                     payment_method="COD",
                     payment_status="Pending",
+                    supplier_order_id="",
                 )
             )
             for order in eligible:
+                release_order_stock(order)
                 order.status = "Cancelled"
                 order.save(update_fields=["status", "updated_at"])
                 notify_order_status(order)
@@ -657,23 +839,36 @@ class IndiaOrderAdmin(admin.ModelAdmin):
         if skipped_count:
             self.message_user(
                 request,
-                f"{skipped_count} order(s) skipped. Only unpaid Pending COD orders can be cancelled by this action.",
+                f"{skipped_count} order(s) skipped. Only unpaid Pending COD orders with no supplier order ID can be cancelled by this action.",
                 level=messages.WARNING,
             )
 
-    @admin.action(description="Start processing only after supplier order ID is recorded")
+    @admin.action(description="Start processing after supplier order ID or for own-stock-only orders")
     def start_processing_orders(self, request, queryset):
-        confirmed = queryset.filter(status="Confirmed")
-        missing_id_count = confirmed.filter(supplier_order_id="").count()
-        ready = confirmed.exclude(supplier_order_id="")
+        confirmed = list(queryset.filter(status="Confirmed"))
+        ready_ids = []
+        missing_id_count = 0
+
+        for order in confirmed:
+            if (order.supplier_order_id or "").strip():
+                ready_ids.append(order.pk)
+                continue
+
+            has_reseller_line = order.items.filter(product__isnull=False).exists()
+            has_own_line = order.items.filter(own_product__isnull=False).exists()
+            if has_own_line and not has_reseller_line:
+                ready_ids.append(order.pk)
+            else:
+                missing_id_count += 1
 
         if missing_id_count:
             self.message_user(
                 request,
-                f"{missing_id_count} confirmed order(s) skipped: enter the supplier order ID first.",
+                f"{missing_id_count} confirmed reseller/mixed order(s) skipped: enter the supplier order ID first.",
                 level=messages.WARNING,
             )
 
+        ready = queryset.filter(pk__in=ready_ids)
         self._apply_india_order_status_transition(
             request, ready, "Confirmed", "Processing", "Processing"
         )
@@ -913,24 +1108,130 @@ class IndiaCoinTransactionAdmin(admin.ModelAdmin):
         return False
 
 
+class IndiaReturnRequestAdminForm(forms.ModelForm):
+    class Meta:
+        model = IndiaReturnRequest
+        fields = "__all__"
+
+    def clean(self):
+        cleaned = super().clean()
+        new_status = cleaned.get("status")
+
+        old_status = None
+        if self.instance.pk:
+            old_status = (
+                IndiaReturnRequest.objects
+                .filter(pk=self.instance.pk)
+                .values_list("status", flat=True)
+                .first()
+            )
+
+        if (
+            old_status in ("REFUNDED", "CLOSED")
+            and new_status != old_status
+        ):
+            self.add_error(
+                "status",
+                "This return is finalized. Its final status cannot be changed here.",
+            )
+            return cleaned
+
+        if new_status == "REFUNDED" and old_status != "REFUNDED":
+            if old_status != "RECEIVED":
+                self.add_error(
+                    "status",
+                    "A return must reach Item Received before it can be marked Refunded.",
+                )
+                return cleaned
+
+            finance_tx = cleaned.get("refund_finance_transaction")
+            if finance_tx is None:
+                self.add_error(
+                    "refund_finance_transaction",
+                    "Select a verified refund transaction before finalizing this return.",
+                )
+                return cleaned
+
+            order = self.instance.order
+            problems = []
+
+            if finance_tx.direction != "outgoing":
+                problems.append("transaction direction must be Money Out")
+            if finance_tx.transaction_type != "customer_refund":
+                problems.append("transaction type must be Customer Refund")
+            if finance_tx.status != "successful":
+                problems.append("transaction must be Successful")
+            if not finance_tx.is_verified:
+                problems.append("transaction must be verified")
+            if finance_tx.payment_source not in ("bank_statement", "gateway_webhook"):
+                problems.append("source must be a bank statement or verified gateway event")
+            if not (finance_tx.transaction_reference or "").strip():
+                problems.append("transaction reference is missing")
+            if (finance_tx.order_reference or "").strip() != order.order_number:
+                problems.append("transaction order reference does not match this order")
+            if finance_tx.amount is None or finance_tx.amount <= 0:
+                problems.append("refund transaction amount must be positive")
+
+            if problems:
+                self.add_error(
+                    "refund_finance_transaction",
+                    "Refund transaction rejected: " + "; ".join(problems) + ".",
+                )
+
+        return cleaned
+
+
 @admin.register(IndiaReturnRequest)
 class IndiaReturnRequestAdmin(admin.ModelAdmin):
+    form = IndiaReturnRequestAdminForm
+
     list_display = (
-        "id", "order_number", "product_name", "customer_email",
-        "quantity", "status", "created_at",
+        "id",
+        "order_number",
+        "product_name",
+        "customer_email",
+        "quantity",
+        "status",
+        "refund_amount_display",
+        "refund_reference_display",
+        "created_at",
     )
     list_filter = ("status", "created_at", "updated_at")
     search_fields = (
-        "order__order_number", "order_item__product_name",
-        "user__email", "reason",
+        "order__order_number",
+        "order_item__product_name",
+        "user__email",
+        "reason",
+        "refund_finance_transaction__transaction_reference",
     )
     readonly_fields = (
-        "order", "order_item", "user", "quantity", "reason",
-        "created_at", "updated_at",
+        "order",
+        "order_item",
+        "user",
+        "quantity",
+        "reason",
+        "refund_amount_display",
+        "refund_reference_display",
+        "refund_processed_at",
+        "refund_verified_by",
+        "created_at",
+        "updated_at",
     )
     fields = (
-        "order", "order_item", "user", "quantity", "reason",
-        "status", "admin_note", "created_at", "updated_at",
+        "order",
+        "order_item",
+        "user",
+        "quantity",
+        "reason",
+        "status",
+        "admin_note",
+        "refund_finance_transaction",
+        "refund_amount_display",
+        "refund_reference_display",
+        "refund_processed_at",
+        "refund_verified_by",
+        "created_at",
+        "updated_at",
     )
     date_hierarchy = "created_at"
     list_per_page = 25
@@ -947,6 +1248,76 @@ class IndiaReturnRequestAdmin(admin.ModelAdmin):
     def customer_email(self, obj):
         return getattr(obj.user, "email", str(obj.user))
 
+    @admin.display(description="Refund Amount")
+    def refund_amount_display(self, obj):
+        tx = obj.refund_finance_transaction
+        return tx.amount if tx else "—"
+
+    @admin.display(description="Refund Reference")
+    def refund_reference_display(self, obj):
+        tx = obj.refund_finance_transaction
+        return tx.transaction_reference if tx else "—"
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(super().get_readonly_fields(request, obj))
+        if obj and obj.status in ("REFUNDED", "CLOSED"):
+            for name in ("status", "refund_finance_transaction"):
+                if name not in readonly:
+                    readonly.append(name)
+        return tuple(readonly)
+
     def save_model(self, request, obj, form, change):
-        # Admin marks REFUNDED only after an actual refund has been processed.
+        if obj.status == "REFUNDED":
+            obj.refund_processed_at = obj.refund_processed_at or timezone.now()
+            obj.refund_verified_by = obj.refund_verified_by or request.user
         super().save_model(request, obj, form, change)
+
+    def has_add_permission(self, request):
+        # Customer returns must originate from the customer return workflow.
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Keep return/refund records available for audit.
+        return False
+
+
+@admin.register(IndiaCartItem)
+class IndiaCartItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cart', 'product', 'own_product', 'quantity', 'price', 'line_total', 'created_at', 'updated_at')
+    search_fields = ('cart__user__email', 'product__name', 'own_product__name')
+    readonly_fields = ('price', 'line_total', 'created_at', 'updated_at')
+    fields = ('cart', 'product', 'own_product', 'quantity', 'price', 'line_total', 'created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    list_per_page = 25
+
+
+@admin.register(IndiaOrderItem)
+class IndiaOrderItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'product_name', 'quantity', 'price', 'line_total', 'stock_pool', 'stock_deducted', 'stock_restored')
+    search_fields = ('order__order_number', 'order__user__email', 'product_name', 'own_product__name')
+    readonly_fields = ('order', 'product', 'own_product', 'product_name', 'quantity', 'price', 'line_total', 'stock_pool', 'stock_deducted', 'stock_restored', 'stock_deducted_at', 'stock_restored_at')
+    fields = readonly_fields
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(IndiaWishlistItem)
+class IndiaWishlistItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'product', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('user__email', 'product__name')
+    readonly_fields = ('user', 'product', 'created_at')
+    fields = ('user', 'product', 'created_at')
+    date_hierarchy = 'created_at'
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

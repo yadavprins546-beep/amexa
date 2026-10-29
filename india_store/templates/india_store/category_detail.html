@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ category.name }} | BYXOM</title>
+<style>
+:root{--ink:#17231f;--muted:#68736e;--green:#176b4d;--cream:#f6f7f2;--line:#e4e9e3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+.top{padding:16px 5%;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px;color:var(--green)}
+.back{font-weight:700;color:var(--green)}
+.wrap{max-width:1200px;margin:auto;padding:24px 5% 50px}
+.hero{position:relative;overflow:hidden;border-radius:24px;min-height:240px;background:linear-gradient(120deg,#164f3b,#287e5b);color:#fff;display:flex;align-items:center;padding:clamp(26px,6vw,64px);margin-bottom:30px}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,35,25,.86),rgba(8,35,25,.18))}
+.herotext{position:relative;z-index:1;max-width:620px}
+.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:800;color:#d4f5df}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;margin:12px 0}
+.herotext p{font-size:15px;line-height:1.7;max-width:520px;color:#eff8f1}
+.heading{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:30px 0 18px}
+h2{font-size:25px;margin:0}
+.count{color:var(--muted);font-size:13px}
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;min-width:0}
+.photo{height:210px;background:#edf1ec;display:flex;align-items:center;justify-content:center}
+.photo img{width:100%;height:100%;object-fit:contain}
+.info{padding:15px}
+.name{font-weight:750;line-height:1.4}
+.price{margin-top:10px;font-size:18px;font-weight:850;color:var(--green)}
+.mrp{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:7px}
+.tag{display:inline-block;margin-top:9px;border-radius:20px;background:#e4f6e9;color:#176b4d;padding:5px 9px;font-size:11px;font-weight:800}
+.empty{padding:28px;border:1px dashed #b9c8bb;background:#fff;border-radius:18px;color:var(--muted);text-align:center;margin-bottom:25px}
+.empty strong{display:block;font-size:24px;color:var(--ink);margin-bottom:7px}
+@media(max-width:900px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:180px}}
+@media(max-width:600px){.wrap{padding:18px 4% 36px}.top{padding:14px 4%}.hero{min-height:220px;border-radius:18px}.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.photo{height:155px}.info{padding:11px}h2{font-size:21px}}
+</style>
+</head>
+<body>
+<header class="top">
+<a class="logo" href="{% url 'india_store:home' %}">BYXOM</a>
+<a class="back" href="{% url 'india_store:home' %}">? All categories</a>
+</header>
+<main class="wrap">
+<section class="hero">
+{% if category.banner_image %}
+<img src="{{ category.banner_image.url }}" alt="{{ category.name }} banner">
+{% elif category.image %}
+<img src="{{ category.image.url }}" alt="{{ category.name }}">
+{% endif %}
+<div class="shade"></div>
+<div class="herotext">
+<div class="eyebrow">BYXOM COLLECTION</div>
+<h1>{{ category.banner_title|default:category.name }}</h1>
+<p>{{ category.banner_subtitle|default:"Explore products selected for you." }}</p>
+</div>
+</section>
+
+{% if category.coming_soon %}
+<div class="empty"><strong>Coming Soon ?</strong>We're preparing this collection. Check back soon for new arrivals.</div>
+{% endif %}
+
+{% if products or reselling_products %}
+<div class="heading"><h2>Explore {{ category.name }}</h2><span class="count">Products for you</span></div>
+<div class="products">
+{% for product in products %}
+<article class="card">
+<a href="{% url 'india_store:stock_product_detail' product.id %}">
+<div class="photo">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span>???</span>{% endif %}</div>
+<div class="info">
+<div class="name">{{ product.name }}</div>
+<div class="price">?{{ product.selling_price }} <span class="mrp">?{{ product.mrp }}</span></div>
+{% if product.show_bestseller_badge %}<span class="tag">Bestseller</span>{% elif product.show_new_arrival_badge %}<span class="tag">New Arrival</span>{% elif product.show_sale_badge %}<span class="tag">{{ product.sale_badge_text|default:"Sale" }}</span>{% endif %}
+</div>
+</a>
+</article>
+{% endfor %}
+{% for product in reselling_products %}
+<article class="card">
+<a href="{% url 'india_store:product_detail' product.id %}">
+<div class="photo">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span>???</span>{% endif %}</div>
+<div class="info">
+<div class="name">{{ product.name }}</div>
+<div class="price">?{{ product.selling_price }} <span class="mrp">?{{ product.mrp }}</span></div>
+{% if product.show_bestseller_badge %}<span class="tag">Bestseller</span>{% elif product.show_new_arrival_badge %}<span class="tag">New Arrival</span>{% elif product.show_sale_badge %}<span class="tag">{{ product.sale_badge_text|default:"Sale" }}</span>{% endif %}
+</div>
+</a>
+</article>
+{% endfor %}
+</div>
+{% else %}
+<div class="empty"><strong>Coming Soon ?</strong>Products for this category are being prepared.</div>
+{% endif %}
+</main>
+</body>
+</html>
